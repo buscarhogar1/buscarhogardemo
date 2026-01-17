@@ -18,6 +18,7 @@
         height: 100%;
         margin: 0;
         font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: #fff;
       }
 
       #topbar {
@@ -54,6 +55,7 @@
         height: calc(100% - 56px);
       }
 
+      /* Marker dot */
       .dot {
         width: 14px;
         height: 14px;
@@ -72,61 +74,167 @@
         transform: scale(1.15);
       }
 
-      /* Card flotante (overlay) centrada */
+      /* ===== Card inferior estilo funda ===== */
       .card {
         position: fixed;
         left: 50%;
         transform: translateX(-50%);
-        bottom: 16px;
-        width: min(520px, calc(100% - 32px));
+        bottom: 14px;
+        width: min(680px, calc(100% - 24px));
         background: #fff;
-        border: 1px solid #eee;
-        border-radius: 14px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-        padding: 12px 12px 10px;
+        border: 1px solid rgba(0,0,0,0.10);
+        border-radius: 12px;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.18);
         z-index: 9999;
+        overflow: hidden;
       }
 
       .hidden { display: none; }
 
-      .cardHeader {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+      .cardInner {
+        display: grid;
+        grid-template-columns: 122px 1fr;
         gap: 12px;
-        margin-bottom: 8px;
+        padding: 12px;
+        align-items: center;
       }
 
-      .cardTitle { font-size: 16px; font-weight: 600; }
+      .thumb {
+        width: 122px;
+        height: 92px;
+        border-radius: 10px;
+        background: #f1f2f4;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid rgba(0,0,0,0.06);
+      }
+
+      .thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .thumbPlaceholder {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        color: #9aa1aa;
+        font-size: 12px;
+      }
+
+      .cardMain {
+        min-width: 0;
+      }
+
+      .cardTopRow {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .cardAddress {
+        color: #111;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 15px;
+        line-height: 1.15;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .cardAddress:hover { text-decoration: underline; }
 
       .cardClose {
+        flex: 0 0 auto;
         width: 34px;
         height: 34px;
         border-radius: 10px;
-        border: 1px solid #eee;
+        border: 1px solid rgba(0,0,0,0.10);
         background: #fff;
         cursor: pointer;
         font-size: 20px;
         line-height: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
 
-      .cardBody {
-        font-size: 14px;
-        color: #222;
-        display: grid;
-        gap: 6px;
-      }
-
-      .cardRowLabel { color: #666; }
-
-      .addressLink {
+      .cardPrice {
+        margin-top: 6px;
+        font-size: 18px;
+        font-weight: 900;
         color: #111;
-        text-decoration: none;
-        font-weight: 600;
       }
 
-      .addressLink:hover {
-        text-decoration: underline;
+      .cardFacts {
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        color: #111;
+        font-size: 14px;
+      }
+
+      .fact {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #111;
+      }
+
+      .fact svg {
+        width: 18px;
+        height: 18px;
+        color: rgba(0,0,0,0.65);
+      }
+
+      .energyPill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 7px;
+        border-radius: 999px;
+        border: 1px solid rgba(0,0,0,0.12);
+        font-weight: 800;
+        font-size: 12px;
+        line-height: 1;
+        background: #fff;
+      }
+
+      .cardMetaLine {
+        margin-top: 4px;
+        color: #6b7280;
+        font-size: 12.5px;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      @media (max-width: 420px) {
+        .cardInner { grid-template-columns: 104px 1fr; }
+        .thumb { width: 104px; height: 80px; }
+        .cardPrice { font-size: 17px; }
+      }
+
+      /* Leaflet: retocar un poco zoom controls para estilo "mapa comercial" */
+      .leaflet-control-zoom a {
+        width: 34px;
+        height: 34px;
+        line-height: 34px;
+        border-radius: 10px;
+      }
+      .leaflet-bar a, .leaflet-bar a:hover {
+        border-bottom: 1px solid rgba(0,0,0,0.08);
       }
     </style>
   </head>
@@ -140,13 +248,25 @@
 
     <div id="map"></div>
 
-    <!-- Tarjeta flotante -->
+    <!-- Tarjeta inferior -->
     <div id="card" class="card hidden">
-      <div class="cardHeader">
-        <div id="cardTitle" class="cardTitle">Anuncio</div>
-        <button id="cardClose" class="cardClose" aria-label="Cerrar">×</button>
+      <div class="cardInner">
+        <div class="thumb" id="thumb">
+          <div class="thumbPlaceholder">Foto</div>
+        </div>
+
+        <div class="cardMain">
+          <div class="cardTopRow">
+            <a class="cardAddress" id="cardAddress" href="#">Dirección</a>
+            <button id="cardClose" class="cardClose" aria-label="Cerrar">×</button>
+          </div>
+
+          <div class="cardPrice" id="cardPrice">—</div>
+
+          <div class="cardFacts" id="cardFacts"></div>
+          <div class="cardMetaLine" id="cardMeta">—</div>
+        </div>
       </div>
-      <div id="cardBody" class="cardBody"></div>
     </div>
 
     <script
@@ -169,9 +289,12 @@
 
       // Card elements
       const cardEl = document.getElementById("card");
-      const cardTitleEl = document.getElementById("cardTitle");
-      const cardBodyEl = document.getElementById("cardBody");
       const cardCloseBtn = document.getElementById("cardClose");
+      const thumbEl = document.getElementById("thumb");
+      const cardAddressEl = document.getElementById("cardAddress");
+      const cardPriceEl = document.getElementById("cardPrice");
+      const cardFactsEl = document.getElementById("cardFacts");
+      const cardMetaEl = document.getElementById("cardMeta");
 
       function setStatus(msg) {
         statusEl.textContent = msg || "";
@@ -193,34 +316,93 @@
         cardEl.classList.add("hidden");
       }
 
-      function openCardForPoint(p) {
-        // De momento la vista del mapa no trae dirección (según tu select actual).
-        // Si luego añades address a listings_map_points, lo cogerá automáticamente.
-        const addressText = p.address || p.display_address || p.street_address || "Dirección (pendiente)";
-        const href = `listing.html?id=${encodeURIComponent(p.listing_id)}`;
+      cardCloseBtn.addEventListener("click", closeCard);
 
-        cardTitleEl.textContent = "Anuncio";
-        cardBodyEl.innerHTML = `
-          <div>
-            <a class="addressLink" href="${href}">
-              ${addressText}
-            </a>
-          </div>
-          <div><span class="cardRowLabel">Precio:</span> ${p.price_eur != null ? euro(p.price_eur) : "-"}</div>
-          <div><span class="cardRowLabel">ID:</span> ${p.listing_id}</div>
-        `;
+      function setThumb(url) {
+        thumbEl.innerHTML = "";
+        if (!url) {
+          const ph = document.createElement("div");
+          ph.className = "thumbPlaceholder";
+          ph.textContent = "Foto";
+          thumbEl.appendChild(ph);
+          return;
+        }
+
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = "";
+        img.loading = "lazy";
+        img.onerror = () => {
+          thumbEl.innerHTML = "";
+          const ph = document.createElement("div");
+          ph.className = "thumbPlaceholder";
+          ph.textContent = "Foto";
+          thumbEl.appendChild(ph);
+        };
+        thumbEl.appendChild(img);
+      }
+
+      function iconArea() {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 10h16"/><path d="M10 10v10"/></svg>';
+      }
+      function iconBed() {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3z"/><path d="M7 7V5h10v2"/><path d="M3 17v2"/><path d="M21 17v2"/></svg>';
+      }
+      function iconBolt() {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></svg>';
+      }
+
+      function addFact(htmlIcon, text, extraHtml="") {
+        const w = document.createElement("div");
+        w.className = "fact";
+        w.innerHTML = htmlIcon + "<span>" + text + "</span>" + extraHtml;
+        cardFactsEl.appendChild(w);
+      }
+
+      function openCardForPoint(p) {
+        const addressText =
+          p.address_display || p.address || p.display_address || p.street_address || "Dirección";
+
+        const href = `listing.html?id=${encodeURIComponent(p.listing_id)}`;
+        cardAddressEl.textContent = addressText;
+        cardAddressEl.href = href;
+
+        cardPriceEl.textContent = (p.price_eur != null) ? euro(p.price_eur) : "—";
+
+        const photoUrl = p.main_photo_url || p.photo_url || p.cover_url || null;
+        setThumb(photoUrl);
+
+        cardFactsEl.innerHTML = "";
+
+        if (p.useful_area_m2 != null) addFact(iconArea(), `${p.useful_area_m2} m²`);
+        else addFact(iconArea(), "— m²");
+
+        const rooms = (p.rooms != null) ? p.rooms : (p.bedrooms != null ? p.bedrooms : null);
+        if (rooms != null) addFact(iconBed(), `${rooms}`);
+        else addFact(iconBed(), "—");
+
+        const label = (p.energy_label != null) ? String(p.energy_label).toUpperCase() : null;
+        if (label) addFact(iconBolt(), "", ` <span class="energyPill">${label}</span>`);
+        else addFact(iconBolt(), "", ' <span class="energyPill">—</span>');
+
+        const metaParts = [];
+        if (p.neighborhood) metaParts.push(p.neighborhood);
+        if (p.city) metaParts.push(p.city);
+        cardMetaEl.textContent = metaParts.length ? metaParts.join(" · ") : "—";
 
         cardEl.classList.remove("hidden");
       }
 
-      cardCloseBtn.addEventListener("click", closeCard);
-
       // Map init
       let map = L.map("map").setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      /*
+        Mapa "lo más parecido posible" a Google sin usar Google:
+        - CARTO Voyager (sin key) da un look muy "comercial" y limpio.
+      */
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
         maxZoom: 19,
-        attribution: "&copy; OpenStreetMap"
+        attribution: "&copy; OpenStreetMap &copy; CARTO"
       }).addTo(map);
 
       let markersLayer = L.layerGroup().addTo(map);
@@ -257,9 +439,10 @@
         });
       }
 
-      async function fetchMapPointsByBounds(bounds) {
+      async function fetchWithSelect(bounds, selectStr) {
         const params = new URLSearchParams();
-        params.set("select", "listing_id,price_eur,lat,lng");
+        params.set("select", selectStr);
+
         params.set("lat", `gte.${bounds.south}`);
         params.append("lat", `lte.${bounds.north}`);
         params.set("lng", `gte.${bounds.west}`);
@@ -274,12 +457,43 @@
           }
         });
 
-        if (!res.ok) {
-          const txt = await res.text();
-          throw new Error(txt);
-        }
+        const txt = await res.text();
+        if (!res.ok) throw new Error(txt);
 
-        return await res.json();
+        try { return JSON.parse(txt); } catch { return []; }
+      }
+
+      async function fetchMapPointsByBounds(bounds) {
+        // Intento 1: campos completos (para tarjeta tipo funda)
+        const selectFull = [
+          "listing_id",
+          "price_eur",
+          "lat",
+          "lng",
+          "address_display",
+          "useful_area_m2",
+          "rooms",
+          "bedrooms",
+          "energy_label",
+          "main_photo_url",
+          "photo_url",
+          "cover_url",
+          "neighborhood",
+          "city"
+        ].join(",");
+
+        // Fallback: mínimo (para que no se rompa aunque la vista aún no tenga esos campos)
+        const selectMin = "listing_id,price_eur,lat,lng";
+
+        try {
+          return await fetchWithSelect(bounds, selectFull);
+        } catch (e1) {
+          try {
+            return await fetchWithSelect(bounds, selectMin);
+          } catch (e2) {
+            throw e2;
+          }
+        }
       }
 
       function getCurrentBounds() {
@@ -343,6 +557,9 @@
 
       map.on("moveend", scheduleReload);
       map.on("zoomend", scheduleReload);
+
+      // Cerrar tarjeta si clickas el mapa (fuera de un marker)
+      map.on("click", () => closeCard());
 
       (async () => {
         try {
