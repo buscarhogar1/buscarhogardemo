@@ -26,7 +26,8 @@
 
       /* Breadcrumb */
       .crumbs{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; margin:10px 0 12px;}
-      .crumbs a{color:#1f6feb; text-decoration:none;}
+      .crumbItem{color:#1f6feb; text-decoration:none;}
+      .crumbText{color:var(--muted);}
       .sep{color:#c4c7cf;}
 
       /* Media block (1 big + 4 small) */
@@ -97,10 +98,8 @@
         cursor:pointer;
         font-size:14px;
       }
-      .actionIcon{
-        width:44px;
-        padding:0;
-      }
+      .actionBtn:active{transform:translateY(1px);}
+      .actionIcon{width:44px; padding:0;}
 
       /* Media tabs row */
       .mediaTabs{
@@ -113,19 +112,21 @@
         margin-bottom:18px;
       }
       .tabsLeft{display:flex; gap:18px; flex-wrap:wrap; align-items:center;}
-      .tab{
+      .tabBtn{
         display:inline-flex;
         align-items:center;
         gap:8px;
         color:#111;
-        text-decoration:none;
         font-size:14px;
         padding:6px 8px;
         border-radius:10px;
+        border:0;
+        background:transparent;
+        cursor:pointer;
       }
-      .tab:hover{background:#f6f7f9;}
+      .tabBtn:hover{background:#f6f7f9;}
       .tabCount{color:var(--muted);}
-      .tabsRight .tab{border:1px solid var(--border); background:#fff;}
+      .tabsRight .tabBtn{border:1px solid var(--border); background:#fff;}
 
       /* Main content grid */
       .contentGrid{
@@ -154,12 +155,19 @@
 
       .title{font-size:34px; line-height:1.08; margin:0 0 6px; font-weight:900; letter-spacing:-0.2px;}
       .metaLine{display:flex; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:14px; margin-bottom:10px;}
-      .metaLine a{color:#1f6feb; text-decoration:none;}
+      .metaLine .linkish{color:#1f6feb; text-decoration:none;}
 
       .priceRow{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin:12px 0 10px;}
-      .price{font-size:26px; font-weight:900; margin:0;}
-      .priceNote{color:var(--muted); font-size:14px; text-decoration:none;}
-      .priceNote:hover{text-decoration:underline;}
+      .price{font-size:34px; font-weight:900; margin:0;}
+      .priceNoteBtn{
+        color:var(--muted);
+        font-size:14px;
+        border:0;
+        background:transparent;
+        padding:0;
+        cursor:pointer;
+      }
+      .priceNoteBtn:hover{text-decoration:underline;}
 
       .factsRow{
         display:flex;
@@ -233,17 +241,17 @@
       <div class="crumbs" id="crumbs">
         <span>🏠</span>
         <span class="sep">/</span>
-        <a href="#" id="crumbCity">Ciudad</a>
+        <span class="crumbItem" id="crumbCity">Ciudad</span>
         <span class="sep">/</span>
-        <a href="#" id="crumbNeighborhood">Barrio</a>
+        <span class="crumbItem" id="crumbNeighborhood">Barrio</span>
         <span class="sep">/</span>
-        <span id="crumbAddress">Dirección</span>
+        <span class="crumbText" id="crumbAddress">Dirección</span>
       </div>
 
       <div class="mediaBlock">
         <div class="mediaActions">
-          <button class="actionBtn actionIcon" id="shareBtn" title="Compartir">⤴</button>
-          <button class="actionBtn" id="saveBtn" title="Guardar">♡ Guardar</button>
+          <button class="actionBtn actionIcon" id="shareBtn" type="button" title="Compartir">⤴</button>
+          <button class="actionBtn" id="saveBtn" type="button" title="Guardar">♡ Guardar</button>
         </div>
 
         <div class="mediaGrid">
@@ -259,13 +267,13 @@
 
       <div class="mediaTabs">
         <div class="tabsLeft">
-          <a class="tab" href="#"><span class="factIcon"></span> Foto’s <span class="tabCount" id="photosCount">0</span></a>
-          <a class="tab" href="#"><span class="factIcon"></span> Plano <span class="tabCount" id="floorCount">0</span></a>
-          <a class="tab" href="#"><span class="factIcon"></span> 360° <span class="tabCount" id="panoCount">0</span></a>
-          <a class="tab" href="#"><span class="factIcon"></span> Video</a>
+          <button class="tabBtn" type="button"><span class="factIcon"></span> Foto’s <span class="tabCount" id="photosCount">0</span></button>
+          <button class="tabBtn" type="button"><span class="factIcon"></span> Plano <span class="tabCount" id="floorCount">0</span></button>
+          <button class="tabBtn" type="button"><span class="factIcon"></span> 360° <span class="tabCount" id="panoCount">0</span></button>
+          <button class="tabBtn" type="button"><span class="factIcon"></span> Video</button>
         </div>
         <div class="tabsRight">
-          <a class="tab" href="#"><span class="factIcon"></span> Todo el media</a>
+          <button class="tabBtn" type="button"><span class="factIcon"></span> Todo el media</button>
         </div>
       </div>
 
@@ -280,12 +288,12 @@
             <span class="sep">•</span>
             <span id="metaCity">—</span>
             <span class="sep">•</span>
-            <a href="#" id="metaNeighborhood">Barrio</a>
+            <span class="linkish" id="metaNeighborhood">Barrio</span>
           </div>
 
           <div class="priceRow">
             <p class="price" id="price">—</p>
-            <a class="priceNote" href="#" id="monthlyLink">¿Cuánto pagaré al mes?</a>
+            <button class="priceNoteBtn" type="button" id="monthlyLink">¿Cuánto pagaré al mes?</button>
           </div>
 
           <div class="factsRow" id="factsRow"></div>
@@ -318,6 +326,12 @@
                 </div>
               </div>
             </div>
+
+            <div class="sideCard" style="display:none;">
+              <p class="sideTitle">Notas</p>
+              <div class="k">Esta ficha es MVP. Las fotos y el plano se conectarán cuando el backend exponga esos campos.</div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -348,6 +362,7 @@
 
       const shareBtn = document.getElementById("shareBtn");
       const saveBtn = document.getElementById("saveBtn");
+      const monthlyBtn = document.getElementById("monthlyLink");
 
       function euro(n) {
         try {
@@ -388,14 +403,14 @@
 
       async function fetchDetail(listingId) {
         const url =
-          `${SUPABASE_URL}/rest/v1/listing_detail_public` +
+          `${SUPABASE_URL}/rest/v1/${VIEW_DETAIL}` +
           `?select=listing_id,price_eur,listed_at,agency_name,property_type,useful_area_m2,built_year,city,neighborhood,address_display,postcode,province` +
           `&listing_id=eq.${encodeURIComponent(listingId)}&limit=1`;
 
         const res = await fetch(url, {
           headers: {
             apikey: SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+            Authorization: \`Bearer ${SUPABASE_ANON_KEY}\`
           }
         });
 
@@ -408,18 +423,30 @@
         return data[0] || null;
       }
 
-      shareBtn.addEventListener("click", async () => {
+      async function copyToClipboard(text) {
         try {
-          await navigator.clipboard.writeText(window.location.href);
+          await navigator.clipboard.writeText(text);
+          return true;
         } catch {
-          alert("No se pudo copiar el enlace.");
+          return false;
         }
+      }
+
+      shareBtn.addEventListener("click", async () => {
+        const ok = await copyToClipboard(window.location.href);
+        if (ok) return;
+        // fallback
+        window.prompt("Copia el enlace:", window.location.href);
       });
 
       let saved = false;
       saveBtn.addEventListener("click", () => {
         saved = !saved;
         saveBtn.textContent = saved ? "♥ Guardado" : "♡ Guardar";
+      });
+
+      monthlyBtn.addEventListener("click", () => {
+        alert("MVP: aquí luego conectaremos calculadora / info financiera.");
       });
 
       (async () => {
@@ -455,8 +482,8 @@
           idEl.textContent = row.listing_id || listingId;
 
           factsRowEl.innerHTML = "";
-          if (row.useful_area_m2 != null) addFact(`${row.useful_area_m2} m²`);
-          if (row.built_year != null) addFact(`Año ${row.built_year}`, true);
+          if (row.useful_area_m2 != null) addFact(\`\${row.useful_area_m2} m²\`);
+          if (row.built_year != null) addFact(\`Año \${row.built_year}\`, true);
           if (row.province) addFact(row.province, true);
 
         } catch (e) {
@@ -469,6 +496,7 @@
     </script>
   </body>
 </html>
+
 
 
 
