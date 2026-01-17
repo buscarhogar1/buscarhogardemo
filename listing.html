@@ -14,39 +14,36 @@
 
     <style>
       :root{
-        --page:#f6f7f9;
         --bg:#ffffff;
         --text:#111;
         --muted:#6b7280;
         --border:#e6e7eb;
         --link:#2563eb;
 
-        --rOuter:16px;
-        --rInner:12px;
         --gap:4px;
 
-        /* Proporción “funda-like” del bloque de media (ancho : alto) */
-        --mediaRatio: 2.55 / 1; /* ajustable */
+        /* Ratio del bloque de media */
+        --mediaRatio: 2.55 / 1;
+
+        /* Ancho del contenido “texto” */
+        --contentMax: 1140px;
+
+        /* Cuánto se “sale” el bloque de fotos respecto al texto (ajustable) */
+        --bleed: 56px;
       }
 
       html,body{
         margin:0;
         font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         color:var(--text);
-        background:var(--page);
+        background:var(--bg);
       }
 
+      /* Contenedor general (fondo blanco, sin tarjeta) */
       .wrap{
-        max-width:1140px;
+        max-width: var(--contentMax);
         margin:0 auto;
         padding:14px 16px 44px;
-      }
-
-      .surface{
-        background:var(--bg);
-        border:1px solid var(--border);
-        border-radius:18px;
-        padding:14px 14px 18px;
       }
 
       .topRow{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
@@ -88,20 +85,26 @@
       .crumbCurrent{color:var(--muted);}
       .sep{color:#c4c7cf;}
 
-      /* Media block (ratio exacto) */
+      /* ===== Media block (más ancho que el texto) ===== */
+      .mediaOuter{
+        /* “bleed” hacia los lados */
+        margin-left: calc(-1 * var(--bleed));
+        margin-right: calc(-1 * var(--bleed));
+        /* separaciones verticales */
+        margin-top: 8px;
+        margin-bottom: 10px;
+      }
+
       .mediaBlock{
         position:relative;
-        border-radius: var(--rOuter);
         overflow:hidden;
-        border:1px solid var(--border);
+        border:0;              /* sin borde exterior */
         background:#fff;
       }
 
-      /* Wrapper que fija la altura por ratio (funda feel) */
       .mediaSizer{
         width:100%;
         aspect-ratio: var(--mediaRatio);
-        /* límites de altura para que no se dispare */
         max-height: 520px;
         min-height: 380px;
       }
@@ -110,15 +113,16 @@
         display:grid;
         grid-template-columns: 66% 34%;
         gap: var(--gap);
-        padding: var(--gap);
+        padding: 0;            /* funda: sin “marco” */
         height:100%;
         background:#fff;
       }
 
+      /* Fotos: bordes rectos + sin borde visible */
       .mediaBig, .mediaSmall{
-        border-radius: var(--rInner);
+        border-radius: 0;      /* bordes rectos */
         background:linear-gradient(135deg,#f0f1f3,#ffffff);
-        border:1px solid var(--border);
+        border:0;              /* sin borde */
         display:grid;
         place-items:center;
         color:#9aa1aa;
@@ -140,8 +144,8 @@
       /* Overlay actions (más discreto) */
       .mediaActions{
         position:absolute;
-        right:10px;
-        top:10px;
+        right:12px;
+        top:12px;
         display:flex;
         gap:8px;
         z-index:5;
@@ -153,7 +157,7 @@
         height:36px;
         padding:0 11px;
         border-radius:999px;
-        border:1px solid var(--border);
+        border:1px solid rgba(0,0,0,0.08);
         background:#fff;
         cursor:pointer;
         font-size:14px;
@@ -163,7 +167,7 @@
       .actionIcon{width:36px; padding:0;}
       .icon{width:18px; height:18px; display:inline-block;}
 
-      /* Media tabs */
+      /* Media tabs (vuelven al ancho normal del texto) */
       .mediaTabs{
         display:flex;
         justify-content:space-between;
@@ -242,7 +246,6 @@
       }
       .priceNoteBtn:hover{text-decoration:underline;}
 
-      /* Facts tipo funda */
       .factsRow{
         display:flex;
         gap:18px;
@@ -265,9 +268,9 @@
       /* Right cards */
       .sideSticky{position:sticky; top:14px; display:grid; gap:12px;}
       .sideCard{
-        background:var(--bg);
+        background:#fff;
         border:1px solid var(--border);
-        border-radius: var(--rOuter);
+        border-radius:14px;
         overflow:hidden;
       }
       .sideCardInner{padding:14px;}
@@ -296,12 +299,17 @@
       }
       .mapHeaderTitle{font-size:14px; color:#111;}
       .mapHeaderSmall{font-size:13px; color:var(--muted);}
-
       .leaflet-control-zoom a{width:32px; height:32px; line-height:32px;}
 
       /* Responsive */
+      @media (max-width: 1200px){
+        :root{ --bleed: 24px; }
+      }
       @media (max-width: 980px){
-        .surface{padding:12px;}
+        .mediaOuter{
+          margin-left: 0;
+          margin-right: 0;
+        }
         .mediaSizer{aspect-ratio:auto; min-height:0; max-height:none;}
         .mediaGrid{grid-template-columns:1fr; height:auto;}
         .mediaBig{min-height:260px;}
@@ -318,22 +326,23 @@
 
   <body>
     <div class="wrap">
-      <div class="surface">
 
-        <div class="topRow">
-          <a class="back" href="./">Volver al mapa</a>
-        </div>
+      <div class="topRow">
+        <a class="back" href="./">Volver al mapa</a>
+      </div>
 
-        <div id="banner" class="banner"></div>
+      <div id="banner" class="banner"></div>
 
-        <div class="crumbs">
-          <span class="crumbLink" id="crumbCity">Ciudad</span>
-          <span class="sep">/</span>
-          <span class="crumbLink" id="crumbNeighborhood">Barrio</span>
-          <span class="sep">/</span>
-          <span class="crumbCurrent" id="crumbAddress">Dirección</span>
-        </div>
+      <div class="crumbs">
+        <span class="crumbLink" id="crumbCity">Ciudad</span>
+        <span class="sep">/</span>
+        <span class="crumbLink" id="crumbNeighborhood">Barrio</span>
+        <span class="sep">/</span>
+        <span class="crumbCurrent" id="crumbAddress">Dirección</span>
+      </div>
 
+      <!-- Bloque de fotos a ancho extendido -->
+      <div class="mediaOuter">
         <div class="mediaBlock">
           <div class="mediaActions">
             <button class="actionBtn actionIcon" id="shareBtn" type="button" title="Compartir">
@@ -364,109 +373,108 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="mediaTabs">
-          <div class="tabsLeft">
-            <button class="tabBtn" type="button" id="tabPhotos">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l2-2h4l2 2h3a2 2 0 0 1 2 2z"/>
-                <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
-              </svg>
-              Foto’s <span class="tabCount" id="photosCount">0</span>
-            </button>
+      <div class="mediaTabs">
+        <div class="tabsLeft">
+          <button class="tabBtn" type="button" id="tabPhotos">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l2-2h4l2 2h3a2 2 0 0 1 2 2z"/>
+              <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
+            </svg>
+            Foto’s <span class="tabCount" id="photosCount">0</span>
+          </button>
 
-            <button class="tabBtn" type="button" id="tabFloor">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 4h16v16H4z"/>
-                <path d="M4 10h16"/>
-                <path d="M10 10v10"/>
-              </svg>
-              Plano <span class="tabCount" id="floorCount">0</span>
-            </button>
+          <button class="tabBtn" type="button" id="tabFloor">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16v16H4z"/>
+              <path d="M4 10h16"/>
+              <path d="M10 10v10"/>
+            </svg>
+            Plano <span class="tabCount" id="floorCount">0</span>
+          </button>
 
-            <button class="tabBtn" type="button" id="tab360">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M2 12a10 10 0 0 0 20 0"/>
-                <path d="M2 12a10 10 0 0 1 20 0"/>
-                <path d="M8 12h8"/>
-              </svg>
-              360° <span class="tabCount" id="panoCount">0</span>
-            </button>
+          <button class="tabBtn" type="button" id="tab360">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 12a10 10 0 0 0 20 0"/>
+              <path d="M2 12a10 10 0 0 1 20 0"/>
+              <path d="M8 12h8"/>
+            </svg>
+            360° <span class="tabCount" id="panoCount">0</span>
+          </button>
 
-            <button class="tabBtn" type="button" id="tabVideo">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14.5 8.5l6-3v13l-6-3"/>
-                <path d="M3 6h11v12H3z"/>
-              </svg>
-              Video
-            </button>
-          </div>
-
-          <div class="tabsRight">
-            <button class="tabBtn" type="button" id="tabAllMedia">Alle media</button>
-          </div>
+          <button class="tabBtn" type="button" id="tabVideo">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14.5 8.5l6-3v13l-6-3"/>
+              <path d="M3 6h11v12H3z"/>
+            </svg>
+            Video
+          </button>
         </div>
 
-        <div class="contentGrid">
-          <div>
-            <h1 class="title" id="title">Dirección</h1>
+        <div class="tabsRight">
+          <button class="tabBtn" type="button" id="tabAllMedia">Alle media</button>
+        </div>
+      </div>
 
-            <div class="metaLine">
-              <span id="metaPostal">—</span>
-              <span class="metaDot">•</span>
-              <span id="metaCity">—</span>
-              <span class="metaDot">•</span>
-              <span id="metaNeighborhood">—</span>
-            </div>
+      <div class="contentGrid">
+        <div>
+          <h1 class="title" id="title">Dirección</h1>
 
-            <div class="priceRow">
-              <p class="price" id="price">—</p>
-              <button class="priceNoteBtn" type="button" id="monthlyLink">¿Cuánto pagaré al mes?</button>
-            </div>
-
-            <div class="factsRow" id="factsRow"></div>
+          <div class="metaLine">
+            <span id="metaPostal">—</span>
+            <span class="metaDot">•</span>
+            <span id="metaCity">—</span>
+            <span class="metaDot">•</span>
+            <span id="metaNeighborhood">—</span>
           </div>
 
-          <div>
-            <div class="sideSticky">
+          <div class="priceRow">
+            <p class="price" id="price">—</p>
+            <button class="priceNoteBtn" type="button" id="monthlyLink">¿Cuánto pagaré al mes?</button>
+          </div>
 
-              <div class="sideCard">
-                <div class="mapHeader">
-                  <div class="mapHeaderTitle">Kaart</div>
-                  <div class="mapHeaderSmall" id="mapHint">—</div>
-                </div>
-                <div id="miniMap"></div>
+          <div class="factsRow" id="factsRow"></div>
+        </div>
+
+        <div>
+          <div class="sideSticky">
+            <div class="sideCard">
+              <div class="mapHeader">
+                <div class="mapHeaderTitle">Kaart</div>
+                <div class="mapHeaderSmall" id="mapHint">—</div>
               </div>
+              <div id="miniMap"></div>
+            </div>
 
-              <div class="sideCard">
-                <div class="sideCardInner">
-                  <p class="sideTitle">Agencia</p>
-                  <div class="kv">
-                    <div class="kvLine">
-                      <div class="k">Nombre</div>
-                      <div class="v" id="agency">—</div>
-                    </div>
-                    <div class="kvLine">
-                      <div class="k">Publicado</div>
-                      <div class="v" id="listedAt">—</div>
-                    </div>
-                    <div class="kvLine">
-                      <div class="k">Tipo</div>
-                      <div class="v" id="ptype">—</div>
-                    </div>
-                    <div class="kvLine">
-                      <div class="k">ID</div>
-                      <div class="v mono" id="id">—</div>
-                    </div>
+            <div class="sideCard">
+              <div class="sideCardInner">
+                <p class="sideTitle">Agencia</p>
+                <div class="kv">
+                  <div class="kvLine">
+                    <div class="k">Nombre</div>
+                    <div class="v" id="agency">—</div>
+                  </div>
+                  <div class="kvLine">
+                    <div class="k">Publicado</div>
+                    <div class="v" id="listedAt">—</div>
+                  </div>
+                  <div class="kvLine">
+                    <div class="k">Tipo</div>
+                    <div class="v" id="ptype">—</div>
+                  </div>
+                  <div class="kvLine">
+                    <div class="k">ID</div>
+                    <div class="v mono" id="id">—</div>
                   </div>
                 </div>
               </div>
-
             </div>
+
           </div>
         </div>
-
       </div>
+
     </div>
 
     <script
@@ -703,6 +711,7 @@
     </script>
   </body>
 </html>
+
 
 
 
