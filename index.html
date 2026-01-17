@@ -72,10 +72,11 @@
         transform: scale(1.15);
       }
 
-      /* Card flotante (overlay) */
+      /* Card flotante (overlay) centrada */
       .card {
         position: fixed;
-        left: 16px;
+        left: 50%;
+        transform: translateX(-50%);
         bottom: 16px;
         width: min(520px, calc(100% - 32px));
         background: #fff;
@@ -118,21 +119,14 @@
 
       .cardRowLabel { color: #666; }
 
-      .cardActions {
-        margin-top: 10px;
-        display: flex;
-        justify-content: flex-end;
+      .addressLink {
+        color: #111;
+        text-decoration: none;
+        font-weight: 600;
       }
 
-      .cardOpen {
-        height: 34px;
-        display: inline-flex;
-        align-items: center;
-        padding: 0 12px;
-        border-radius: 10px;
-        border: 1px solid #eee;
-        text-decoration: none;
-        color: #111;
+      .addressLink:hover {
+        text-decoration: underline;
       }
     </style>
   </head>
@@ -153,9 +147,6 @@
         <button id="cardClose" class="cardClose" aria-label="Cerrar">×</button>
       </div>
       <div id="cardBody" class="cardBody"></div>
-      <div class="cardActions">
-        <a id="cardOpen" class="cardOpen" href="#" target="_blank" rel="noreferrer">Abrir ficha</a>
-      </div>
     </div>
 
     <script
@@ -181,7 +172,6 @@
       const cardTitleEl = document.getElementById("cardTitle");
       const cardBodyEl = document.getElementById("cardBody");
       const cardCloseBtn = document.getElementById("cardClose");
-      const cardOpenLink = document.getElementById("cardOpen");
 
       function setStatus(msg) {
         statusEl.textContent = msg || "";
@@ -204,14 +194,21 @@
       }
 
       function openCardForPoint(p) {
+        // De momento la vista del mapa no trae dirección (según tu select actual).
+        // Si luego añades address a listings_map_points, lo cogerá automáticamente.
+        const addressText = p.address || p.display_address || p.street_address || "Dirección (pendiente)";
+        const href = `listing.html?id=${encodeURIComponent(p.listing_id)}`;
+
         cardTitleEl.textContent = "Anuncio";
         cardBodyEl.innerHTML = `
+          <div>
+            <a class="addressLink" href="${href}">
+              ${addressText}
+            </a>
+          </div>
           <div><span class="cardRowLabel">Precio:</span> ${p.price_eur != null ? euro(p.price_eur) : "-"}</div>
           <div><span class="cardRowLabel">ID:</span> ${p.listing_id}</div>
         `;
-
-        // Por ahora no tenemos ruta real. Luego será /listing/[id] en Next.
-        cardOpenLink.href = "#";
 
         cardEl.classList.remove("hidden");
       }
@@ -360,5 +357,6 @@
     </script>
   </body>
 </html>
+
 
 
