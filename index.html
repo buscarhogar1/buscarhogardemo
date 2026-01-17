@@ -13,11 +13,11 @@
         --border:#e6e7eb;
 
         --terra:#b85a3c;           /* terracota */
-        --terraDark:#a34f36;
         --white:#ffffff;
 
         --btn:#1a73e8;
         --btnText:#fff;
+        --chipBg:#f6f7f9;
       }
 
       html,body{
@@ -135,39 +135,64 @@
       .main{
         display:grid;
         place-items:center;
-        padding: 28px 16px;
+        padding: 30px 16px 22px;
       }
 
       .center{
-        width:min(720px, 100%);
+        width:min(860px, 100%);
         display:grid;
-        gap: 18px;
+        gap: 16px;
         justify-items:center;
       }
 
-      .hero{
+      .headline{
+        font-size: 22px;
+        font-weight: 750;
+        letter-spacing: -0.2px;
+        text-align:center;
+        margin-top: 2px;
+      }
+
+      .searchRow{
+        width: min(780px, 100%);
         display:grid;
-        justify-items:center;
-        gap: 8px;
-        margin-bottom: 2px;
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+        align-items:center;
       }
 
-      .heroTitle{
-        font-size: 44px;
-        font-weight: 800;
-        letter-spacing: -0.6px;
-        line-height: 1;
-        text-align:center;
+      /* Toggle options (tipo google, sin “tabs” agresivos) */
+      .toggles{
+        display:flex;
+        gap:10px;
+        align-items:center;
+        flex-wrap:wrap;
+        justify-content:flex-start;
       }
 
-      .heroTag{
-        font-size: 14px;
-        color: var(--muted);
-        text-align:center;
+      .toggle{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        border:1px solid var(--border);
+        background:#fff;
+        padding:8px 10px;
+        border-radius: 999px;
+        cursor:pointer;
+        font-size: 13.5px;
+        color:#111;
+        user-select:none;
+      }
+
+      .toggle input{
+        width:16px;
+        height:16px;
+        margin:0;
+        accent-color: var(--btn);
+        cursor:pointer;
       }
 
       .searchBox{
-        width: min(640px, 100%);
         border: 1px solid var(--border);
         border-radius: 999px;
         padding: 10px;
@@ -208,25 +233,43 @@
 
       .btn:active{ transform: translateY(1px); }
 
-      .examples{
-        display:flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content:center;
+      .subTag{
+        font-size: 14px;
+        color: var(--muted);
+        text-align:center;
         margin-top: 2px;
       }
 
-      .chip{
-        border: 1px solid var(--border);
-        background:#fff;
-        border-radius: 999px;
-        padding: 8px 12px;
-        font-size: 13px;
-        color: #111;
-        cursor: pointer;
+      /* Filtros línea */
+      .filtersRow{
+        width: min(780px, 100%);
+        display:grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin-top: 6px;
       }
 
-      .chip:hover{ background:#f6f7f9; }
+      .f{
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        background:#fff;
+        display:grid;
+        gap: 6px;
+      }
+
+      .f label{
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+
+      .f input{
+        border:0;
+        outline:0;
+        font-size: 14px;
+        padding: 0;
+        background: transparent;
+      }
 
       .footer{
         padding: 14px 16px;
@@ -238,10 +281,22 @@
         text-align:center;
       }
 
+      @media (max-width: 860px){
+        .searchRow{
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .filtersRow{
+          grid-template-columns: 1fr;
+        }
+        .toggles{
+          justify-content:center;
+        }
+      }
+
       @media (max-width: 520px){
-        .heroTitle{ font-size: 36px; }
-        .btn{ padding: 10px 14px; }
-        .nav{ display:none; } /* en móvil ocultamos el menú central */
+        .nav{ display:none; }
+        .headline{ font-size: 20px; }
       }
     </style>
   </head>
@@ -272,32 +327,60 @@
     <div class="wrap">
       <main class="main">
         <div class="center">
-          <div class="hero">
-            <div class="heroTitle">Buscar Hogar</div>
-            <div class="heroTag">Solo inmobiliarias. Una vivienda, un anuncio.</div>
+          <div class="headline">Viviendas publicadas únicamente por profesionales</div>
+
+          <div class="searchRow">
+            <div class="toggles" aria-label="Tipo de búsqueda">
+              <label class="toggle" title="Compra">
+                <input type="radio" name="mode" value="buy" checked />
+                <span>Compra</span>
+              </label>
+
+              <label class="toggle" title="Alquiler vivienda">
+                <input type="radio" name="mode" value="rent_home" />
+                <span>Alquiler vivienda</span>
+              </label>
+
+              <label class="toggle" title="Alquiler habitación">
+                <input type="radio" name="mode" value="rent_room" />
+                <span>Alquiler habitación</span>
+              </label>
+            </div>
+
+            <form id="form" class="searchBox" autocomplete="off">
+              <svg class="searchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="M21 21l-4.3-4.3"></path>
+              </svg>
+
+              <input
+                id="q"
+                class="input"
+                placeholder="Escribe una ciudad o zona (ej. Murcia)"
+                aria-label="Buscar ciudad o zona"
+              />
+
+              <button class="btn" type="submit">Buscar</button>
+            </form>
           </div>
 
-          <form id="form" class="searchBox" autocomplete="off">
-            <svg class="searchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <circle cx="11" cy="11" r="7"></circle>
-              <path d="M21 21l-4.3-4.3"></path>
-            </svg>
+          <div class="subTag">Solo inmobiliarias. Una vivienda, un anuncio.</div>
 
-            <input
-              id="q"
-              class="input"
-              placeholder="Escribe una ciudad o zona (ej. Murcia)"
-              aria-label="Buscar ciudad o zona"
-            />
+          <div class="filtersRow" aria-label="Filtros principales">
+            <div class="f">
+              <label for="price">Precio de la vivienda</label>
+              <input id="price" inputmode="numeric" placeholder="Ej. 250000" />
+            </div>
 
-            <button class="btn" type="submit">Buscar</button>
-          </form>
+            <div class="f">
+              <label for="area">Superficie útil interior</label>
+              <input id="area" inputmode="numeric" placeholder="Ej. 90" />
+            </div>
 
-          <div class="examples" aria-label="Ejemplos">
-            <button class="chip" type="button" data-city="Murcia">Murcia</button>
-            <button class="chip" type="button" data-city="Cartagena">Cartagena</button>
-            <button class="chip" type="button" data-city="Alicante">Alicante</button>
-            <button class="chip" type="button" data-city="Valencia">Valencia</button>
+            <div class="f">
+              <label for="year">Año de construcción</label>
+              <input id="year" inputmode="numeric" placeholder="Ej. 2005" />
+            </div>
           </div>
         </div>
       </main>
@@ -311,25 +394,40 @@
       const form = document.getElementById("form");
       const q = document.getElementById("q");
 
-      function go(city){
-        const c = (city || "").trim();
-        if(!c) return;
-        window.location.href = `./map.html?city=${encodeURIComponent(c)}`;
+      function getSelectedMode(){
+        const el = document.querySelector('input[name="mode"]:checked');
+        return el ? el.value : "buy";
+      }
+
+      function go(){
+        const city = (q.value || "").trim();
+        if(!city) return;
+
+        const mode = getSelectedMode();
+        const price = (document.getElementById("price").value || "").trim();
+        const area = (document.getElementById("area").value || "").trim();
+        const year = (document.getElementById("year").value || "").trim();
+
+        const params = new URLSearchParams();
+        params.set("city", city);
+        params.set("mode", mode);
+
+        if (price) params.set("price", price);
+        if (area) params.set("area", area);
+        if (year) params.set("year", year);
+
+        window.location.href = "./map.html?" + params.toString();
       }
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
-        go(q.value);
-      });
-
-      document.querySelectorAll("[data-city]").forEach(btn => {
-        btn.addEventListener("click", () => go(btn.getAttribute("data-city")));
+        go();
       });
 
       // placeholders de navegación (MVP)
       function mvp(msg){ alert(msg); }
-      document.getElementById("navComprar").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: aquí se elegirá Comprar y se irá al mapa con filtros."); });
-      document.getElementById("navAlquilar").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: aquí se elegirá Alquilar y se irá al mapa con filtros."); });
+      document.getElementById("navComprar").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: navegación superior (a definir)."); });
+      document.getElementById("navAlquilar").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: navegación superior (a definir)."); });
       document.getElementById("navFavoritos").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Favoritos (requiere registro)."); });
       document.getElementById("navLogin").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Login."); });
 
@@ -337,6 +435,7 @@
     </script>
   </body>
 </html>
+
 
 
 
