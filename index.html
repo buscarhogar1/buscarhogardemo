@@ -98,9 +98,7 @@
 
       .cardGrid {
         display: grid;
-        /* texto +20% ancho relativo (56% -> ~65%) */
         grid-template-columns: 35% 65%;
-        /* 15% menos alto (168 -> 143) */
         min-height: 143px;
       }
 
@@ -157,9 +155,12 @@
         color: rgba(0,0,0,0.75);
       }
 
+      /* flex para pegar agencia abajo */
       .textSide {
         position: relative;
         padding: 12px 14px 12px;
+        display: flex;
+        flex-direction: column;
       }
 
       .topActions {
@@ -203,42 +204,44 @@
         color: #fff;
       }
 
-      /* Letras área blanca -20% */
-      .addr {
+      /* Línea 1: calle + número + (opcionales) */
+      .addrTop {
         color: #1a73e8;
         text-decoration: none;
-        font-size: 18px;         /* antes 22 */
+        font-size: 18px;
         line-height: 1.08;
-        font-weight: 750;
+        font-weight: 650; /* antes ~750 */
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         padding-right: 112px;
       }
-      .addr:hover { text-decoration: underline; }
+      .addrTop:hover { text-decoration: underline; }
 
-      .sub {
-        margin-top: 5px;         /* antes 6 */
-        font-size: 13px;         /* antes 16 */
+      /* Línea 2: CP + ciudad (tamaño +20%) */
+      .addrBottom {
+        margin-top: 5px;
+        font-size: 16px; /* antes 13, +20% sobre 13 = 15.6 aprox */
         color: #111;
       }
 
+      /* Espacio entre CP+ciudad y precio +20% */
       .price {
-        margin-top: 8px;         /* antes 10 */
-        font-size: 16px;         /* antes 20 */
+        margin-top: 10px; /* antes 8 -> +20% = 9.6 */
+        font-size: 16px;
         font-weight: 900;
         color: #111;
       }
 
       .facts {
-        margin-top: 8px;         /* antes 10 */
+        margin-top: 8px;
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
         align-items: center;
         color: rgba(0,0,0,0.85);
-        font-size: 13px;         /* antes 16 */
+        font-size: 13px;
       }
 
       .fact {
@@ -248,22 +251,22 @@
       }
 
       .fact svg {
-        width: 18px;             /* antes 22 */
+        width: 18px;
         height: 18px;
         color: rgba(0,0,0,0.75);
       }
 
       .agency {
-        margin-top: 10px;        /* antes 12 */
-        font-size: 14px;         /* antes 17 */
-        font-weight: 400;        /* sin negrita */
+        margin-top: auto;
+        padding-top: 10px;
+        font-size: 14px;
+        font-weight: 400;
         color: #1a73e8;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
-      /* Responsive */
       @media (max-width: 720px) {
         .card {
           width: calc(100% - 22px);
@@ -271,15 +274,14 @@
         }
         .cardGrid { grid-template-columns: 1fr; }
         .mediaSide { min-height: 210px; }
-        .addr { padding-right: 0; font-size: 18px; }
-        .sub { font-size: 13px; }
+        .addrTop { padding-right: 0; font-size: 18px; }
+        .addrBottom { font-size: 16px; }
         .price { font-size: 16px; }
         .facts { font-size: 13px; }
         .agency { font-size: 14px; }
         .topActions { right: 10px; top: 10px; }
       }
 
-      /* Leaflet controles */
       .leaflet-control-zoom a {
         width: 34px;
         height: 34px;
@@ -331,10 +333,12 @@
             </button>
           </div>
 
-          <a id="cardAddress" class="addr" href="#">Dirección</a>
-          <div id="cardSub" class="sub">—</div>
+          <a id="cardAddrTop" class="addrTop" href="#">Dirección</a>
+          <div id="cardAddrBottom" class="addrBottom">—</div>
+
           <div id="cardPrice" class="price">—</div>
           <div id="cardFacts" class="facts"></div>
+
           <div id="cardAgency" class="agency">—</div>
         </div>
       </div>
@@ -366,8 +370,8 @@
       const mediaImgEl = document.getElementById("mediaImg");
       const mediaPlaceholderEl = document.getElementById("mediaPlaceholder");
 
-      const cardAddressEl = document.getElementById("cardAddress");
-      const cardSubEl = document.getElementById("cardSub");
+      const cardAddrTopEl = document.getElementById("cardAddrTop");
+      const cardAddrBottomEl = document.getElementById("cardAddrBottom");
       const cardPriceEl = document.getElementById("cardPrice");
       const cardFactsEl = document.getElementById("cardFacts");
       const cardAgencyEl = document.getElementById("cardAgency");
@@ -431,15 +435,32 @@
         return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>';
       }
 
-      function openCardForPoint(p) {
-        const addressText = p.address_display || "Dirección";
-        cardAddressEl.textContent = addressText;
-        cardAddressEl.href = `listing.html?id=${encodeURIComponent(p.listing_id)}`;
+      function joinNonEmpty(parts, sep) {
+        return parts.map(v => (v == null ? "" : String(v).trim()))
+          .filter(v => v.length > 0)
+          .join(sep);
+      }
 
-        const subParts = [];
-        if (p.postcode) subParts.push(String(p.postcode));
-        if (p.city) subParts.push(String(p.city));
-        cardSubEl.textContent = subParts.length ? subParts.join(" ") : "—";
+      function buildAddressTop(p) {
+        const base = joinNonEmpty([p.street_name, p.street_number], " ");
+        const extras = joinNonEmpty(
+          [p.building, p.staircase, p.floor, p.door],
+          ", "
+        );
+        if (base && extras) return base + ", " + extras;
+        return base || extras || "Dirección";
+      }
+
+      function buildAddressBottom(p) {
+        const line = joinNonEmpty([p.postcode, p.city], " ");
+        return line || "—";
+      }
+
+      function openCardForPoint(p) {
+        cardAddrTopEl.textContent = buildAddressTop(p);
+        cardAddrBottomEl.textContent = buildAddressBottom(p);
+
+        cardAddrTopEl.href = `listing.html?id=${encodeURIComponent(p.listing_id)}`;
 
         cardPriceEl.textContent = (p.price_eur != null) ? euro(p.price_eur) : "—";
 
@@ -517,15 +538,19 @@
           "price_eur",
           "lat",
           "lng",
-          "address_display",
           "postcode",
           "city",
-          "neighborhood",
           "agency_name",
           "property_type",
           "useful_area_m2",
           "listed_at",
-          "main_photo_url"
+          "main_photo_url",
+          "street_name",
+          "street_number",
+          "building",
+          "staircase",
+          "floor",
+          "door"
         ].join(","));
 
         params.set("lat", `gte.${bounds.south}`);
