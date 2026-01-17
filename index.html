@@ -227,15 +227,20 @@
 
   let debounceTimer = null;
   async function loadPointsForCurrentView() {
-    setStatus("Cargando anuncios...");
-    clearMarkers();
+  const b = getCurrentBounds();
+  const z = map.getZoom();
 
-    const bounds = getCurrentBounds();
-    const rows = await fetchMapPointsByBounds(bounds);
+  setStatus(`Cargando... (zoom ${z})`);
 
-    rows.forEach(addPoint);
-    setStatus(`Anuncios en el mapa: ${rows.length}`);
-  }
+  // Pedimos datos primero (sin borrar aún)
+  const rows = await fetchMapPointsByBounds(b);
+
+  // Ahora actualizamos el mapa
+  clearMarkers();
+  rows.forEach(addPoint);
+
+  setStatus(`Anuncios en el mapa: ${rows.length} | zoom ${z}`);
+}
 
   function scheduleReload() {
     if (debounceTimer) clearTimeout(debounceTimer);
