@@ -27,6 +27,7 @@
         padding: 0 16px;
         border-bottom: 1px solid #eee;
         gap: 12px;
+        background: #fff;
       }
 
       #cityInput {
@@ -44,6 +45,9 @@
       #status {
         color: #555;
         font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       #map {
@@ -60,9 +64,7 @@
         transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
       }
 
-      .dot:hover {
-        transform: scale(1.15);
-      }
+      .dot:hover { transform: scale(1.15); }
 
       .dot.active {
         background: #1a73e8;
@@ -70,25 +72,67 @@
         transform: scale(1.15);
       }
 
-      .popupCard {
-        width: 260px;
+      /* Card flotante (overlay) */
+      .card {
+        position: fixed;
+        left: 16px;
+        bottom: 16px;
+        width: min(520px, calc(100% - 32px));
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+        padding: 12px 12px 10px;
+        z-index: 9999;
       }
 
-      .popupTitle {
-        font-weight: 600;
-        margin: 0 0 6px;
+      .hidden { display: none; }
+
+      .cardHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
       }
 
-      .popupRow {
-        color: #333;
+      .cardTitle { font-size: 16px; font-weight: 600; }
+
+      .cardClose {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        border: 1px solid #eee;
+        background: #fff;
+        cursor: pointer;
+        font-size: 20px;
+        line-height: 0;
+      }
+
+      .cardBody {
         font-size: 14px;
-        margin: 0;
+        color: #222;
+        display: grid;
+        gap: 6px;
       }
 
-      .muted {
-        color: #666;
-        font-size: 12px;
-        margin-top: 8px;
+      .cardRowLabel { color: #666; }
+
+      .cardActions {
+        margin-top: 10px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .cardOpen {
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 12px;
+        border-radius: 10px;
+        border: 1px solid #eee;
+        text-decoration: none;
+        color: #111;
       }
     </style>
   </head>
@@ -102,189 +146,219 @@
 
     <div id="map"></div>
 
+    <!-- Tarjeta flotante -->
+    <div id="card" class="card hidden">
+      <div class="cardHeader">
+        <div id="cardTitle" class="cardTitle">Anuncio</div>
+        <button id="cardClose" class="cardClose" aria-label="Cerrar">×</button>
+      </div>
+      <div id="cardBody" class="cardBody"></div>
+      <div class="cardActions">
+        <a id="cardOpen" class="cardOpen" href="#" target="_blank" rel="noreferrer">Abrir ficha</a>
+      </div>
+    </div>
+
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
 
-<script>
-  const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
-  const VIEW_MAP_POINTS = "listings_map_points";
+    <script>
+      const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
+      const VIEW_MAP_POINTS = "listings_map_points";
 
-  const DEFAULT_CENTER = [37.9838, -1.1280];
-  const DEFAULT_ZOOM = 13;
+      const DEFAULT_CENTER = [37.9838, -1.1280];
+      const DEFAULT_ZOOM = 13;
 
-  const statusEl = document.getElementById("status");
-  const cityInput = document.getElementById("cityInput");
-  const searchBtn = document.getElementById("searchBtn");
+      const statusEl = document.getElementById("status");
+      const cityInput = document.getElementById("cityInput");
+      const searchBtn = document.getElementById("searchBtn");
 
-  let map = L.map("map").setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+      // Card elements
+      const cardEl = document.getElementById("card");
+      const cardTitleEl = document.getElementById("cardTitle");
+      const cardBodyEl = document.getElementById("cardBody");
+      const cardCloseBtn = document.getElementById("cardClose");
+      const cardOpenLink = document.getElementById("cardOpen");
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap"
-  }).addTo(map);
-
-  let markersLayer = L.layerGroup().addTo(map);
-  let activeMarker = null;
-
-  function setStatus(msg) {
-    statusEl.textContent = msg || "";
-  }
-
-  function euro(n) {
-    try {
-      return new Intl.NumberFormat("es-ES", {
-        style: "currency",
-        currency: "EUR",
-        maximumFractionDigits: 0
-      }).format(n);
-    } catch {
-      return `${n} EUR`;
-    }
-  }
-
-  function clearMarkers() {
-    markersLayer.clearLayers();
-    activeMarker = null;
-  }
-
-  function addPoint(p) {
-    if (p.lat == null || p.lng == null) return;
-
-    const el = document.createElement("div");
-    el.className = "dot";
-
-    const icon = L.divIcon({
-      className: "",
-      html: el,
-      iconSize: [20, 20],
-      iconAnchor: [10, 10]
-    });
-
-    const m = L.marker([p.lat, p.lng], { icon }).addTo(markersLayer);
-
-    const popupHtml = `
-      <div class="popupCard">
-        <p class="popupTitle">Anuncio</p>
-        <p class="popupRow">Precio: ${p.price_eur != null ? euro(p.price_eur) : "-"}</p>
-        <p class="popupRow">ID: ${p.listing_id}</p>
-        <p class="muted">Demo mapa Buscar Hogar</p>
-      </div>
-    `;
-    m.bindPopup(popupHtml, { autoPan: false, closeButton: true });
-
-    m.on("click", () => {
-      if (activeMarker && activeMarker._icon) {
-        activeMarker._icon.querySelector(".dot")?.classList.remove("active");
+      function setStatus(msg) {
+        statusEl.textContent = msg || "";
       }
-      activeMarker = m;
-      m._icon.querySelector(".dot")?.classList.add("active");
-    });
 
-    m.on("popupclose", () => {
-      m._icon.querySelector(".dot")?.classList.remove("active");
-      if (activeMarker === m) activeMarker = null;
-    });
-  }
-
-  async function fetchMapPointsByBounds(bounds) {
-    const params = new URLSearchParams();
-    params.set("select", "listing_id,price_eur,lat,lng");
-    params.set("lat", `gte.${bounds.south}`);
-    params.append("lat", `lte.${bounds.north}`);
-    params.set("lng", `gte.${bounds.west}`);
-    params.append("lng", `lte.${bounds.east}`);
-
-    const url = `${SUPABASE_URL}/rest/v1/${VIEW_MAP_POINTS}?${params.toString()}`;
-
-    const res = await fetch(url, {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      function euro(n) {
+        try {
+          return new Intl.NumberFormat("es-ES", {
+            style: "currency",
+            currency: "EUR",
+            maximumFractionDigits: 0
+          }).format(n);
+        } catch {
+          return `${n} EUR`;
+        }
       }
-    });
 
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(txt);
-    }
-
-    return await res.json();
-  }
-
-  function getCurrentBounds() {
-    const b = map.getBounds();
-    return {
-      south: b.getSouthWest().lat,
-      west: b.getSouthWest().lng,
-      north: b.getNorthEast().lat,
-      east: b.getNorthEast().lng
-    };
-  }
-
-  let debounceTimer = null;
-  async function loadPointsForCurrentView() {
-  const b = getCurrentBounds();
-  const z = map.getZoom();
-
-  setStatus(`Cargando... (zoom ${z})`);
-
-  // Pedimos datos primero (sin borrar aún)
-  const rows = await fetchMapPointsByBounds(b);
-
-  // Ahora actualizamos el mapa
-  clearMarkers();
-  rows.forEach(addPoint);
-
-  setStatus(`Anuncios en el mapa: ${rows.length} | zoom ${z}`);
-}
-
-  function scheduleReload() {
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(async () => {
-      try {
-        await loadPointsForCurrentView();
-      } catch (e) {
-        setStatus("Error cargando datos");
-        console.error(e);
+      function closeCard() {
+        cardEl.classList.add("hidden");
       }
-    }, 300);
-  }
 
-  async function geocodeCity(city) {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data[0]) return null;
-    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-  }
+      function openCardForPoint(p) {
+        cardTitleEl.textContent = "Anuncio";
+        cardBodyEl.innerHTML = `
+          <div><span class="cardRowLabel">Precio:</span> ${p.price_eur != null ? euro(p.price_eur) : "-"}</div>
+          <div><span class="cardRowLabel">ID:</span> ${p.listing_id}</div>
+        `;
 
-  searchBtn.addEventListener("click", async () => {
-    const city = cityInput.value.trim();
-    if (!city) return;
+        // Por ahora no tenemos ruta real. Luego será /listing/[id] en Next.
+        cardOpenLink.href = "#";
 
-    setStatus("Buscando ciudad...");
-    const center = await geocodeCity(city);
-    if (center) map.setView(center, 13);
+        cardEl.classList.remove("hidden");
+      }
 
-    scheduleReload();
-  });
+      cardCloseBtn.addEventListener("click", closeCard);
 
-  map.on("moveend", scheduleReload);
-  map.on("zoomend", scheduleReload);
+      // Map init
+      let map = L.map("map").setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
-  (async () => {
-    try {
-      await loadPointsForCurrentView();
-    } catch (e) {
-      setStatus("Error cargando datos");
-      alert("Error al cargar datos. Revisa Supabase.");
-      console.error(e);
-    }
-  })();
-</script>
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(map);
+
+      let markersLayer = L.layerGroup().addTo(map);
+      let activeMarker = null;
+
+      function clearMarkers() {
+        markersLayer.clearLayers();
+        activeMarker = null;
+      }
+
+      function addPoint(p) {
+        if (p.lat == null || p.lng == null) return;
+
+        const el = document.createElement("div");
+        el.className = "dot";
+
+        const icon = L.divIcon({
+          className: "",
+          html: el,
+          iconSize: [20, 20],
+          iconAnchor: [10, 10]
+        });
+
+        const m = L.marker([p.lat, p.lng], { icon }).addTo(markersLayer);
+
+        m.on("click", () => {
+          if (activeMarker && activeMarker._icon) {
+            activeMarker._icon.querySelector(".dot")?.classList.remove("active");
+          }
+          activeMarker = m;
+          m._icon.querySelector(".dot")?.classList.add("active");
+
+          openCardForPoint(p);
+        });
+      }
+
+      async function fetchMapPointsByBounds(bounds) {
+        const params = new URLSearchParams();
+        params.set("select", "listing_id,price_eur,lat,lng");
+        params.set("lat", `gte.${bounds.south}`);
+        params.append("lat", `lte.${bounds.north}`);
+        params.set("lng", `gte.${bounds.west}`);
+        params.append("lng", `lte.${bounds.east}`);
+
+        const url = `${SUPABASE_URL}/rest/v1/${VIEW_MAP_POINTS}?${params.toString()}`;
+
+        const res = await fetch(url, {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(txt);
+        }
+
+        return await res.json();
+      }
+
+      function getCurrentBounds() {
+        const b = map.getBounds();
+        return {
+          south: b.getSouthWest().lat,
+          west: b.getSouthWest().lng,
+          north: b.getNorthEast().lat,
+          east: b.getNorthEast().lng
+        };
+      }
+
+      let debounceTimer = null;
+
+      async function loadPointsForCurrentView() {
+        const b = getCurrentBounds();
+        const z = map.getZoom();
+
+        setStatus(`Cargando... (zoom ${z})`);
+
+        const rows = await fetchMapPointsByBounds(b);
+
+        clearMarkers();
+        rows.forEach(addPoint);
+
+        setStatus(`Anuncios en el mapa: ${rows.length} | zoom ${z}`);
+      }
+
+      function scheduleReload() {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(async () => {
+          try {
+            await loadPointsForCurrentView();
+          } catch (e) {
+            const msg = (e && e.message) ? e.message : String(e);
+            setStatus(`Error cargando datos: ${msg}`);
+            console.error(e);
+          }
+        }, 300);
+      }
+
+      async function geocodeCity(city) {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}&limit=1`;
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!data[0]) return null;
+        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      }
+
+      searchBtn.addEventListener("click", async () => {
+        const city = cityInput.value.trim();
+        if (!city) return;
+
+        setStatus("Buscando ciudad...");
+        const center = await geocodeCity(city);
+        if (center) map.setView(center, 13);
+
+        scheduleReload();
+      });
+
+      map.on("moveend", scheduleReload);
+      map.on("zoomend", scheduleReload);
+
+      (async () => {
+        try {
+          await loadPointsForCurrentView();
+        } catch (e) {
+          const msg = (e && e.message) ? e.message : String(e);
+          setStatus(`Error cargando datos: ${msg}`);
+          alert("Error al cargar datos. Revisa Supabase.");
+          console.error(e);
+        }
+      })();
+    </script>
+  </body>
+</html>
+
 
