@@ -5,75 +5,193 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Buscar Hogar – Ficha</title>
     <style>
-      html, body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: #111; background: #fff; }
-      .wrap { max-width: 980px; margin: 0 auto; padding: 16px; }
-      .top { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
-      .back { text-decoration: none; border: 1px solid #eee; padding: 8px 10px; border-radius: 10px; color: #111; }
-      .status { color: #666; font-size: 13px; }
+      :root{
+        --bg:#f6f7f8;
+        --card:#ffffff;
+        --border:#e9eaec;
+        --text:#111;
+        --muted:#6b7280;
+        --shadow:0 10px 30px rgba(0,0,0,.08);
+        --radius:16px;
+      }
 
-      .h1 { font-size: 24px; font-weight: 800; margin: 8px 0 6px; }
-      .subtitle { color: #666; font-size: 14px; margin: 0 0 12px; }
+      html, body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: var(--text); background: var(--bg); }
 
-      .grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; }
-      .card { border: 1px solid #eee; border-radius: 14px; padding: 14px; }
+      .wrap { max-width: 1120px; margin: 0 auto; padding: 18px 16px 28px; }
+
+      .topbar {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        margin-bottom:14px;
+      }
+
+      .leftTop { display:flex; align-items:center; gap:10px; }
+      .back {
+        text-decoration:none;
+        color:var(--text);
+        background:var(--card);
+        border:1px solid var(--border);
+        padding:10px 12px;
+        border-radius:12px;
+        box-shadow:0 2px 10px rgba(0,0,0,.04);
+      }
+
+      .status { color: var(--muted); font-size: 13px; }
+
+      .header {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px 18px 16px;
+        margin-bottom: 14px;
+      }
+
+      .h1 { font-size: 28px; line-height: 1.12; font-weight: 800; margin: 0 0 6px; }
+      .subtitle { color: var(--muted); font-size: 14px; margin: 0; display:flex; gap:8px; flex-wrap:wrap; }
+      .subtitleDot { color: #c2c6cc; }
+
+      .grid {
+        display:grid;
+        grid-template-columns: 1.45fr 0.55fr;
+        gap: 14px;
+        align-items:start;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+
+      .media {
+        padding: 14px;
+      }
 
       .hero {
         width: 100%;
-        aspect-ratio: 16/9;
-        border-radius: 12px;
-        border: 1px solid #eee;
-        background: linear-gradient(135deg, #f6f6f6, #ffffff);
+        aspect-ratio: 16/10;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, #f1f2f4, #ffffff);
         display: grid;
         place-items: center;
-        color: #999;
+        color: #9aa1aa;
         font-size: 13px;
+        user-select:none;
       }
 
-      .price { font-size: 28px; font-weight: 900; margin: 10px 0 8px; }
-      .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-      .chip { border: 1px solid #eee; border-radius: 999px; padding: 6px 10px; font-size: 13px; background: #fff; }
+      .mediaMeta {
+        display:flex;
+        justify-content:space-between;
+        gap:12px;
+        margin-top: 12px;
+        align-items:flex-end;
+      }
 
-      .kv { display: grid; gap: 10px; margin-top: 10px; }
-      .kvLine { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
-      .k { color: #666; font-size: 13px; }
+      .price { font-size: 34px; font-weight: 900; margin: 0; letter-spacing: -0.3px; }
+      .priceNote { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+      .chips { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+      .chip {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 13px;
+        background: #fff;
+        color: #111;
+      }
+      .chipMuted { color: var(--muted); }
+
+      .side {
+        padding: 14px;
+        position: sticky;
+        top: 14px;
+      }
+
+      .sideTitle { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+
+      .kv { display:grid; gap: 10px; }
+      .kvLine { display:grid; grid-template-columns: 92px 1fr; gap: 10px; }
+      .k { color: var(--muted); font-size: 13px; }
       .v { font-size: 14px; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; color: var(--muted); word-break: break-all; }
 
-      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; color: #666; word-break: break-all; }
+      .section {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border);
+      }
 
-      @media (max-width: 840px) { .grid { grid-template-columns: 1fr; } }
+      .sectionH { font-size: 14px; font-weight: 700; margin: 0 0 10px; }
+      .sectionP { color: var(--muted); font-size: 14px; margin: 0; }
+
+      @media (max-width: 920px) {
+        .grid { grid-template-columns: 1fr; }
+        .side { position: static; }
+        .mediaMeta { flex-direction: column; align-items:flex-start; }
+        .chips { justify-content:flex-start; }
+      }
     </style>
   </head>
 
   <body>
     <div class="wrap">
-      <div class="top">
-        <a class="back" href="./">Volver al mapa</a>
-        <div class="status" id="status">Cargando…</div>
+      <div class="topbar">
+        <div class="leftTop">
+          <a class="back" href="./">Volver al mapa</a>
+          <div class="status" id="status">Cargando…</div>
+        </div>
       </div>
 
-      <h1 class="h1" id="title">Ficha</h1>
-      <p class="subtitle" id="subtitle"></p>
+      <div class="header">
+        <h1 class="h1" id="title">Ficha</h1>
+        <div class="subtitle" id="subtitle"></div>
+      </div>
 
       <div class="grid">
         <div class="card">
-          <div class="hero">Imagen (pendiente)</div>
-          <div class="price" id="price">—</div>
-          <div class="row" id="chips"></div>
+          <div class="media">
+            <div class="hero" id="hero">Imagen (pendiente)</div>
+
+            <div class="mediaMeta">
+              <div>
+                <p class="price" id="price">—</p>
+                <div class="priceNote" id="priceNote"></div>
+              </div>
+              <div class="chips" id="chips"></div>
+            </div>
+          </div>
         </div>
 
         <div class="card">
-          <div class="kv">
-            <div class="kvLine">
-              <div class="k">Agencia</div>
-              <div class="v" id="agency">—</div>
+          <div class="side">
+            <p class="sideTitle">Datos</p>
+            <div class="kv">
+              <div class="kvLine">
+                <div class="k">Agencia</div>
+                <div class="v" id="agency">—</div>
+              </div>
+              <div class="kvLine">
+                <div class="k">Publicado</div>
+                <div class="v" id="listedAt">—</div>
+              </div>
+              <div class="kvLine">
+                <div class="k">Tipo</div>
+                <div class="v" id="ptype">—</div>
+              </div>
+              <div class="kvLine">
+                <div class="k">ID</div>
+                <div class="v mono" id="id">—</div>
+              </div>
             </div>
-            <div class="kvLine">
-              <div class="k">Publicado</div>
-              <div class="v" id="listedAt">—</div>
-            </div>
-            <div class="kvLine">
-              <div class="k">ID</div>
-              <div class="v mono" id="id">—</div>
+
+            <div class="section">
+              <div class="sectionH">Notas</div>
+              <p class="sectionP">Esta ficha es MVP. Las fotos y el plano se conectarán cuando el backend exponga esos campos.</p>
             </div>
           </div>
         </div>
@@ -89,10 +207,12 @@
       const titleEl = document.getElementById("title");
       const subtitleEl = document.getElementById("subtitle");
       const priceEl = document.getElementById("price");
+      const priceNoteEl = document.getElementById("priceNote");
       const chipsEl = document.getElementById("chips");
       const idEl = document.getElementById("id");
       const agencyEl = document.getElementById("agency");
       const listedAtEl = document.getElementById("listedAt");
+      const ptypeEl = document.getElementById("ptype");
 
       function euro(n) {
         try {
@@ -118,10 +238,33 @@
         return u.searchParams.get(name);
       }
 
+      function setSubtitle(parts) {
+        subtitleEl.innerHTML = "";
+        const clean = parts.filter(Boolean);
+        clean.forEach((t, i) => {
+          const span = document.createElement("span");
+          span.textContent = t;
+          subtitleEl.appendChild(span);
+          if (i < clean.length - 1) {
+            const dot = document.createElement("span");
+            dot.className = "subtitleDot";
+            dot.textContent = "•";
+            subtitleEl.appendChild(dot);
+          }
+        });
+      }
+
+      function addChip(text, muted=false) {
+        const c = document.createElement("div");
+        c.className = "chip" + (muted ? " chipMuted" : "");
+        c.textContent = text;
+        chipsEl.appendChild(c);
+      }
+
       async function fetchDetail(listingId) {
         const url =
           `${SUPABASE_URL}/rest/v1/${VIEW_DETAIL}` +
-          `?select=listing_id,price_eur,listed_at,agency_name,city,neighborhood,address_display,postcode,province` +
+          `?select=listing_id,price_eur,listed_at,agency_name,property_type,useful_area_m2,built_year,city,neighborhood,address_display,postcode,province` +
           `&listing_id=eq.${encodeURIComponent(listingId)}&limit=1`;
 
         const res = await fetch(url, {
@@ -143,9 +286,9 @@
       (async () => {
         const listingId = getParam("id");
         if (!listingId) {
-          statusEl.textContent = "Falta ?id=… en la URL";
+          statusEl.textContent = "Falta ?id=…";
           titleEl.textContent = "Ficha no disponible";
-          subtitleEl.textContent = "Abre esta página desde el mapa pulsando la dirección.";
+          setSubtitle(["Abre esta página desde el mapa pulsando la dirección."]);
           return;
         }
 
@@ -156,39 +299,37 @@
           if (!row) {
             statusEl.textContent = "No encontrada";
             titleEl.textContent = "Ficha no encontrada";
-            subtitleEl.textContent = "No hay resultados para este anuncio.";
+            setSubtitle(["No hay resultados para este anuncio."]);
             idEl.textContent = listingId;
             return;
           }
 
           titleEl.textContent = row.address_display || "Dirección";
-          subtitleEl.textContent = [row.neighborhood, row.city].filter(Boolean).join(" · ");
+          setSubtitle([row.neighborhood, row.city].filter(Boolean));
 
           priceEl.textContent = row.price_eur != null ? euro(row.price_eur) : "—";
+          priceNoteEl.textContent = row.postcode ? row.postcode : "";
 
           agencyEl.textContent = row.agency_name || "—";
           listedAtEl.textContent = fmtDate(row.listed_at);
+          ptypeEl.textContent = row.property_type || "—";
           idEl.textContent = row.listing_id || listingId;
 
-          // Chips (solo datos “buenos”/neutros)
           chipsEl.innerHTML = "";
-          if (row.postcode) {
-            const c = document.createElement("div");
-            c.className = "chip";
-            c.textContent = row.postcode;
-            chipsEl.appendChild(c);
-          }
-          // útil interior
-          // Nota: useful_area_m2 existe en la vista; si quieres, lo añadimos aquí en la siguiente iteración.
+          if (row.useful_area_m2 != null) addChip(`${row.useful_area_m2} m² útiles`);
+          if (row.built_year != null) addChip(`Año ${row.built_year}`);
+          if (row.province) addChip(row.province, true);
+
           statusEl.textContent = "OK";
         } catch (e) {
           const msg = (e && e.message) ? e.message : String(e);
           statusEl.textContent = "Error";
           titleEl.textContent = "Error cargando ficha";
-          subtitleEl.textContent = msg;
+          setSubtitle([msg]);
           console.error(e);
         }
       })();
     </script>
   </body>
 </html>
+
