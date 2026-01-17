@@ -71,14 +71,14 @@
         transform: scale(1.15);
       }
 
-      /* ===== Card estilo funda ===== */
+      /* ===== Card estilo funda (más pequeña) ===== */
       .card {
         position: fixed;
         left: 50%;
-        bottom: 22px;
+        bottom: 18px;
 
-        /* Funda: tarjeta más contenida */
-        width: min(860px, calc(100% - 28px));
+        /* Clave: más estrecha */
+        width: min(720px, calc(100% - 28px));
 
         background: #fff;
         border: 1px solid rgba(0,0,0,0.14);
@@ -101,8 +101,9 @@
 
       .cardGrid {
         display: grid;
-        grid-template-columns: 46% 54%;
-        min-height: 190px;
+        grid-template-columns: 44% 56%;
+        /* Clave: más baja */
+        min-height: 168px;
       }
 
       .mediaSide {
@@ -124,29 +125,28 @@
         display: grid;
         place-items: center;
         color: #9aa1aa;
-        font-size: 14px;
+        font-size: 13px;
       }
 
       .badgeNew {
         position: absolute;
-        top: 12px;
-        left: 12px;
+        top: 10px;
+        left: 10px;
         background: #f7a300;
         color: #fff;
-        padding: 6px 12px;
+        padding: 5px 10px;
         border-radius: 9px;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 700;
         display: none;
       }
 
-      /* Icono pequeño en la foto (similar a funda) */
       .mediaMiniIcon {
         position: absolute;
-        left: 12px;
-        bottom: 12px;
-        width: 34px;
-        height: 34px;
+        left: 10px;
+        bottom: 10px;
+        width: 30px;
+        height: 30px;
         border-radius: 10px;
         background: rgba(255,255,255,0.94);
         border: 1px solid rgba(0,0,0,0.10);
@@ -154,28 +154,29 @@
         place-items: center;
       }
       .mediaMiniIcon svg {
-        width: 18px;
-        height: 18px;
+        width: 16px;
+        height: 16px;
         color: rgba(0,0,0,0.75);
       }
 
       .textSide {
         position: relative;
-        padding: 16px 18px 16px;
+        /* Clave: menos padding */
+        padding: 12px 14px 12px;
       }
 
       .topActions {
         position: absolute;
-        right: 14px;
-        top: 14px;
+        right: 10px;
+        top: 10px;
         display: flex;
-        gap: 12px;
+        gap: 10px;
         align-items: center;
       }
 
       .heartBtn {
-        width: 44px;
-        height: 44px;
+        width: 38px;
+        height: 38px;
         border-radius: 999px;
         border: 1px solid rgba(0,0,0,0.18);
         background: #fff;
@@ -184,14 +185,14 @@
         place-items: center;
       }
       .heartBtn svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         color: #1a73e8;
       }
 
       .closeBtn {
-        width: 52px;
-        height: 52px;
+        width: 44px;
+        height: 44px;
         border-radius: 10px;
         border: 0;
         background: #1a73e8;
@@ -200,65 +201,65 @@
         place-items: center;
       }
       .closeBtn svg {
-        width: 22px;
-        height: 22px;
+        width: 20px;
+        height: 20px;
         color: #fff;
       }
 
       .addr {
         color: #1a73e8;
         text-decoration: none;
-        font-size: 26px;
-        line-height: 1.1;
+        /* Clave: más pequeña */
+        font-size: 22px;
+        line-height: 1.08;
         font-weight: 750;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-
-        /* Deja aire para los botones como en funda */
-        padding-right: 132px;
+        /* aire para botones */
+        padding-right: 112px;
       }
       .addr:hover { text-decoration: underline; }
 
       .sub {
-        margin-top: 8px;
-        font-size: 18px;
+        margin-top: 6px;
+        font-size: 16px;
         color: #111;
       }
 
       .price {
-        margin-top: 14px;
-        font-size: 24px;
+        margin-top: 10px;
+        font-size: 20px;
         font-weight: 900;
         color: #111;
       }
 
       .facts {
-        margin-top: 14px;
+        margin-top: 10px;
         display: flex;
-        gap: 18px;
+        gap: 14px;
         flex-wrap: wrap;
         align-items: center;
         color: rgba(0,0,0,0.85);
-        font-size: 18px;
+        font-size: 16px;
       }
 
       .fact {
         display: inline-flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
       }
 
       .fact svg {
-        width: 26px;
-        height: 26px;
+        width: 22px;
+        height: 22px;
         color: rgba(0,0,0,0.75);
       }
 
       .agency {
-        margin-top: 18px;
-        font-size: 20px;
+        margin-top: 12px;
+        font-size: 17px;
         font-weight: 750;
         color: #1a73e8;
         white-space: nowrap;
@@ -274,12 +275,12 @@
         }
         .cardGrid { grid-template-columns: 1fr; }
         .mediaSide { min-height: 210px; }
-        .addr { padding-right: 0; font-size: 22px; }
-        .sub { font-size: 18px; }
-        .price { font-size: 22px; }
-        .facts { font-size: 18px; }
-        .agency { font-size: 18px; }
-        .topActions { right: 12px; top: 12px; }
+        .addr { padding-right: 0; font-size: 20px; }
+        .sub { font-size: 16px; }
+        .price { font-size: 20px; }
+        .facts { font-size: 16px; }
+        .agency { font-size: 16px; }
+        .topActions { right: 10px; top: 10px; }
       }
 
       /* Leaflet controles */
@@ -304,7 +305,6 @@
 
     <div id="map"></div>
 
-    <!-- Tarjeta inferior -->
     <div id="card" class="card">
       <div class="cardGrid">
         <div class="mediaSide">
@@ -464,10 +464,8 @@
         openCard();
       }
 
-      // Map init
       let map = L.map("map").setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
-      // Carto Voyager (look “comercial” sin Google)
       L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap &copy; CARTO"
@@ -607,8 +605,6 @@
 
       map.on("moveend", scheduleReload);
       map.on("zoomend", scheduleReload);
-
-      // Cierra tarjeta al clicar en el mapa vacío
       map.on("click", () => closeCard());
 
       (async () => {
@@ -624,7 +620,6 @@
     </script>
   </body>
 </html>
-
 
 
 
