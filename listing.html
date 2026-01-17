@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Buscar Hogar – Ficha</title>
 
+    <!-- Leaflet (para mini-mapa) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+
     <style>
       :root{
         --bg:#ffffff;
@@ -13,14 +21,27 @@
         --border:#e6e7eb;
         --card:#ffffff;
         --shadow:0 10px 30px rgba(0,0,0,.08);
+        --radius:16px;
+        --link:#1f6feb;
       }
 
       html,body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--text); background:var(--bg);}
-      .wrap{max-width:1180px; margin:0 auto; padding:14px 16px 40px;}
+      .wrap{max-width:1180px; margin:0 auto; padding:14px 16px 44px;}
 
-      .topRow{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;}
-      .back{display:inline-flex; align-items:center; gap:8px; text-decoration:none; color:var(--text); border:1px solid var(--border); padding:9px 12px; border-radius:12px; background:#fff;}
+      .topRow{display:flex; align-items:center; justify-content:flex-start; gap:12px; margin-bottom:10px;}
+      .back{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        text-decoration:none;
+        color:var(--text);
+        border:1px solid var(--border);
+        padding:9px 12px;
+        border-radius:12px;
+        background:#fff;
+      }
 
+      /* Banner error (solo si hay problemas) */
       .banner{
         border:1px solid #f3b4b4;
         background:#fff5f5;
@@ -33,17 +54,26 @@
         display:none;
       }
 
-      .crumbs{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; margin:10px 0 12px;}
+      /* Breadcrumbs (funda-like) */
+      .crumbs{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        color:var(--muted);
+        font-size:13px;
+        margin:10px 0 12px;
+      }
+      .crumbLink{color:var(--link); cursor:default;}
+      .crumbCurrent{color:var(--muted);}
       .sep{color:#c4c7cf;}
-      .crumbItem{color:#1f6feb;}
-      .crumbText{color:var(--muted);}
 
+      /* Media block */
       .mediaBlock{
         position:relative;
         border-radius:18px;
         overflow:hidden;
-        background:#f2f3f5;
         border:1px solid var(--border);
+        background:#fff;
       }
       .mediaGrid{
         display:grid;
@@ -73,10 +103,12 @@
         color:#9aa1aa;
         user-select:none;
       }
+
+      /* Overlay actions */
       .mediaActions{
         position:absolute;
-        right:16px;
-        top:16px;
+        right:14px;
+        top:14px;
         display:flex;
         gap:10px;
         z-index:5;
@@ -85,25 +117,29 @@
         display:inline-flex;
         align-items:center;
         justify-content:center;
-        height:44px;
-        padding:0 14px;
+        height:42px;
+        padding:0 12px;
         border-radius:12px;
         border:1px solid var(--border);
         background:#fff;
         box-shadow:0 10px 30px rgba(0,0,0,.10);
         cursor:pointer;
         font-size:14px;
+        gap:8px;
       }
-      .actionIcon{width:44px; padding:0;}
+      .actionBtn:active{transform:translateY(1px);}
+      .actionIcon{width:42px; padding:0;}
+      .icon{width:18px; height:18px; display:inline-block;}
 
+      /* Media tabs */
       .mediaTabs{
         display:flex;
         justify-content:space-between;
         align-items:center;
         gap:12px;
         border-bottom:1px solid var(--border);
-        padding:12px 6px 12px;
-        margin-bottom:18px;
+        padding:10px 2px 12px;
+        margin:10px 0 18px;
       }
       .tabsLeft{display:flex; gap:18px; flex-wrap:wrap; align-items:center;}
       .tabBtn{
@@ -120,19 +156,25 @@
       }
       .tabBtn:hover{background:#f6f7f9;}
       .tabCount{color:var(--muted);}
-      .tabsRight .tabBtn{border:1px solid var(--border); background:#fff;}
-      .factIcon{width:18px; height:18px; border:1px solid var(--border); border-radius:4px; background:#fff;}
+      .tabsRight .tabBtn{
+        border:1px solid var(--border);
+        background:#fff;
+      }
 
+      /* Content grid */
       .contentGrid{
         display:grid;
         grid-template-columns: 2fr 1fr;
-        gap:20px;
+        gap:22px;
         align-items:start;
       }
 
+      /* Left summary */
       .title{font-size:34px; line-height:1.08; margin:0 0 6px; font-weight:900; letter-spacing:-0.2px;}
       .metaLine{display:flex; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:14px; margin-bottom:10px;}
-      .priceRow{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin:12px 0 10px;}
+      .metaDot{color:#c4c7cf;}
+
+      .priceRow{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin:12px 0 8px;}
       .price{font-size:34px; font-weight:900; margin:0;}
       .priceNoteBtn{
         color:var(--muted);
@@ -144,36 +186,73 @@
       }
       .priceNoteBtn:hover{text-decoration:underline;}
 
-      .factsRow{display:flex; gap:18px; flex-wrap:wrap; align-items:center; margin-top:10px; color:#111; font-size:15px;}
-      .fact{display:inline-flex; align-items:center; gap:8px;}
+      /* Facts row (chips funda-like) */
+      .factsRow{
+        display:flex;
+        gap:14px;
+        flex-wrap:wrap;
+        align-items:center;
+        margin-top:10px;
+        color:#111;
+        font-size:15px;
+      }
+      .fact{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding:8px 10px;
+        border:1px solid var(--border);
+        border-radius:999px;
+        background:#fff;
+      }
       .factMuted{color:var(--muted);}
 
+      /* Right cards */
+      .sideSticky{position:sticky; top:14px; display:grid; gap:14px;}
       .sideCard{
         background:var(--card);
         border:1px solid var(--border);
         border-radius:16px;
         box-shadow:var(--shadow);
-        padding:14px;
+        overflow:hidden;
       }
-      .sideSticky{position:sticky; top:14px; display:grid; gap:14px;}
+      .sideCardInner{padding:14px;}
       .sideTitle{color:var(--muted); font-size:13px; margin:0 0 10px;}
+
       .kv{display:grid; gap:10px;}
       .kvLine{display:grid; grid-template-columns: 92px 1fr; gap:10px;}
       .k{color:var(--muted); font-size:13px;}
       .v{font-size:14px;}
-      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; font-size:12px; color:var(--muted); word-break:break-all;}
-      .mapMock{
-        height:120px;
-        border:1px solid var(--border);
-        border-radius:12px;
-        background:linear-gradient(135deg,#f0f1f3,#ffffff);
-        display:grid;
-        place-items:center;
-        color:#9aa1aa;
-        font-size:13px;
-        user-select:none;
+      .mono{
+        font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+        font-size:12px; color:var(--muted); word-break:break-all;
       }
 
+      /* Mini-map */
+      #miniMap{
+        height:160px;
+        width:100%;
+        background:linear-gradient(135deg,#f0f1f3,#ffffff);
+      }
+      .mapHeader{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        padding:12px 14px;
+        border-bottom:1px solid var(--border);
+      }
+      .mapHeaderTitle{font-size:14px; color:#111;}
+      .mapHeaderSmall{font-size:13px; color:var(--muted);}
+
+      /* Leaflet controls a bit tighter */
+      .leaflet-control-zoom a{
+        width:32px;
+        height:32px;
+        line-height:32px;
+      }
+
+      /* Responsive */
       @media (max-width: 980px){
         .mediaGrid{grid-template-columns:1fr;}
         .mediaSmallGrid{grid-template-columns:1fr 1fr;}
@@ -198,41 +277,83 @@
       <div id="banner" class="banner"></div>
 
       <div class="crumbs">
-        <span>🏠</span>
+        <span class="crumbLink" id="crumbCity">Ciudad</span>
         <span class="sep">/</span>
-        <span class="crumbItem" id="crumbCity">Ciudad</span>
+        <span class="crumbLink" id="crumbNeighborhood">Barrio</span>
         <span class="sep">/</span>
-        <span class="crumbItem" id="crumbNeighborhood">Barrio</span>
-        <span class="sep">/</span>
-        <span class="crumbText" id="crumbAddress">Dirección</span>
+        <span class="crumbCurrent" id="crumbAddress">Dirección</span>
       </div>
 
       <div class="mediaBlock">
         <div class="mediaActions">
-          <button class="actionBtn actionIcon" id="shareBtn" type="button" title="Compartir">⤴</button>
-          <button class="actionBtn" id="saveBtn" type="button" title="Guardar">♡ Guardar</button>
+          <button class="actionBtn actionIcon" id="shareBtn" type="button" title="Compartir">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/>
+              <path d="M12 3v12"/>
+              <path d="M7 8l5-5 5 5"/>
+            </svg>
+          </button>
+
+          <button class="actionBtn" id="saveBtn" type="button" title="Guardar">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+            </svg>
+            <span id="saveText">Guardar</span>
+          </button>
         </div>
 
         <div class="mediaGrid">
-          <div class="mediaBig">Foto principal (pendiente)</div>
+          <div class="mediaBig" id="heroBig">Foto principal (pendiente)</div>
           <div class="mediaSmallGrid">
-            <div class="mediaSmall">Foto</div>
-            <div class="mediaSmall">Vídeo</div>
-            <div class="mediaSmall">Foto</div>
-            <div class="mediaSmall">Foto</div>
+            <div class="mediaSmall" id="heroS1">Foto</div>
+            <div class="mediaSmall" id="heroS2">Vídeo</div>
+            <div class="mediaSmall" id="heroS3">Foto</div>
+            <div class="mediaSmall" id="heroS4">Foto</div>
           </div>
         </div>
       </div>
 
       <div class="mediaTabs">
         <div class="tabsLeft">
-          <button class="tabBtn" type="button"><span class="factIcon"></span> Foto’s <span class="tabCount" id="photosCount">0</span></button>
-          <button class="tabBtn" type="button"><span class="factIcon"></span> Plano <span class="tabCount" id="floorCount">0</span></button>
-          <button class="tabBtn" type="button"><span class="factIcon"></span> 360° <span class="tabCount" id="panoCount">0</span></button>
-          <button class="tabBtn" type="button"><span class="factIcon"></span> Video</button>
+          <button class="tabBtn" type="button" id="tabPhotos">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l2-2h4l2 2h3a2 2 0 0 1 2 2z"/>
+              <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
+            </svg>
+            Foto’s <span class="tabCount" id="photosCount">0</span>
+          </button>
+
+          <button class="tabBtn" type="button" id="tabFloor">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16v16H4z"/>
+              <path d="M4 10h16"/>
+              <path d="M10 10v10"/>
+            </svg>
+            Plano <span class="tabCount" id="floorCount">0</span>
+          </button>
+
+          <button class="tabBtn" type="button" id="tab360">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 12a10 10 0 0 0 20 0"/>
+              <path d="M2 12a10 10 0 0 1 20 0"/>
+              <path d="M8 12h8"/>
+            </svg>
+            360° <span class="tabCount" id="panoCount">0</span>
+          </button>
+
+          <button class="tabBtn" type="button" id="tabVideo">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14.5 8.5l6-3v13l-6-3"/>
+              <path d="M3 6h11v12H3z"/>
+            </svg>
+            Video
+          </button>
         </div>
+
         <div class="tabsRight">
-          <button class="tabBtn" type="button"><span class="factIcon"></span> Todo el media</button>
+          <button class="tabBtn" type="button" id="tabAllMedia">
+            Alle media
+          </button>
         </div>
       </div>
 
@@ -242,10 +363,10 @@
 
           <div class="metaLine">
             <span id="metaPostal">—</span>
-            <span class="sep">•</span>
+            <span class="metaDot">•</span>
             <span id="metaCity">—</span>
-            <span class="sep">•</span>
-            <span id="metaNeighborhood">Barrio</span>
+            <span class="metaDot">•</span>
+            <span id="metaNeighborhood">—</span>
           </div>
 
           <div class="priceRow">
@@ -258,36 +379,50 @@
 
         <div>
           <div class="sideSticky">
+
             <div class="sideCard">
-              <div class="mapMock">Mapa (pendiente)</div>
+              <div class="mapHeader">
+                <div class="mapHeaderTitle">Kaart</div>
+                <div class="mapHeaderSmall" id="mapHint">—</div>
+              </div>
+              <div id="miniMap"></div>
             </div>
 
             <div class="sideCard">
-              <p class="sideTitle">Agencia</p>
-              <div class="kv">
-                <div class="kvLine">
-                  <div class="k">Nombre</div>
-                  <div class="v" id="agency">—</div>
-                </div>
-                <div class="kvLine">
-                  <div class="k">Publicado</div>
-                  <div class="v" id="listedAt">—</div>
-                </div>
-                <div class="kvLine">
-                  <div class="k">Tipo</div>
-                  <div class="v" id="ptype">—</div>
-                </div>
-                <div class="kvLine">
-                  <div class="k">ID</div>
-                  <div class="v mono" id="id">—</div>
+              <div class="sideCardInner">
+                <p class="sideTitle">Agencia</p>
+                <div class="kv">
+                  <div class="kvLine">
+                    <div class="k">Nombre</div>
+                    <div class="v" id="agency">—</div>
+                  </div>
+                  <div class="kvLine">
+                    <div class="k">Publicado</div>
+                    <div class="v" id="listedAt">—</div>
+                  </div>
+                  <div class="kvLine">
+                    <div class="k">Tipo</div>
+                    <div class="v" id="ptype">—</div>
+                  </div>
+                  <div class="kvLine">
+                    <div class="k">ID</div>
+                    <div class="v mono" id="id">—</div>
+                  </div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
 
     </div>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
 
     <script>
       const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
@@ -315,7 +450,23 @@
 
       const shareBtn = document.getElementById("shareBtn");
       const saveBtn = document.getElementById("saveBtn");
+      const saveTextEl = document.getElementById("saveText");
       const monthlyBtn = document.getElementById("monthlyLink");
+
+      const tabPhotos = document.getElementById("tabPhotos");
+      const tabFloor = document.getElementById("tabFloor");
+      const tab360 = document.getElementById("tab360");
+      const tabVideo = document.getElementById("tabVideo");
+      const tabAllMedia = document.getElementById("tabAllMedia");
+
+      const photosCountEl = document.getElementById("photosCount");
+      const floorCountEl = document.getElementById("floorCount");
+      const panoCountEl = document.getElementById("panoCount");
+
+      const mapHintEl = document.getElementById("mapHint");
+
+      let miniMap = null;
+      let miniMarker = null;
 
       function showBanner(msg) {
         bannerEl.style.display = "block";
@@ -324,7 +475,11 @@
 
       function euro(n) {
         try {
-          return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+          return new Intl.NumberFormat("es-ES", {
+            style: "currency",
+            currency: "EUR",
+            maximumFractionDigits: 0
+          }).format(n);
         } catch {
           return String(n) + " EUR";
         }
@@ -346,22 +501,31 @@
         return u.searchParams.get(name);
       }
 
-      function addFact(text, muted=false) {
+      function addFact(iconSvg, text, muted=false) {
         const wrap = document.createElement("div");
         wrap.className = "fact";
+
         const icon = document.createElement("span");
-        icon.className = "factIcon";
+        icon.className = "icon";
+        icon.innerHTML = iconSvg;
+
         const t = document.createElement("span");
         t.textContent = text;
         if (muted) t.className = "factMuted";
+
         wrap.appendChild(icon);
         wrap.appendChild(t);
         factsRowEl.appendChild(wrap);
       }
 
+      const ICON_AREA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 10h16"/><path d="M10 10v10"/></svg>';
+      const ICON_YEAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18"/><path d="M7 3v4"/><path d="M17 3v4"/><path d="M5 7h14v14H5z"/></svg>';
+      const ICON_TYPE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>';
+      const ICON_LOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-4.5 7-11a7 7 0 0 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2"/></svg>';
+
       async function fetchDetail(listingId) {
         const params = new URLSearchParams();
-        params.set("select", "listing_id,price_eur,listed_at,agency_name,property_type,useful_area_m2,built_year,city,neighborhood,address_display,postcode,province");
+        params.set("select", "listing_id,price_eur,listed_at,agency_name,property_type,useful_area_m2,built_year,city,neighborhood,address_display,postcode,province,lat,lng");
         params.set("listing_id", "eq." + listingId);
         params.set("limit", "1");
 
@@ -375,13 +539,10 @@
         });
 
         const text = await res.text();
-        if (!res.ok) {
-          throw new Error("Supabase " + res.status + ": " + text);
-        }
+        if (!res.ok) throw new Error("Supabase " + res.status + ": " + text);
 
         let data = [];
         try { data = JSON.parse(text); } catch { data = []; }
-
         return data[0] || null;
       }
 
@@ -394,6 +555,34 @@
         }
       }
 
+      function ensureMiniMap(lat, lng) {
+        const hasCoords = (typeof lat === "number" && typeof lng === "number" && isFinite(lat) && isFinite(lng));
+        if (!hasCoords) {
+          mapHintEl.textContent = "Sin coordenadas";
+          if (miniMap) {
+            miniMap.remove();
+            miniMap = null;
+            miniMarker = null;
+          }
+          return;
+        }
+
+        mapHintEl.textContent = "Ver ubicación";
+
+        if (!miniMap) {
+          miniMap = L.map("miniMap", { zoomControl: true, attributionControl: false, scrollWheelZoom: false }).setView([lat, lng], 15);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(miniMap);
+        } else {
+          miniMap.setView([lat, lng], 15);
+        }
+
+        if (miniMarker) {
+          miniMarker.setLatLng([lat, lng]);
+        } else {
+          miniMarker = L.marker([lat, lng]).addTo(miniMap);
+        }
+      }
+
       shareBtn.addEventListener("click", async () => {
         const ok = await copyToClipboard(window.location.href);
         if (!ok) window.prompt("Copia el enlace:", window.location.href);
@@ -402,14 +591,26 @@
       let saved = false;
       saveBtn.addEventListener("click", () => {
         saved = !saved;
-        saveBtn.textContent = saved ? "♥ Guardado" : "♡ Guardar";
+        saveTextEl.textContent = saved ? "Guardado" : "Guardar";
+        saveBtn.style.opacity = saved ? "0.95" : "1";
       });
 
       monthlyBtn.addEventListener("click", () => {
         alert("MVP: aquí luego conectaremos calculadora / info financiera.");
       });
 
+      function wireMediaButtons() {
+        const msg = "MVP: este botón abrirá la galería/visor cuando haya fotos/plano/vídeo.";
+        tabPhotos.addEventListener("click", () => alert(msg));
+        tabFloor.addEventListener("click", () => alert(msg));
+        tab360.addEventListener("click", () => alert(msg));
+        tabVideo.addEventListener("click", () => alert(msg));
+        tabAllMedia.addEventListener("click", () => alert(msg));
+      }
+
       (async () => {
+        wireMediaButtons();
+
         const listingId = getParam("id");
         if (!listingId) {
           showBanner("Falta el parámetro ?id=...");
@@ -432,6 +633,7 @@
           crumbsAddressEl.textContent = row.address_display || "Dirección";
 
           titleEl.textContent = row.address_display || "Dirección";
+
           metaPostalEl.textContent = row.postcode || "—";
           metaCityEl.textContent = row.city || "—";
           metaNeighborhoodEl.textContent = row.neighborhood || "—";
@@ -444,9 +646,20 @@
           idEl.textContent = row.listing_id || listingId;
 
           factsRowEl.innerHTML = "";
-          if (row.useful_area_m2 != null) addFact(String(row.useful_area_m2) + " m²");
-          if (row.built_year != null) addFact("Año " + row.built_year, true);
-          if (row.province) addFact(row.province, true);
+          if (row.useful_area_m2 != null) addFact(ICON_AREA, String(row.useful_area_m2) + " m²");
+          if (row.built_year != null) addFact(ICON_YEAR, "Año " + row.built_year, true);
+          if (row.property_type) addFact(ICON_TYPE, row.property_type, true);
+          if (row.province) addFact(ICON_LOC, row.province, true);
+
+          // Contadores de media: seguimos en 0 hasta que existan fotos/plano/vídeo reales
+          photosCountEl.textContent = "0";
+          floorCountEl.textContent = "0";
+          panoCountEl.textContent = "0";
+
+          // Mini map
+          const lat = (row.lat != null) ? Number(row.lat) : null;
+          const lng = (row.lng != null) ? Number(row.lng) : null;
+          ensureMiniMap(lat, lng);
 
         } catch (e) {
           console.error(e);
@@ -457,6 +670,7 @@
     </script>
   </body>
 </html>
+
 
 
 
