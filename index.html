@@ -10,12 +10,16 @@
         --bg:#ffffff;
         --text:#111;
         --muted:#6b7280;
+
+        /* Terracota más intenso (topbar) */
+        --terra:#a3472f;
+
+        /* Marrón pastel para acentos/bordes (sustituye al azul) */
+        --accent:#b08a66;
+
+        --white:#ffffff;
         --border:#e6e7eb;
 
-        --terra:#b85a3c;           /* terracota */
-        --white:#ffffff;
-
-        --btn:#1a73e8;
         --btnText:#fff;
       }
 
@@ -49,7 +53,7 @@
       .leftGroup{
         display:flex;
         align-items:center;
-        gap: 14px;
+        gap: 12px;
         min-width: 0;
       }
 
@@ -81,15 +85,13 @@
         letter-spacing: -0.2px;
       }
 
-      .nav{
+      .topLinks{
         display:flex;
         align-items:center;
-        gap: 14px;
-        flex: 1 1 auto;
-        min-width: 0;
+        gap: 8px;
       }
 
-      .nav a{
+      .topLinks a{
         color: var(--white);
         text-decoration:none;
         font-size:14px;
@@ -99,8 +101,43 @@
         white-space: nowrap;
       }
 
-      .nav a:hover{
+      .topLinks a:hover{
         background: rgba(255,255,255,0.14);
+      }
+
+      /* Buscador mini en topbar (minimal) */
+      .miniSearch{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        border: 1px solid rgba(255,255,255,0.28);
+        background: rgba(255,255,255,0.10);
+        border-radius: 999px;
+        padding: 6px 10px;
+        min-width: 260px;
+        max-width: 420px;
+      }
+
+      .miniSearch input{
+        border:0;
+        outline:0;
+        background: transparent;
+        color: var(--white);
+        font-size: 13.5px;
+        width: 100%;
+      }
+
+      .miniSearch input::placeholder{
+        color: rgba(255,255,255,0.78);
+      }
+
+      .miniSearch button{
+        border:0;
+        background: transparent;
+        color: var(--white);
+        cursor: pointer;
+        font-size: 13.5px;
+        padding: 0 2px;
       }
 
       .rightGroup{
@@ -144,17 +181,17 @@
         justify-items:center;
       }
 
-      /* Título centrado entre la topbar y el bloque de búsqueda */
+      /* Titular más arriba */
       .heroLine{
         width: 100%;
         display:grid;
         place-items:center;
-        padding: 34px 0 10px;
+        padding: 18px 0 6px; /* más arriba que antes */
       }
 
       .headline{
-        font-size: 22px;
-        font-weight: 750;
+        font-size: 20px;
+        font-weight: 720;
         letter-spacing: -0.2px;
         text-align:center;
       }
@@ -166,13 +203,14 @@
         justify-content:flex-start;
         gap:10px;
         flex-wrap:wrap;
+        margin-top: 2px;
       }
 
       .toggle{
         display:inline-flex;
         align-items:center;
         gap:8px;
-        border:1px solid var(--border);
+        border:1.5px solid var(--accent);
         background:#fff;
         padding:8px 10px;
         border-radius: 999px;
@@ -186,14 +224,14 @@
         width:16px;
         height:16px;
         margin:0;
-        accent-color: var(--btn);
+        accent-color: var(--accent);
         cursor:pointer;
       }
 
       /* Buscador */
       .searchBox{
         width: min(640px, 100%);
-        border: 1px solid var(--border);
+        border: 1.5px solid var(--accent);
         border-radius: 999px;
         padding: 10px;
         display:flex;
@@ -221,7 +259,7 @@
 
       .btn{
         border:0;
-        background: var(--btn);
+        background: var(--accent);
         color: var(--btnText);
         padding: 10px 16px;
         border-radius: 999px;
@@ -242,35 +280,48 @@
         margin-top: 2px;
       }
 
-      /* Filtros */
+      /* Filtros (un poco más abajo) */
       .filtersRow{
         width: min(860px, 100%);
         display:grid;
         grid-template-columns: 1.2fr 1fr 1fr 1fr;
         gap: 10px;
-        margin-top: 10px;
+        margin-top: 18px; /* bajados */
       }
 
       .f{
-        border: 1px solid var(--border);
+        border: 2px solid var(--accent);   /* borde más grueso + color marrón pastel */
         border-radius: 12px;
         padding: 10px 12px;
         background:#fff;
         display:grid;
-        gap: 6px;
+        gap: 8px;
         align-content:start;
       }
 
       .f label{
-        font-size: 12.5px;
-        color: var(--muted);
+        font-size: 12.8px;
+        color: #4b3a2a;
+        text-align:center; /* título centrado */
+        font-weight: 650;
       }
 
-      .f input, .f select{
+      /* Inputs / selects mismo estilo */
+      .control{
+        border: 1.5px solid var(--accent);
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: #fff;
+        display:flex;
+        align-items:center;
+        gap: 8px;
+      }
+
+      .control input,
+      .control select{
         border:0;
         outline:0;
         font-size: 14px;
-        padding: 0;
         background: transparent;
         width: 100%;
       }
@@ -280,24 +331,6 @@
         grid-template-columns: 1fr 1fr;
         gap: 10px;
         align-items:center;
-      }
-
-      .miniField{
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 8px 10px;
-        display:flex;
-        align-items:center;
-        gap: 8px;
-      }
-
-      .miniField input{
-        width:100%;
-      }
-
-      .hint{
-        font-size:12px;
-        color: var(--muted);
       }
 
       .footer{
@@ -316,8 +349,11 @@
         }
       }
 
+      @media (max-width: 720px){
+        .miniSearch{ display:none; }
+      }
+
       @media (max-width: 640px){
-        .nav{ display:none; }
         .filtersRow{
           grid-template-columns: 1fr;
         }
@@ -335,11 +371,16 @@
             </div>
           </a>
 
-          <nav class="nav" aria-label="Navegación principal">
-            <a href="#" id="navComprar">Comprar</a>
-            <a href="#" id="navAlquilar">Alquilar</a>
-          </nav>
+          <div class="topLinks" aria-label="Accesos">
+            <a href="#" id="navAccesoUsuario">Acceso usuario</a>
+            <a href="#" id="navAccesoProfesional">Acceso profesional</a>
+          </div>
         </div>
+
+        <form class="miniSearch" id="miniSearchForm" autocomplete="off" aria-label="Búsqueda rápida">
+          <input id="miniQ" placeholder="Buscar..." aria-label="Buscar rápido" />
+          <button type="submit" title="Buscar">⌕</button>
+        </form>
 
         <div class="rightGroup" aria-label="Acciones">
           <a href="#" id="navFavoritos">Favoritos</a>
@@ -353,7 +394,7 @@
         <div class="center">
 
           <div class="heroLine">
-            <div class="headline">Viviendas publicadas únicamente por profesionales</div>
+            <div class="headline">Publicaciones únicamente por profesional inmobiliario</div>
           </div>
 
           <div class="modeRow" aria-label="Tipo de búsqueda">
@@ -370,6 +411,11 @@
             <label class="toggle" title="Alquiler habitación">
               <input type="radio" name="mode" value="rent_room" />
               <span>Alquiler habitación</span>
+            </label>
+
+            <label class="toggle" title="Obra nueva">
+              <input type="radio" name="mode" value="new_build" />
+              <span>Obra nueva</span>
             </label>
           </div>
 
@@ -395,53 +441,55 @@
             <div class="f">
               <label>Precio de la vivienda</label>
               <div class="twoCols">
-                <div class="miniField">
+                <div class="control">
                   <input id="priceMin" inputmode="numeric" list="priceOptions" placeholder="Mín." aria-label="Precio mínimo" />
                 </div>
-                <div class="miniField">
+                <div class="control">
                   <input id="priceMax" inputmode="numeric" list="priceOptions" placeholder="Máx." aria-label="Precio máximo" />
                 </div>
               </div>
-              <div class="hint">Sugerencias: 50.000 € en adelante</div>
             </div>
 
             <div class="f">
               <label>Superficie útil interior</label>
-              <div class="miniField">
+              <div class="control">
                 <input id="areaMin" inputmode="numeric" list="areaOptions" placeholder="Mín. (m²)" aria-label="Superficie mínima" />
               </div>
-              <div class="hint">Sugerencias: 30 m² en adelante</div>
             </div>
 
             <div class="f">
               <label for="buildPeriod">Periodo de construcción</label>
-              <select id="buildPeriod" aria-label="Periodo de construcción">
-                <option value="">Sin preferencia</option>
-                <option value="unknown">Desconocido</option>
-                <option value="before_1906">Antes de 1906</option>
-                <option value="1906_1930">1906–1930</option>
-                <option value="1931_1944">1931–1944</option>
-                <option value="1945_1959">1945–1959</option>
-                <option value="1960_1970">1960–1970</option>
-                <option value="1971_1980">1971–1980</option>
-                <option value="1981_1990">1981–1990</option>
-                <option value="1991_2000">1991–2000</option>
-                <option value="2001_2010">2001–2010</option>
-                <option value="2011_2020">2011–2020</option>
-                <option value="after_2020">Después de 2020</option>
-              </select>
+              <div class="control">
+                <select id="buildPeriod" aria-label="Periodo de construcción">
+                  <option value="">Sin preferencia</option>
+                  <option value="unknown">Desconocido</option>
+                  <option value="before_1906">Antes de 1906</option>
+                  <option value="1906_1930">1906–1930</option>
+                  <option value="1931_1944">1931–1944</option>
+                  <option value="1945_1959">1945–1959</option>
+                  <option value="1960_1970">1960–1970</option>
+                  <option value="1971_1980">1971–1980</option>
+                  <option value="1981_1990">1981–1990</option>
+                  <option value="1991_2000">1991–2000</option>
+                  <option value="2001_2010">2001–2010</option>
+                  <option value="2011_2020">2011–2020</option>
+                  <option value="after_2020">Después de 2020</option>
+                </select>
+              </div>
             </div>
 
             <div class="f">
               <label for="offeredSince">Publicado desde</label>
-              <select id="offeredSince" aria-label="Publicado desde">
-                <option value="">Sin preferencia</option>
-                <option value="today">Hoy</option>
-                <option value="3d">Últimos 3 días</option>
-                <option value="5d">Últimos 5 días</option>
-                <option value="10d">Últimos 10 días</option>
-                <option value="30d">Últimos 30 días</option>
-              </select>
+              <div class="control">
+                <select id="offeredSince" aria-label="Publicado desde">
+                  <option value="">Sin preferencia</option>
+                  <option value="today">Hoy</option>
+                  <option value="3d">Últimos 3 días</option>
+                  <option value="5d">Últimos 5 días</option>
+                  <option value="10d">Últimos 10 días</option>
+                  <option value="30d">Últimos 30 días</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -460,6 +508,9 @@
       const form = document.getElementById("form");
       const q = document.getElementById("q");
 
+      const miniSearchForm = document.getElementById("miniSearchForm");
+      const miniQ = document.getElementById("miniQ");
+
       const priceMinEl = document.getElementById("priceMin");
       const priceMaxEl = document.getElementById("priceMax");
       const areaMinEl = document.getElementById("areaMin");
@@ -474,21 +525,13 @@
         return el ? el.value : "buy";
       }
 
-      function fmtEuro(n){
-        try{
-          return new Intl.NumberFormat("es-ES", { style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(n);
-        }catch{
-          return String(n) + " €";
-        }
-      }
-
       function buildDatalists(){
         // Precio: desde 50.000, step 50.000 (tope 2.000.000)
+        // Importante: en datalist, value debe ser único (si no, algunos navegadores “repiten”).
         priceOptionsEl.innerHTML = "";
         for(let v = 50000; v <= 2000000; v += 50000){
           const opt = document.createElement("option");
-          opt.value = String(v);
-          opt.label = fmtEuro(v);
+          opt.value = String(v); // único
           priceOptionsEl.appendChild(opt);
         }
 
@@ -496,8 +539,7 @@
         areaOptionsEl.innerHTML = "";
         for(let v = 30; v <= 300; v += 10){
           const opt = document.createElement("option");
-          opt.value = String(v);
-          opt.label = v + " m²";
+          opt.value = String(v); // único
           areaOptionsEl.appendChild(opt);
         }
       }
@@ -510,10 +552,7 @@
           .replace(/,/g, "");
       }
 
-      function go(){
-        const city = (q.value || "").trim();
-        if(!city) return;
-
+      function go(city){
         const mode = getSelectedMode();
 
         const priceMin = cleanNumber(priceMinEl.value);
@@ -539,13 +578,23 @@
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
-        go();
+        const city = (q.value || "").trim();
+        if(!city) return;
+        go(city);
+      });
+
+      miniSearchForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const city = (miniQ.value || "").trim();
+        if(!city) return;
+        q.value = city;
+        go(city);
       });
 
       // placeholders topbar (MVP)
       function mvp(msg){ alert(msg); }
-      document.getElementById("navComprar").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: navegación superior (a definir)."); });
-      document.getElementById("navAlquilar").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: navegación superior (a definir)."); });
+      document.getElementById("navAccesoUsuario").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Acceso usuario."); });
+      document.getElementById("navAccesoProfesional").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Acceso profesional."); });
       document.getElementById("navFavoritos").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Favoritos (requiere registro)."); });
       document.getElementById("navLogin").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Iniciar sesión."); });
 
