@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Buscar Hogar – Ficha</title>
 
-    <!-- Leaflet (para mini-mapa) -->
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -15,20 +14,43 @@
 
     <style>
       :root{
+        --page:#f6f7f9;
         --bg:#ffffff;
         --text:#111;
         --muted:#6b7280;
         --border:#e6e7eb;
-        --card:#ffffff;
-        --shadow:0 10px 30px rgba(0,0,0,.08);
-        --radius:16px;
-        --link:#1f6feb;
+        --link:#2563eb;
+
+        --rOuter:16px;
+        --rInner:12px;
+        --gap:4px;
+
+        /* Proporción “funda-like” del bloque de media (ancho : alto) */
+        --mediaRatio: 2.55 / 1; /* ajustable */
       }
 
-      html,body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--text); background:var(--bg);}
-      .wrap{max-width:1180px; margin:0 auto; padding:14px 16px 44px;}
+      html,body{
+        margin:0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        color:var(--text);
+        background:var(--page);
+      }
 
-      .topRow{display:flex; align-items:center; justify-content:flex-start; gap:12px; margin-bottom:10px;}
+      .wrap{
+        max-width:1140px;
+        margin:0 auto;
+        padding:14px 16px 44px;
+      }
+
+      .surface{
+        background:var(--bg);
+        border:1px solid var(--border);
+        border-radius:18px;
+        padding:14px 14px 18px;
+      }
+
+      .topRow{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
+
       .back{
         display:inline-flex;
         align-items:center;
@@ -36,12 +58,12 @@
         text-decoration:none;
         color:var(--text);
         border:1px solid var(--border);
-        padding:9px 12px;
+        padding:8px 10px;
         border-radius:12px;
         background:#fff;
+        font-size:14px;
       }
 
-      /* Banner error (solo si hay problemas) */
       .banner{
         border:1px solid #f3b4b4;
         background:#fff5f5;
@@ -54,81 +76,91 @@
         display:none;
       }
 
-      /* Breadcrumbs (funda-like) */
       .crumbs{
         display:flex;
         align-items:center;
-        gap:8px;
+        gap:6px;
         color:var(--muted);
-        font-size:13px;
-        margin:10px 0 12px;
+        font-size:12.5px;
+        margin:6px 0 12px;
       }
       .crumbLink{color:var(--link); cursor:default;}
       .crumbCurrent{color:var(--muted);}
       .sep{color:#c4c7cf;}
 
-      /* Media block */
+      /* Media block (ratio exacto) */
       .mediaBlock{
         position:relative;
-        border-radius:18px;
+        border-radius: var(--rOuter);
         overflow:hidden;
         border:1px solid var(--border);
         background:#fff;
       }
-      .mediaGrid{
-        display:grid;
-        grid-template-columns: 2fr 1fr;
-        gap:6px;
-        padding:6px;
-        background:#fff;
-      }
-      .mediaBig{
-        border-radius:14px;
-        background:linear-gradient(135deg,#f0f1f3,#ffffff);
-        min-height:420px;
-        border:1px solid var(--border);
-        display:grid;
-        place-items:center;
-        color:#9aa1aa;
-        user-select:none;
-      }
-      .mediaSmallGrid{display:grid; grid-template-columns: 1fr 1fr; gap:6px;}
-      .mediaSmall{
-        border-radius:14px;
-        background:linear-gradient(135deg,#f0f1f3,#ffffff);
-        min-height:206px;
-        border:1px solid var(--border);
-        display:grid;
-        place-items:center;
-        color:#9aa1aa;
-        user-select:none;
+
+      /* Wrapper que fija la altura por ratio (funda feel) */
+      .mediaSizer{
+        width:100%;
+        aspect-ratio: var(--mediaRatio);
+        /* límites de altura para que no se dispare */
+        max-height: 520px;
+        min-height: 380px;
       }
 
-      /* Overlay actions */
+      .mediaGrid{
+        display:grid;
+        grid-template-columns: 66% 34%;
+        gap: var(--gap);
+        padding: var(--gap);
+        height:100%;
+        background:#fff;
+      }
+
+      .mediaBig, .mediaSmall{
+        border-radius: var(--rInner);
+        background:linear-gradient(135deg,#f0f1f3,#ffffff);
+        border:1px solid var(--border);
+        display:grid;
+        place-items:center;
+        color:#9aa1aa;
+        user-select:none;
+        overflow:hidden;
+      }
+
+      .mediaBig{height:100%;}
+
+      .mediaSmallGrid{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: var(--gap);
+        height:100%;
+      }
+      .mediaSmall{height:100%;}
+
+      /* Overlay actions (más discreto) */
       .mediaActions{
         position:absolute;
-        right:14px;
-        top:14px;
+        right:10px;
+        top:10px;
         display:flex;
-        gap:10px;
+        gap:8px;
         z-index:5;
       }
       .actionBtn{
         display:inline-flex;
         align-items:center;
         justify-content:center;
-        height:42px;
-        padding:0 12px;
-        border-radius:12px;
+        height:36px;
+        padding:0 11px;
+        border-radius:999px;
         border:1px solid var(--border);
         background:#fff;
-        box-shadow:0 10px 30px rgba(0,0,0,.10);
         cursor:pointer;
         font-size:14px;
         gap:8px;
       }
       .actionBtn:active{transform:translateY(1px);}
-      .actionIcon{width:42px; padding:0;}
+      .actionIcon{width:36px; padding:0;}
       .icon{width:18px; height:18px; display:inline-block;}
 
       /* Media tabs */
@@ -139,16 +171,16 @@
         gap:12px;
         border-bottom:1px solid var(--border);
         padding:10px 2px 12px;
-        margin:10px 0 18px;
+        margin:10px 0 16px;
       }
-      .tabsLeft{display:flex; gap:18px; flex-wrap:wrap; align-items:center;}
+      .tabsLeft{display:flex; gap:16px; flex-wrap:wrap; align-items:center;}
       .tabBtn{
         display:inline-flex;
         align-items:center;
         gap:8px;
         color:#111;
         font-size:14px;
-        padding:6px 8px;
+        padding:6px 6px;
         border-radius:10px;
         border:0;
         background:transparent;
@@ -159,6 +191,8 @@
       .tabsRight .tabBtn{
         border:1px solid var(--border);
         background:#fff;
+        padding:7px 10px;
+        border-radius:12px;
       }
 
       /* Content grid */
@@ -169,13 +203,35 @@
         align-items:start;
       }
 
-      /* Left summary */
-      .title{font-size:34px; line-height:1.08; margin:0 0 6px; font-weight:900; letter-spacing:-0.2px;}
-      .metaLine{display:flex; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:14px; margin-bottom:10px;}
+      .title{
+        font-size:30px;
+        line-height:1.12;
+        margin:0 0 6px;
+        font-weight:800;
+        letter-spacing:-0.2px;
+      }
+      .metaLine{
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        color:var(--muted);
+        font-size:14px;
+        margin-bottom:10px;
+      }
       .metaDot{color:#c4c7cf;}
 
-      .priceRow{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin:12px 0 8px;}
-      .price{font-size:34px; font-weight:900; margin:0;}
+      .priceRow{
+        display:flex;
+        align-items:baseline;
+        gap:12px;
+        flex-wrap:wrap;
+        margin:10px 0 8px;
+      }
+      .price{
+        font-size:34px;
+        font-weight:900;
+        margin:0;
+      }
       .priceNoteBtn{
         color:var(--muted);
         font-size:14px;
@@ -186,10 +242,10 @@
       }
       .priceNoteBtn:hover{text-decoration:underline;}
 
-      /* Facts row (chips funda-like) */
+      /* Facts tipo funda */
       .factsRow{
         display:flex;
-        gap:14px;
+        gap:18px;
         flex-wrap:wrap;
         align-items:center;
         margin-top:10px;
@@ -200,20 +256,18 @@
         display:inline-flex;
         align-items:center;
         gap:8px;
-        padding:8px 10px;
-        border:1px solid var(--border);
-        border-radius:999px;
-        background:#fff;
+        padding:0;
+        border:0;
+        background:transparent;
       }
       .factMuted{color:var(--muted);}
 
       /* Right cards */
-      .sideSticky{position:sticky; top:14px; display:grid; gap:14px;}
+      .sideSticky{position:sticky; top:14px; display:grid; gap:12px;}
       .sideCard{
-        background:var(--card);
+        background:var(--bg);
         border:1px solid var(--border);
-        border-radius:16px;
-        box-shadow:var(--shadow);
+        border-radius: var(--rOuter);
         overflow:hidden;
       }
       .sideCardInner{padding:14px;}
@@ -224,16 +278,14 @@
       .k{color:var(--muted); font-size:13px;}
       .v{font-size:14px;}
       .mono{
-        font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-        font-size:12px; color:var(--muted); word-break:break-all;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+        font-size:12px;
+        color:var(--muted);
+        word-break:break-all;
       }
 
       /* Mini-map */
-      #miniMap{
-        height:160px;
-        width:100%;
-        background:linear-gradient(135deg,#f0f1f3,#ffffff);
-      }
+      #miniMap{height:160px; width:100%; background:linear-gradient(135deg,#f0f1f3,#ffffff);}
       .mapHeader{
         display:flex;
         align-items:center;
@@ -245,19 +297,16 @@
       .mapHeaderTitle{font-size:14px; color:#111;}
       .mapHeaderSmall{font-size:13px; color:var(--muted);}
 
-      /* Leaflet controls a bit tighter */
-      .leaflet-control-zoom a{
-        width:32px;
-        height:32px;
-        line-height:32px;
-      }
+      .leaflet-control-zoom a{width:32px; height:32px; line-height:32px;}
 
       /* Responsive */
       @media (max-width: 980px){
-        .mediaGrid{grid-template-columns:1fr;}
-        .mediaSmallGrid{grid-template-columns:1fr 1fr;}
-        .mediaBig{min-height:300px;}
-        .mediaSmall{min-height:160px;}
+        .surface{padding:12px;}
+        .mediaSizer{aspect-ratio:auto; min-height:0; max-height:none;}
+        .mediaGrid{grid-template-columns:1fr; height:auto;}
+        .mediaBig{min-height:260px;}
+        .mediaSmallGrid{height:auto;}
+        .mediaSmall{min-height:150px;}
         .contentGrid{grid-template-columns:1fr;}
         .sideSticky{position:static;}
       }
@@ -269,153 +318,155 @@
 
   <body>
     <div class="wrap">
+      <div class="surface">
 
-      <div class="topRow">
-        <a class="back" href="./">Volver al mapa</a>
-      </div>
-
-      <div id="banner" class="banner"></div>
-
-      <div class="crumbs">
-        <span class="crumbLink" id="crumbCity">Ciudad</span>
-        <span class="sep">/</span>
-        <span class="crumbLink" id="crumbNeighborhood">Barrio</span>
-        <span class="sep">/</span>
-        <span class="crumbCurrent" id="crumbAddress">Dirección</span>
-      </div>
-
-      <div class="mediaBlock">
-        <div class="mediaActions">
-          <button class="actionBtn actionIcon" id="shareBtn" type="button" title="Compartir">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/>
-              <path d="M12 3v12"/>
-              <path d="M7 8l5-5 5 5"/>
-            </svg>
-          </button>
-
-          <button class="actionBtn" id="saveBtn" type="button" title="Guardar">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
-            </svg>
-            <span id="saveText">Guardar</span>
-          </button>
+        <div class="topRow">
+          <a class="back" href="./">Volver al mapa</a>
         </div>
 
-        <div class="mediaGrid">
-          <div class="mediaBig" id="heroBig">Foto principal (pendiente)</div>
-          <div class="mediaSmallGrid">
-            <div class="mediaSmall" id="heroS1">Foto</div>
-            <div class="mediaSmall" id="heroS2">Vídeo</div>
-            <div class="mediaSmall" id="heroS3">Foto</div>
-            <div class="mediaSmall" id="heroS4">Foto</div>
-          </div>
-        </div>
-      </div>
+        <div id="banner" class="banner"></div>
 
-      <div class="mediaTabs">
-        <div class="tabsLeft">
-          <button class="tabBtn" type="button" id="tabPhotos">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l2-2h4l2 2h3a2 2 0 0 1 2 2z"/>
-              <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
-            </svg>
-            Foto’s <span class="tabCount" id="photosCount">0</span>
-          </button>
-
-          <button class="tabBtn" type="button" id="tabFloor">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16v16H4z"/>
-              <path d="M4 10h16"/>
-              <path d="M10 10v10"/>
-            </svg>
-            Plano <span class="tabCount" id="floorCount">0</span>
-          </button>
-
-          <button class="tabBtn" type="button" id="tab360">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M2 12a10 10 0 0 0 20 0"/>
-              <path d="M2 12a10 10 0 0 1 20 0"/>
-              <path d="M8 12h8"/>
-            </svg>
-            360° <span class="tabCount" id="panoCount">0</span>
-          </button>
-
-          <button class="tabBtn" type="button" id="tabVideo">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14.5 8.5l6-3v13l-6-3"/>
-              <path d="M3 6h11v12H3z"/>
-            </svg>
-            Video
-          </button>
+        <div class="crumbs">
+          <span class="crumbLink" id="crumbCity">Ciudad</span>
+          <span class="sep">/</span>
+          <span class="crumbLink" id="crumbNeighborhood">Barrio</span>
+          <span class="sep">/</span>
+          <span class="crumbCurrent" id="crumbAddress">Dirección</span>
         </div>
 
-        <div class="tabsRight">
-          <button class="tabBtn" type="button" id="tabAllMedia">
-            Alle media
-          </button>
-        </div>
-      </div>
+        <div class="mediaBlock">
+          <div class="mediaActions">
+            <button class="actionBtn actionIcon" id="shareBtn" type="button" title="Compartir">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/>
+                <path d="M12 3v12"/>
+                <path d="M7 8l5-5 5 5"/>
+              </svg>
+            </button>
 
-      <div class="contentGrid">
-        <div>
-          <h1 class="title" id="title">Dirección</h1>
-
-          <div class="metaLine">
-            <span id="metaPostal">—</span>
-            <span class="metaDot">•</span>
-            <span id="metaCity">—</span>
-            <span class="metaDot">•</span>
-            <span id="metaNeighborhood">—</span>
+            <button class="actionBtn" id="saveBtn" type="button" title="Guardar">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+              </svg>
+              <span id="saveText">Guardar</span>
+            </button>
           </div>
 
-          <div class="priceRow">
-            <p class="price" id="price">—</p>
-            <button class="priceNoteBtn" type="button" id="monthlyLink">¿Cuánto pagaré al mes?</button>
-          </div>
-
-          <div class="factsRow" id="factsRow"></div>
-        </div>
-
-        <div>
-          <div class="sideSticky">
-
-            <div class="sideCard">
-              <div class="mapHeader">
-                <div class="mapHeaderTitle">Kaart</div>
-                <div class="mapHeaderSmall" id="mapHint">—</div>
+          <div class="mediaSizer">
+            <div class="mediaGrid">
+              <div class="mediaBig">Foto principal (pendiente)</div>
+              <div class="mediaSmallGrid">
+                <div class="mediaSmall">Foto</div>
+                <div class="mediaSmall">Vídeo</div>
+                <div class="mediaSmall">Foto</div>
+                <div class="mediaSmall">Foto</div>
               </div>
-              <div id="miniMap"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mediaTabs">
+          <div class="tabsLeft">
+            <button class="tabBtn" type="button" id="tabPhotos">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l2-2h4l2 2h3a2 2 0 0 1 2 2z"/>
+                <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
+              </svg>
+              Foto’s <span class="tabCount" id="photosCount">0</span>
+            </button>
+
+            <button class="tabBtn" type="button" id="tabFloor">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16v16H4z"/>
+                <path d="M4 10h16"/>
+                <path d="M10 10v10"/>
+              </svg>
+              Plano <span class="tabCount" id="floorCount">0</span>
+            </button>
+
+            <button class="tabBtn" type="button" id="tab360">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 12a10 10 0 0 0 20 0"/>
+                <path d="M2 12a10 10 0 0 1 20 0"/>
+                <path d="M8 12h8"/>
+              </svg>
+              360° <span class="tabCount" id="panoCount">0</span>
+            </button>
+
+            <button class="tabBtn" type="button" id="tabVideo">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14.5 8.5l6-3v13l-6-3"/>
+                <path d="M3 6h11v12H3z"/>
+              </svg>
+              Video
+            </button>
+          </div>
+
+          <div class="tabsRight">
+            <button class="tabBtn" type="button" id="tabAllMedia">Alle media</button>
+          </div>
+        </div>
+
+        <div class="contentGrid">
+          <div>
+            <h1 class="title" id="title">Dirección</h1>
+
+            <div class="metaLine">
+              <span id="metaPostal">—</span>
+              <span class="metaDot">•</span>
+              <span id="metaCity">—</span>
+              <span class="metaDot">•</span>
+              <span id="metaNeighborhood">—</span>
             </div>
 
-            <div class="sideCard">
-              <div class="sideCardInner">
-                <p class="sideTitle">Agencia</p>
-                <div class="kv">
-                  <div class="kvLine">
-                    <div class="k">Nombre</div>
-                    <div class="v" id="agency">—</div>
-                  </div>
-                  <div class="kvLine">
-                    <div class="k">Publicado</div>
-                    <div class="v" id="listedAt">—</div>
-                  </div>
-                  <div class="kvLine">
-                    <div class="k">Tipo</div>
-                    <div class="v" id="ptype">—</div>
-                  </div>
-                  <div class="kvLine">
-                    <div class="k">ID</div>
-                    <div class="v mono" id="id">—</div>
+            <div class="priceRow">
+              <p class="price" id="price">—</p>
+              <button class="priceNoteBtn" type="button" id="monthlyLink">¿Cuánto pagaré al mes?</button>
+            </div>
+
+            <div class="factsRow" id="factsRow"></div>
+          </div>
+
+          <div>
+            <div class="sideSticky">
+
+              <div class="sideCard">
+                <div class="mapHeader">
+                  <div class="mapHeaderTitle">Kaart</div>
+                  <div class="mapHeaderSmall" id="mapHint">—</div>
+                </div>
+                <div id="miniMap"></div>
+              </div>
+
+              <div class="sideCard">
+                <div class="sideCardInner">
+                  <p class="sideTitle">Agencia</p>
+                  <div class="kv">
+                    <div class="kvLine">
+                      <div class="k">Nombre</div>
+                      <div class="v" id="agency">—</div>
+                    </div>
+                    <div class="kvLine">
+                      <div class="k">Publicado</div>
+                      <div class="v" id="listedAt">—</div>
+                    </div>
+                    <div class="kvLine">
+                      <div class="k">Tipo</div>
+                      <div class="v" id="ptype">—</div>
+                    </div>
+                    <div class="kvLine">
+                      <div class="k">ID</div>
+                      <div class="v mono" id="id">—</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
+            </div>
           </div>
         </div>
-      </div>
 
+      </div>
     </div>
 
     <script
@@ -475,11 +526,7 @@
 
       function euro(n) {
         try {
-          return new Intl.NumberFormat("es-ES", {
-            style: "currency",
-            currency: "EUR",
-            maximumFractionDigits: 0
-          }).format(n);
+          return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
         } catch {
           return String(n) + " EUR";
         }
@@ -547,23 +594,15 @@
       }
 
       async function copyToClipboard(text) {
-        try {
-          await navigator.clipboard.writeText(text);
-          return true;
-        } catch {
-          return false;
-        }
+        try { await navigator.clipboard.writeText(text); return true; }
+        catch { return false; }
       }
 
       function ensureMiniMap(lat, lng) {
         const hasCoords = (typeof lat === "number" && typeof lng === "number" && isFinite(lat) && isFinite(lng));
         if (!hasCoords) {
           mapHintEl.textContent = "Sin coordenadas";
-          if (miniMap) {
-            miniMap.remove();
-            miniMap = null;
-            miniMarker = null;
-          }
+          if (miniMap) { miniMap.remove(); miniMap = null; miniMarker = null; }
           return;
         }
 
@@ -576,11 +615,8 @@
           miniMap.setView([lat, lng], 15);
         }
 
-        if (miniMarker) {
-          miniMarker.setLatLng([lat, lng]);
-        } else {
-          miniMarker = L.marker([lat, lng]).addTo(miniMap);
-        }
+        if (miniMarker) miniMarker.setLatLng([lat, lng]);
+        else miniMarker = L.marker([lat, lng]).addTo(miniMap);
       }
 
       shareBtn.addEventListener("click", async () => {
@@ -592,7 +628,6 @@
       saveBtn.addEventListener("click", () => {
         saved = !saved;
         saveTextEl.textContent = saved ? "Guardado" : "Guardar";
-        saveBtn.style.opacity = saved ? "0.95" : "1";
       });
 
       monthlyBtn.addEventListener("click", () => {
@@ -651,12 +686,10 @@
           if (row.property_type) addFact(ICON_TYPE, row.property_type, true);
           if (row.province) addFact(ICON_LOC, row.province, true);
 
-          // Contadores de media: seguimos en 0 hasta que existan fotos/plano/vídeo reales
           photosCountEl.textContent = "0";
           floorCountEl.textContent = "0";
           panoCountEl.textContent = "0";
 
-          // Mini map
           const lat = (row.lat != null) ? Number(row.lat) : null;
           const lng = (row.lng != null) ? Number(row.lng) : null;
           ensureMiniMap(lat, lng);
