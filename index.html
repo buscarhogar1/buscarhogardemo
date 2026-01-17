@@ -174,7 +174,7 @@
         <p class="muted">Demo mapa Buscar Hogar</p>
       </div>
     `;
-    m.bindPopup(popupHtml);
+    m.bindPopup(popupHtml, { autoPan: false, closeButton: true });
 
     m.on("click", () => {
       if (activeMarker && activeMarker._icon) {
