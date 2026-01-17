@@ -21,9 +21,8 @@
       .wrap{max-width:1180px; margin:0 auto; padding:14px 16px 40px;}
 
       /* Top row */
-      .topRow{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;}
+      .topRow{display:flex; align-items:center; justify-content:flex-start; gap:12px; margin-bottom:10px;}
       .back{display:inline-flex; align-items:center; gap:8px; text-decoration:none; color:var(--text); border:1px solid var(--border); padding:9px 12px; border-radius:12px; background:#fff;}
-      .status{color:var(--muted); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 
       /* Breadcrumb */
       .crumbs{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; margin:10px 0 12px;}
@@ -229,7 +228,6 @@
 
       <div class="topRow">
         <a class="back" href="./">Volver al mapa</a>
-        <div class="status" id="status">Cargando…</div>
       </div>
 
       <div class="crumbs" id="crumbs">
@@ -290,9 +288,7 @@
             <a class="priceNote" href="#" id="monthlyLink">¿Cuánto pagaré al mes?</a>
           </div>
 
-          <div class="factsRow" id="factsRow">
-            <!-- Se rellena por JS -->
-          </div>
+          <div class="factsRow" id="factsRow"></div>
         </div>
 
         <div class="sideRight">
@@ -333,7 +329,6 @@
       const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
       const VIEW_DETAIL = "listing_detail_public";
 
-      const statusEl = document.getElementById("status");
       const titleEl = document.getElementById("title");
       const priceEl = document.getElementById("price");
       const agencyEl = document.getElementById("agency");
@@ -393,7 +388,7 @@
 
       async function fetchDetail(listingId) {
         const url =
-          `${SUPABASE_URL}/rest/v1/${VIEW_DETAIL}` +
+          `${SUPABASE_URL}/rest/v1/listing_detail_public` +
           `?select=listing_id,price_eur,listed_at,agency_name,property_type,useful_area_m2,built_year,city,neighborhood,address_display,postcode,province` +
           `&listing_id=eq.${encodeURIComponent(listingId)}&limit=1`;
 
@@ -416,8 +411,6 @@
       shareBtn.addEventListener("click", async () => {
         try {
           await navigator.clipboard.writeText(window.location.href);
-          statusEl.textContent = "Enlace copiado";
-          setTimeout(() => statusEl.textContent = "OK", 900);
         } catch {
           alert("No se pudo copiar el enlace.");
         }
@@ -432,52 +425,42 @@
       (async () => {
         const listingId = getParam("id");
         if (!listingId) {
-          statusEl.textContent = "Falta ?id=…";
-          titleEl.textContent = "Ficha no disponible";
+          titleEl.textContent = "Ficha no disponible (falta ?id=...)";
           return;
         }
 
         try {
-          statusEl.textContent = "Cargando…";
           const row = await fetchDetail(listingId);
 
           if (!row) {
-            statusEl.textContent = "No encontrada";
             titleEl.textContent = "Ficha no encontrada";
             idEl.textContent = listingId;
             return;
           }
 
-          // Breadcrumb
           crumbsCityEl.textContent = row.city || "Ciudad";
           crumbsNeighborhoodEl.textContent = row.neighborhood || "Barrio";
           crumbsAddressEl.textContent = row.address_display || "Dirección";
 
-          // Main title
           titleEl.textContent = row.address_display || "Dirección";
           metaPostalEl.textContent = row.postcode || "—";
           metaCityEl.textContent = row.city || "—";
           metaNeighborhoodEl.textContent = row.neighborhood || "—";
 
-          // Price
           priceEl.textContent = row.price_eur != null ? euro(row.price_eur) : "—";
 
-          // Right card
           agencyEl.textContent = row.agency_name || "—";
           listedAtEl.textContent = fmtDate(row.listed_at);
           ptypeEl.textContent = row.property_type || "—";
           idEl.textContent = row.listing_id || listingId;
 
-          // Facts row (tipo funda)
           factsRowEl.innerHTML = "";
           if (row.useful_area_m2 != null) addFact(`${row.useful_area_m2} m²`);
           if (row.built_year != null) addFact(`Año ${row.built_year}`, true);
           if (row.province) addFact(row.province, true);
 
-          statusEl.textContent = "OK";
         } catch (e) {
           const msg = (e && e.message) ? e.message : String(e);
-          statusEl.textContent = "Error";
           titleEl.textContent = "Error cargando ficha";
           console.error(e);
           alert(msg);
@@ -486,5 +469,6 @@
     </script>
   </body>
 </html>
+
 
 
