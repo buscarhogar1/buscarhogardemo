@@ -6,16 +6,128 @@
     <title>Buscar Hogar</title>
 
     <style>
+      :root{
+        --bg:#ffffff;
+        --text:#111;
+        --muted:#6b7280;
+        --border:#e6e7eb;
+
+        --terra:#b85a3c;           /* terracota */
+        --terraDark:#a34f36;
+        --white:#ffffff;
+
+        --btn:#1a73e8;
+        --btnText:#fff;
+      }
+
       html,body{
         height:100%;
         margin:0;
         font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        background:#fff;
-        color:#111;
+        background:var(--bg);
+        color:var(--text);
       }
 
+      /* ===== Topbar ===== */
+      .topbar{
+        height:56px;
+        background:var(--terra);
+        color:var(--white);
+        display:flex;
+        align-items:center;
+        padding:0 16px;
+      }
+
+      .topbarInner{
+        width: min(1120px, 100%);
+        margin: 0 auto;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap: 14px;
+      }
+
+      .leftGroup{
+        display:flex;
+        align-items:center;
+        gap: 14px;
+        min-width: 0;
+      }
+
+      .brand{
+        display:flex;
+        align-items:center;
+        gap: 10px;
+        text-decoration:none;
+        color:var(--white);
+        font-weight:800;
+        letter-spacing:-0.2px;
+        flex: 0 0 auto;
+      }
+
+      .logoMark{
+        width: 34px;
+        height: 28px;
+        border-radius: 6px;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.25);
+        display:grid;
+        place-items:center;
+        overflow:hidden;
+      }
+
+      .logoMark span{
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: -0.2px;
+      }
+
+      .nav{
+        display:flex;
+        align-items:center;
+        gap: 14px;
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      .nav a{
+        color: var(--white);
+        text-decoration:none;
+        font-size:14px;
+        font-weight:650;
+        padding: 8px 10px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+
+      .nav a:hover{
+        background: rgba(255,255,255,0.14);
+      }
+
+      .rightGroup{
+        display:flex;
+        align-items:center;
+        gap: 10px;
+        flex: 0 0 auto;
+      }
+
+      .rightGroup a{
+        color: var(--white);
+        text-decoration:none;
+        font-size:14px;
+        font-weight:650;
+        padding: 8px 10px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+
+      .rightGroup a:hover{
+        background: rgba(255,255,255,0.14);
+      }
+
+      /* ===== Layout ===== */
       .wrap{
-        min-height:100%;
+        min-height: calc(100% - 56px);
         display:grid;
         grid-template-rows: 1fr auto;
       }
@@ -23,104 +135,174 @@
       .main{
         display:grid;
         place-items:center;
-        padding:24px 16px;
+        padding: 28px 16px;
       }
 
       .center{
-        width:min(720px,100%);
+        width:min(720px, 100%);
         display:grid;
-        gap:18px;
+        gap: 18px;
         justify-items:center;
       }
 
-      .logo{
-        font-size:44px;
-        font-weight:800;
-        letter-spacing:-0.6px;
+      .hero{
+        display:grid;
+        justify-items:center;
+        gap: 8px;
+        margin-bottom: 2px;
       }
 
-      .tag{
-        font-size:14px;
-        color:#6b7280;
+      .heroTitle{
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: -0.6px;
+        line-height: 1;
+        text-align:center;
+      }
+
+      .heroTag{
+        font-size: 14px;
+        color: var(--muted);
+        text-align:center;
       }
 
       .searchBox{
-        width:min(640px,100%);
-        border:1px solid #e6e7eb;
-        border-radius:999px;
-        padding:10px;
+        width: min(640px, 100%);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 10px;
         display:flex;
         align-items:center;
-        gap:10px;
-      }
-
-      .searchBox input{
-        border:0;
-        outline:0;
-        font-size:16px;
-        flex:1;
-        padding:10px;
-      }
-
-      .searchBox button{
-        border:0;
-        background:#1a73e8;
-        color:#fff;
-        padding:10px 18px;
-        border-radius:999px;
-        font-size:14px;
-        font-weight:600;
-        cursor:pointer;
-      }
-
-      .examples{
-        display:flex;
-        gap:10px;
-        flex-wrap:wrap;
-        justify-content:center;
-      }
-
-      .chip{
-        border:1px solid #e6e7eb;
-        padding:8px 14px;
-        border-radius:999px;
-        font-size:13px;
-        cursor:pointer;
+        gap: 10px;
         background:#fff;
       }
 
-      footer{
-        border-top:1px solid #f0f1f3;
-        padding:14px;
+      .searchIcon{
+        width: 22px;
+        height: 22px;
+        color: var(--muted);
+        flex: 0 0 auto;
+        margin-left: 6px;
+      }
+
+      .input{
+        border:0;
+        outline:0;
+        font-size: 16px;
+        flex: 1 1 auto;
+        padding: 10px 6px;
+        background: transparent;
+      }
+
+      .btn{
+        border:0;
+        background: var(--btn);
+        color: var(--btnText);
+        padding: 10px 16px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 650;
+        margin-right: 6px;
+      }
+
+      .btn:active{ transform: translateY(1px); }
+
+      .examples{
+        display:flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content:center;
+        margin-top: 2px;
+      }
+
+      .chip{
+        border: 1px solid var(--border);
+        background:#fff;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 13px;
+        color: #111;
+        cursor: pointer;
+      }
+
+      .chip:hover{ background:#f6f7f9; }
+
+      .footer{
+        padding: 14px 16px;
+        border-top: 1px solid #f0f1f3;
+        color: var(--muted);
+        font-size: 12.5px;
+        display:flex;
+        justify-content:center;
         text-align:center;
-        font-size:12.5px;
-        color:#6b7280;
+      }
+
+      @media (max-width: 520px){
+        .heroTitle{ font-size: 36px; }
+        .btn{ padding: 10px 14px; }
+        .nav{ display:none; } /* en móvil ocultamos el menú central */
       }
     </style>
   </head>
 
   <body>
+    <header class="topbar">
+      <div class="topbarInner">
+        <div class="leftGroup">
+          <a class="brand" href="./">
+            <div class="logoMark" aria-label="Logo">
+              <span>BH</span>
+            </div>
+          </a>
+
+          <nav class="nav" aria-label="Navegación principal">
+            <a href="#" id="navComprar">Comprar</a>
+            <a href="#" id="navAlquilar">Alquilar</a>
+          </nav>
+        </div>
+
+        <div class="rightGroup" aria-label="Acciones">
+          <a href="#" id="navFavoritos">Favoritos</a>
+          <a href="#" id="navLogin">Iniciar sesión</a>
+        </div>
+      </div>
+    </header>
+
     <div class="wrap">
       <main class="main">
         <div class="center">
-          <div class="logo">Buscar Hogar</div>
-          <div class="tag">Solo inmobiliarias. Una vivienda, un anuncio.</div>
+          <div class="hero">
+            <div class="heroTitle">Buscar Hogar</div>
+            <div class="heroTag">Solo inmobiliarias. Una vivienda, un anuncio.</div>
+          </div>
 
-          <form id="form" class="searchBox">
-            <input id="q" placeholder="Escribe una ciudad o zona" />
-            <button type="submit">Buscar</button>
+          <form id="form" class="searchBox" autocomplete="off">
+            <svg class="searchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.3-4.3"></path>
+            </svg>
+
+            <input
+              id="q"
+              class="input"
+              placeholder="Escribe una ciudad o zona (ej. Murcia)"
+              aria-label="Buscar ciudad o zona"
+            />
+
+            <button class="btn" type="submit">Buscar</button>
           </form>
 
-          <div class="examples">
-            <div class="chip" data-city="Murcia">Murcia</div>
-            <div class="chip" data-city="Cartagena">Cartagena</div>
-            <div class="chip" data-city="Alicante">Alicante</div>
-            <div class="chip" data-city="Valencia">Valencia</div>
+          <div class="examples" aria-label="Ejemplos">
+            <button class="chip" type="button" data-city="Murcia">Murcia</button>
+            <button class="chip" type="button" data-city="Cartagena">Cartagena</button>
+            <button class="chip" type="button" data-city="Alicante">Alicante</button>
+            <button class="chip" type="button" data-city="Valencia">Valencia</button>
           </div>
         </div>
       </main>
 
-      <footer>
+      <footer class="footer">
         Inventario limpio, sin duplicados, sin anuncios zombis.
       </footer>
     </div>
@@ -132,21 +314,29 @@
       function go(city){
         const c = (city || "").trim();
         if(!c) return;
-        window.location.href = "./map.html?city=" + encodeURIComponent(c);
+        window.location.href = `./map.html?city=${encodeURIComponent(c)}`;
       }
 
-      form.addEventListener("submit", e => {
+      form.addEventListener("submit", (e) => {
         e.preventDefault();
         go(q.value);
       });
 
-      document.querySelectorAll("[data-city]").forEach(el => {
-        el.addEventListener("click", () => go(el.dataset.city));
+      document.querySelectorAll("[data-city]").forEach(btn => {
+        btn.addEventListener("click", () => go(btn.getAttribute("data-city")));
       });
+
+      // placeholders de navegación (MVP)
+      function mvp(msg){ alert(msg); }
+      document.getElementById("navComprar").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: aquí se elegirá Comprar y se irá al mapa con filtros."); });
+      document.getElementById("navAlquilar").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: aquí se elegirá Alquilar y se irá al mapa con filtros."); });
+      document.getElementById("navFavoritos").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Favoritos (requiere registro)."); });
+      document.getElementById("navLogin").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Login."); });
 
       q.focus();
     </script>
   </body>
 </html>
+
 
 
