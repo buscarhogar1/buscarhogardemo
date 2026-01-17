@@ -12,12 +12,11 @@
         --muted:#6b7280;
         --border:#e6e7eb;
 
-        --terra:#b85a3c;           /* terracota */
+        --terra:#b85a3c;
         --white:#ffffff;
 
         --btn:#1a73e8;
         --btnText:#fff;
-        --chipBg:#f6f7f9;
       }
 
       html,body{
@@ -135,14 +134,22 @@
       .main{
         display:grid;
         place-items:center;
-        padding: 30px 16px 22px;
+        padding: 0 16px 22px;
       }
 
       .center{
-        width:min(860px, 100%);
+        width:min(980px, 100%);
         display:grid;
-        gap: 16px;
+        gap: 14px;
         justify-items:center;
+      }
+
+      /* Título centrado entre la topbar y el bloque de búsqueda */
+      .heroLine{
+        width: 100%;
+        display:grid;
+        place-items:center;
+        padding: 34px 0 10px;
       }
 
       .headline{
@@ -150,24 +157,15 @@
         font-weight: 750;
         letter-spacing: -0.2px;
         text-align:center;
-        margin-top: 2px;
       }
 
-      .searchRow{
-        width: min(780px, 100%);
-        display:grid;
-        grid-template-columns: auto 1fr;
-        gap: 12px;
-        align-items:center;
-      }
-
-      /* Toggle options (tipo google, sin “tabs” agresivos) */
-      .toggles{
+      /* Opciones arriba del buscador */
+      .modeRow{
+        width: min(640px, 100%);
         display:flex;
-        gap:10px;
-        align-items:center;
-        flex-wrap:wrap;
         justify-content:flex-start;
+        gap:10px;
+        flex-wrap:wrap;
       }
 
       .toggle{
@@ -192,7 +190,9 @@
         cursor:pointer;
       }
 
+      /* Buscador (largo como antes) */
       .searchBox{
+        width: min(640px, 100%);
         border: 1px solid var(--border);
         border-radius: 999px;
         padding: 10px;
@@ -233,20 +233,22 @@
 
       .btn:active{ transform: translateY(1px); }
 
+      /* Frase debajo del buscador */
       .subTag{
+        width: min(640px, 100%);
         font-size: 14px;
         color: var(--muted);
         text-align:center;
         margin-top: 2px;
       }
 
-      /* Filtros línea */
+      /* Filtros */
       .filtersRow{
-        width: min(780px, 100%);
+        width: min(860px, 100%);
         display:grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: 1.2fr 1fr 1fr 1fr;
         gap: 10px;
-        margin-top: 6px;
+        margin-top: 10px;
       }
 
       .f{
@@ -256,6 +258,7 @@
         background:#fff;
         display:grid;
         gap: 6px;
+        align-content:start;
       }
 
       .f label{
@@ -263,12 +266,38 @@
         color: var(--muted);
       }
 
-      .f input{
+      .f input, .f select{
         border:0;
         outline:0;
         font-size: 14px;
         padding: 0;
         background: transparent;
+        width: 100%;
+      }
+
+      .twoCols{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        align-items:center;
+      }
+
+      .miniField{
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 10px;
+        display:flex;
+        align-items:center;
+        gap: 8px;
+      }
+
+      .miniField input{
+        width:100%;
+      }
+
+      .hint{
+        font-size:12px;
+        color: var(--muted);
       }
 
       .footer{
@@ -281,22 +310,20 @@
         text-align:center;
       }
 
-      @media (max-width: 860px){
-        .searchRow{
-          grid-template-columns: 1fr;
-          gap: 10px;
-        }
+      @media (max-width: 940px){
         .filtersRow{
-          grid-template-columns: 1fr;
-        }
-        .toggles{
-          justify-content:center;
+          grid-template-columns: 1fr 1fr;
         }
       }
 
-      @media (max-width: 520px){
+      @media (max-width: 640px){
         .nav{ display:none; }
-        .headline{ font-size: 20px; }
+        .filtersRow{
+          grid-template-columns: 1fr;
+        }
+        .modeRow, .searchBox, .subTag{
+          width: min(640px, 100%);
+        }
       }
     </style>
   </head>
@@ -327,61 +354,103 @@
     <div class="wrap">
       <main class="main">
         <div class="center">
-          <div class="headline">Viviendas publicadas únicamente por profesionales</div>
 
-          <div class="searchRow">
-            <div class="toggles" aria-label="Tipo de búsqueda">
-              <label class="toggle" title="Compra">
-                <input type="radio" name="mode" value="buy" checked />
-                <span>Compra</span>
-              </label>
-
-              <label class="toggle" title="Alquiler vivienda">
-                <input type="radio" name="mode" value="rent_home" />
-                <span>Alquiler vivienda</span>
-              </label>
-
-              <label class="toggle" title="Alquiler habitación">
-                <input type="radio" name="mode" value="rent_room" />
-                <span>Alquiler habitación</span>
-              </label>
-            </div>
-
-            <form id="form" class="searchBox" autocomplete="off">
-              <svg class="searchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <circle cx="11" cy="11" r="7"></circle>
-                <path d="M21 21l-4.3-4.3"></path>
-              </svg>
-
-              <input
-                id="q"
-                class="input"
-                placeholder="Escribe una ciudad o zona (ej. Murcia)"
-                aria-label="Buscar ciudad o zona"
-              />
-
-              <button class="btn" type="submit">Buscar</button>
-            </form>
+          <div class="heroLine">
+            <div class="headline">Viviendas publicadas únicamente por profesionales</div>
           </div>
+
+          <div class="modeRow" aria-label="Tipo de búsqueda">
+            <label class="toggle" title="Compra">
+              <input type="radio" name="mode" value="buy" checked />
+              <span>Compra</span>
+            </label>
+
+            <label class="toggle" title="Alquiler vivienda">
+              <input type="radio" name="mode" value="rent_home" />
+              <span>Alquiler vivienda</span>
+            </label>
+
+            <label class="toggle" title="Alquiler habitación">
+              <input type="radio" name="mode" value="rent_room" />
+              <span>Alquiler habitación</span>
+            </label>
+          </div>
+
+          <form id="form" class="searchBox" autocomplete="off">
+            <svg class="searchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.3-4.3"></path>
+            </svg>
+
+            <input
+              id="q"
+              class="input"
+              placeholder="Escribe una ciudad o zona (ej. Murcia)"
+              aria-label="Buscar ciudad o zona"
+            />
+
+            <button class="btn" type="submit">Buscar</button>
+          </form>
 
           <div class="subTag">Solo inmobiliarias. Una vivienda, un anuncio.</div>
 
           <div class="filtersRow" aria-label="Filtros principales">
             <div class="f">
-              <label for="price">Precio de la vivienda</label>
-              <input id="price" inputmode="numeric" placeholder="Ej. 250000" />
+              <label>Precio de la vivienda</label>
+              <div class="twoCols">
+                <div class="miniField">
+                  <input id="priceMin" inputmode="numeric" list="priceOptions" placeholder="Mín." aria-label="Precio mínimo" />
+                </div>
+                <div class="miniField">
+                  <input id="priceMax" inputmode="numeric" list="priceOptions" placeholder="Máx." aria-label="Precio máximo" />
+                </div>
+              </div>
+              <div class="hint">Sugerencias: 50.000 € en adelante</div>
             </div>
 
             <div class="f">
-              <label for="area">Superficie útil interior</label>
-              <input id="area" inputmode="numeric" placeholder="Ej. 90" />
+              <label>Superficie útil interior</label>
+              <div class="miniField">
+                <input id="areaMin" inputmode="numeric" list="areaOptions" placeholder="Mín. (m²)" aria-label="Superficie mínima" />
+              </div>
+              <div class="hint">Sugerencias: 30 m² en adelante</div>
             </div>
 
             <div class="f">
-              <label for="year">Año de construcción</label>
-              <input id="year" inputmode="numeric" placeholder="Ej. 2005" />
+              <label for="buildPeriod">Periodo de construcción</label>
+              <select id="buildPeriod" aria-label="Periodo de construcción">
+                <option value="">Sin preferencia</option>
+                <option value="unknown">Desconocido</option>
+                <option value="before_1906">Antes de 1906</option>
+                <option value="1906_1930">1906–1930</option>
+                <option value="1931_1944">1931–1944</option>
+                <option value="1945_1959">1945–1959</option>
+                <option value="1960_1970">1960–1970</option>
+                <option value="1971_1980">1971–1980</option>
+                <option value="1981_1990">1981–1990</option>
+                <option value="1991_2000">1991–2000</option>
+                <option value="2001_2010">2001–2010</option>
+                <option value="2011_2020">2011–2020</option>
+                <option value="after_2020">Después de 2020</option>
+              </select>
+            </div>
+
+            <div class="f">
+              <label for="offeredSince">Publicado desde</label>
+              <select id="offeredSince" aria-label="Publicado desde">
+                <option value="">Sin preferencia</option>
+                <option value="today">Hoy</option>
+                <option value="3d">Últimos 3 días</option>
+                <option value="5d">Últimos 5 días</option>
+                <option value="10d">Últimos 10 días</option>
+                <option value="30d">Últimos 30 días</option>
+              </select>
             </div>
           </div>
+
+          <datalist id="priceOptions"></datalist>
+          <datalist id="areaOptions"></datalist>
+
         </div>
       </main>
 
@@ -394,9 +463,54 @@
       const form = document.getElementById("form");
       const q = document.getElementById("q");
 
+      const priceMinEl = document.getElementById("priceMin");
+      const priceMaxEl = document.getElementById("priceMax");
+      const areaMinEl = document.getElementById("areaMin");
+      const buildPeriodEl = document.getElementById("buildPeriod");
+      const offeredSinceEl = document.getElementById("offeredSince");
+
+      const priceOptionsEl = document.getElementById("priceOptions");
+      const areaOptionsEl = document.getElementById("areaOptions");
+
       function getSelectedMode(){
         const el = document.querySelector('input[name="mode"]:checked');
         return el ? el.value : "buy";
+      }
+
+      function fmtEuro(n){
+        try{
+          return new Intl.NumberFormat("es-ES", { style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(n);
+        }catch{
+          return String(n) + " €";
+        }
+      }
+
+      function buildDatalists(){
+        // Precio: desde 50.000, step 50.000 (hasta 2.000.000 por defecto)
+        priceOptionsEl.innerHTML = "";
+        for(let v = 50000; v <= 2000000; v += 50000){
+          const opt = document.createElement("option");
+          opt.value = String(v);
+          opt.label = fmtEuro(v);
+          priceOptionsEl.appendChild(opt);
+        }
+
+        // Superficie: desde 30, step 10 (hasta 300)
+        areaOptionsEl.innerHTML = "";
+        for(let v = 30; v <= 300; v += 10){
+          const opt = document.createElement("option");
+          opt.value = String(v);
+          opt.label = v + " m²";
+          areaOptionsEl.appendChild(opt);
+        }
+      }
+
+      function cleanNumber(s){
+        return (s || "")
+          .replace(/\./g, "")
+          .replace(/€/g, "")
+          .replace(/\s/g, "")
+          .replace(/,/g, "");
       }
 
       function go(){
@@ -404,17 +518,24 @@
         if(!city) return;
 
         const mode = getSelectedMode();
-        const price = (document.getElementById("price").value || "").trim();
-        const area = (document.getElementById("area").value || "").trim();
-        const year = (document.getElementById("year").value || "").trim();
+
+        const priceMin = cleanNumber(priceMinEl.value);
+        const priceMax = cleanNumber(priceMaxEl.value);
+        const areaMin = cleanNumber(areaMinEl.value);
+
+        const buildPeriod = (buildPeriodEl.value || "").trim();
+        const offeredSince = (offeredSinceEl.value || "").trim();
 
         const params = new URLSearchParams();
         params.set("city", city);
         params.set("mode", mode);
 
-        if (price) params.set("price", price);
-        if (area) params.set("area", area);
-        if (year) params.set("year", year);
+        if (priceMin) params.set("price_min", priceMin);
+        if (priceMax) params.set("price_max", priceMax);
+        if (areaMin) params.set("area_min", areaMin);
+
+        if (buildPeriod) params.set("build_period", buildPeriod);
+        if (offeredSince) params.set("published_since", offeredSince);
 
         window.location.href = "./map.html?" + params.toString();
       }
@@ -424,17 +545,19 @@
         go();
       });
 
-      // placeholders de navegación (MVP)
+      // placeholders topbar (MVP)
       function mvp(msg){ alert(msg); }
       document.getElementById("navComprar").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: navegación superior (a definir)."); });
       document.getElementById("navAlquilar").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: navegación superior (a definir)."); });
       document.getElementById("navFavoritos").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Favoritos (requiere registro)."); });
-      document.getElementById("navLogin").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Login."); });
+      document.getElementById("navLogin").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Iniciar sesión."); });
 
+      buildDatalists();
       q.focus();
     </script>
   </body>
 </html>
+
 
 
 
