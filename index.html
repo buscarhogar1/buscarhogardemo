@@ -11,17 +11,13 @@
         --text:#111;
         --muted:#6b7280;
 
-        /* Terracota topbar + titular */
         --terra:#a3472f;
 
-        /* Azul botones */
         --btn:#1a73e8;
         --btnText:#fff;
 
-        /* Bordes negros minimalistas */
-        --borderBlack:#111;
-
-        --white:#ffffff;
+        --border:#111;
+        --shadow: 0 10px 30px rgba(0,0,0,0.10);
       }
 
       html,body{
@@ -36,7 +32,7 @@
       .topbar{
         height:56px;
         background:var(--terra);
-        color:var(--white);
+        color:#fff;
         display:flex;
         align-items:center;
         padding:0 16px;
@@ -62,7 +58,7 @@
         align-items:center;
         gap: 10px;
         text-decoration:none;
-        color:var(--white);
+        color:#fff;
         font-weight:800;
         letter-spacing:-0.2px;
         flex: 0 0 auto;
@@ -85,7 +81,7 @@
         letter-spacing: -0.2px;
       }
 
-      /* Mini search: pegado al logo (distancia = tamaño del símbolo aprox) */
+      /* Mini search junto al logo */
       .miniSearch{
         display:flex;
         align-items:center;
@@ -96,15 +92,14 @@
         padding: 6px 10px;
         min-width: 280px;
         max-width: 460px;
-
-        margin-left: 34px; /* ~tamaño del símbolo */
+        margin-left: 34px; /* distancia ~tamaño del símbolo */
       }
 
       .miniSearch input{
         border:0;
         outline:0;
         background: transparent;
-        color: var(--white);
+        color: #fff;
         font-size: 13.5px;
         width: 100%;
       }
@@ -116,7 +111,7 @@
       .miniSearch button{
         border:0;
         background: transparent;
-        color: var(--white);
+        color: #fff;
         cursor: pointer;
         padding: 0 2px;
         display:grid;
@@ -124,7 +119,7 @@
       }
 
       .miniIcon{
-        width: 22px;   /* un poco más grande y bonita */
+        width: 22px;
         height: 22px;
         display:block;
       }
@@ -138,7 +133,7 @@
       }
 
       .rightGroup a{
-        color: var(--white);
+        color: #fff;
         text-decoration:none;
         font-size:14px;
         font-weight:650;
@@ -158,10 +153,12 @@
         grid-template-rows: 1fr auto;
       }
 
+      /* Querías el bloque central en mitad de la página */
       .main{
-        display:grid;
-        place-items:center;
-        padding: 0 16px 22px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding: 22px 16px 22px;
       }
 
       .center{
@@ -171,43 +168,46 @@
         justify-items:center;
       }
 
-      /* Titular: +20% tamaño y mover arriba (5x su altura aproximado -> 5 * 24px = 120px) */
+      /* Titular: +50% y en 3 líneas */
       .heroLine{
         width: 100%;
         display:grid;
         place-items:center;
-        padding: 0 0 6px;
-        margin-top: -120px; /* sube hacia arriba */
+        margin-bottom: 6px;
       }
 
       .headline{
-        font-size: 24px; /* ~20% más (antes 20px) */
-        font-weight: 720;
-        letter-spacing: -0.2px;
-        text-align:center;
         color: var(--terra);
+        text-align:center;
+        letter-spacing:-0.2px;
+        font-weight: 720;
+        line-height: 1.05;
+        font-size: 36px; /* referencia; ajusta si lo ves enorme en tu pantalla */
+      }
+
+      .headline span{
+        display:block;
       }
 
       /* Opciones arriba del buscador: centradas sobre la barra */
       .modeRow{
-        width: min(640px, 100%);
+        width: min(720px, 100%);
         display:flex;
         justify-content:center;
-        gap:10px;
+        gap:12px;
         flex-wrap:wrap;
-        margin-top: 2px;
       }
 
       .toggle{
         display:inline-flex;
         align-items:center;
         gap:8px;
-        border:1px solid var(--borderBlack); /* menos grosor, estilo google */
+        border:1px solid var(--border);
         background:#fff;
-        padding:8px 10px;
+        padding:8px 12px;
         border-radius: 999px;
         cursor:pointer;
-        font-size: 13.5px;
+        font-size: 14px;
         color:#111;
         user-select:none;
       }
@@ -222,8 +222,8 @@
 
       /* Buscador */
       .searchBox{
-        width: min(640px, 100%);
-        border: 1px solid var(--borderBlack); /* menos grosor */
+        width: min(720px, 100%);
+        border: 1px solid var(--border);
         border-radius: 999px;
         padding: 10px;
         display:flex;
@@ -237,15 +237,15 @@
         height: 22px;
         color: var(--muted);
         flex: 0 0 auto;
-        margin-left: 6px;
+        margin-left: 10px;
       }
 
       .input{
         border:0;
         outline:0;
-        font-size: 16px;
+        font-size: 18px;
         flex: 1 1 auto;
-        padding: 10px 6px;
+        padding: 12px 6px;
         background: transparent;
       }
 
@@ -253,115 +253,143 @@
         border:0;
         background: var(--btn);
         color: var(--btnText);
-        padding: 10px 16px;
+        padding: 12px 18px;
         border-radius: 999px;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 650;
-        margin-right: 6px;
+        margin-right: 10px;
       }
 
       .btn:active{ transform: translateY(1px); }
 
       /* Frase debajo del buscador */
       .subTag{
-        width: min(640px, 100%);
+        width: min(720px, 100%);
         font-size: 14px;
         color: var(--muted);
         text-align:center;
-        margin-top: 2px;
+        margin-top: 4px;
+        letter-spacing: 0.8px;
       }
 
-      /* Filtros: bajar una “cuadrícula” (aprox 10px más) */
+      /* Filtros */
       .filtersRow{
-        width: min(860px, 100%);
+        width: min(960px, 100%);
         display:grid;
-        grid-template-columns: 1.2fr 1fr 1fr 1fr;
-        gap: 10px;
-        margin-top: 32px; /* antes 22px -> +10px */
-        margin-bottom: 0;
+        grid-template-columns: 1.35fr 1fr 1fr 1fr;
+        gap: 12px;
+        margin-top: 24px;
       }
 
       .f{
-        border: 1px solid var(--borderBlack); /* minimal */
-        border-radius: 12px;
-        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px;
         background:#fff;
         display:grid;
-        gap: 8px;
+        gap: 10px;
         align-content:start;
       }
 
-      .f label{
-        font-size: 12.8px;
-        color: #111;
+      /* títulos en mayúscula + menos “negrita” (aprox -30%) */
+      .fTitle{
+        font-size: 12px;
+        letter-spacing: 0.9px;
+        text-transform: uppercase;
         text-align:center;
-        font-weight: 650;
+        font-weight: 480;
+        color: #111;
       }
 
-      /* Control estilo único (como el de periodo de construcción) */
-      .control{
-        border: 1px solid var(--borderBlack);
-        border-radius: 10px;
-        padding: 8px 10px;
-        background: #fff;
-        display:flex;
-        align-items:center;
-        gap: 8px;
-      }
-
-      .control input,
-      .control select{
-        border:0;
-        outline:0;
-        font-size: 14px;
-        background: transparent;
-        width: 100%;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-      }
-
-      /* Flecha consistente para selects */
-      .selectWrap{
+      /* Dropdown estilo “caja grande” como tu ejemplo */
+      .dd{
         position: relative;
       }
-      .selectWrap::after{
-        content:"";
-        position:absolute;
-        right:10px;
-        top:50%;
-        width:0;
-        height:0;
-        border-left:5px solid transparent;
-        border-right:5px solid transparent;
-        border-top:6px solid #111;
-        transform: translateY(-25%);
-        pointer-events:none;
+
+      .ddBtn{
+        width: 100%;
+        border: 1px solid var(--border);
+        background:#fff;
+        border-radius: 14px;
+        padding: 14px 14px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap: 12px;
+        cursor:pointer;
+        font-size: 18px;
+        color:#111;
       }
-      .selectWrap select{
-        padding-right: 26px;
+
+      .ddBtn .ddValue{
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
       }
+
+      .chev{
+        width: 20px;
+        height: 20px;
+        flex: 0 0 auto;
+      }
+
+      .ddMenu{
+        position: absolute;
+        left: 0;
+        top: calc(100% + 8px);
+        width: 100%;
+        background:#fff;
+        border: 1px solid rgba(0,0,0,0.12);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 10px;
+        display:none;
+        z-index: 50;
+        max-height: 320px;
+        overflow:auto;
+      }
+
+      .dd.open .ddMenu{ display:block; }
+
+      .ddOpt{
+        width:100%;
+        text-align:left;
+        border:0;
+        background: transparent;
+        padding: 12px 10px;
+        border-radius: 10px;
+        cursor:pointer;
+        font-size: 18px;
+        color:#111;
+      }
+
+      .ddOpt:hover{
+        background: #f3f4f6;
+      }
+
+      .ddOpt.muted{ color: #6b7280; }
 
       .twoCols{
         display:grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
-        align-items:center;
       }
 
-      /* Multi-select (para periodo) */
-      .multiSelect{
+      /* Multi-select para periodo de construcción */
+      .multiBox{
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 10px;
+      }
+
+      .multi{
+        width:100%;
         border:0;
         outline:0;
-        width:100%;
         background: transparent;
-        font-size:14px;
-        padding: 0;
-        min-height: 74px; /* muestra varias opciones */
-      }
-      .multiSelect option{
-        padding: 6px 6px;
+        font-size: 16px;
+        min-height: 168px;
       }
 
       .footer{
@@ -374,22 +402,17 @@
         text-align:center;
       }
 
-      @media (max-width: 940px){
-        .filtersRow{
-          grid-template-columns: 1fr 1fr;
-        }
+      @media (max-width: 980px){
+        .filtersRow{ grid-template-columns: 1fr 1fr; }
       }
-
       @media (max-width: 720px){
         .miniSearch{ display:none; }
-        .heroLine{ margin-top: -80px; } /* reduce subida en móvil para no romper */
+        .headline{ font-size: 30px; }
       }
-
-      @media (max-width: 640px){
-        .filtersRow{
-          grid-template-columns: 1fr;
-          margin-top: 28px;
-        }
+      @media (max-width: 620px){
+        .filtersRow{ grid-template-columns: 1fr; }
+        .ddBtn{ font-size: 17px; }
+        .ddOpt{ font-size: 17px; }
       }
     </style>
   </head>
@@ -427,26 +450,30 @@
         <div class="center">
 
           <div class="heroLine">
-            <div class="headline">Publicaciones únicamente por profesional inmobiliarios</div>
+            <div class="headline">
+              <span>Publicaciones únicamente</span>
+              <span>por</span>
+              <span>profesionales inmobiliarios</span>
+            </div>
           </div>
 
           <div class="modeRow" aria-label="Tipo de búsqueda">
-            <label class="toggle" title="Compra">
+            <label class="toggle">
               <input type="radio" name="mode" value="buy" checked />
               <span>Compra</span>
             </label>
 
-            <label class="toggle" title="Obra nueva">
+            <label class="toggle">
               <input type="radio" name="mode" value="new_build" />
               <span>Obra nueva</span>
             </label>
 
-            <label class="toggle" title="Alquiler vivienda">
+            <label class="toggle">
               <input type="radio" name="mode" value="rent_home" />
               <span>Alquiler vivienda</span>
             </label>
 
-            <label class="toggle" title="Alquiler habitación">
+            <label class="toggle">
               <input type="radio" name="mode" value="rent_room" />
               <span>Alquiler habitación</span>
             </label>
@@ -468,32 +495,54 @@
             <button class="btn" type="submit">Buscar</button>
           </form>
 
-          <div class="subTag">Solo inmobiliarias. Una vivienda, un anuncio.</div>
+          <div class="subTag">UNA VIVIENDA, UN ANUNCIO</div>
 
           <div class="filtersRow" aria-label="Filtros principales">
+            <!-- Precio -->
             <div class="f">
-              <label>Precio de la vivienda</label>
+              <div class="fTitle">Precio</div>
               <div class="twoCols">
-                <div class="control selectWrap">
-                  <input id="priceMin" inputmode="numeric" list="priceOptions" placeholder="Mín." aria-label="Precio mínimo" />
+                <div class="dd" id="ddPriceMin">
+                  <button class="ddBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="ddValue" id="priceMinLabel">Mín.</span>
+                    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                  </button>
+                  <div class="ddMenu" role="listbox" aria-label="Precio mínimo"></div>
                 </div>
-                <div class="control selectWrap">
-                  <input id="priceMax" inputmode="numeric" list="priceOptions" placeholder="Máx." aria-label="Precio máximo" />
+
+                <div class="dd" id="ddPriceMax">
+                  <button class="ddBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="ddValue" id="priceMaxLabel">Máx.</span>
+                    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                  </button>
+                  <div class="ddMenu" role="listbox" aria-label="Precio máximo"></div>
                 </div>
               </div>
             </div>
 
+            <!-- Superficie -->
             <div class="f">
-              <label>Superficie útil interior</label>
-              <div class="control selectWrap">
-                <input id="areaMin" inputmode="numeric" list="areaOptions" placeholder="Mín. (m²)" aria-label="Superficie mínima" />
+              <div class="fTitle">Superficie útil</div>
+              <div class="dd" id="ddAreaMin">
+                <button class="ddBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="ddValue" id="areaMinLabel">Mín. (m²)</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6"></path>
+                  </svg>
+                </button>
+                <div class="ddMenu" role="listbox" aria-label="Superficie mínima"></div>
               </div>
             </div>
 
+            <!-- Periodo de construcción (multi) -->
             <div class="f">
-              <label for="buildPeriod">Periodo de construcción</label>
-              <div class="control">
-                <select id="buildPeriod" class="multiSelect" multiple aria-label="Periodo de construcción (múltiple)">
+              <div class="fTitle">Periodo de construcción</div>
+              <div class="multiBox">
+                <select id="buildPeriod" class="multi" multiple aria-label="Periodo de construcción (múltiple)">
                   <option value="unknown">Desconocido</option>
                   <option value="before_1906">Antes de 1906</option>
                   <option value="1906_1930">1906–1930</option>
@@ -510,23 +559,20 @@
               </div>
             </div>
 
+            <!-- Publicado desde -->
             <div class="f">
-              <label for="offeredSince">Publicado desde</label>
-              <div class="control selectWrap">
-                <select id="offeredSince" aria-label="Publicado desde">
-                  <option value="">Sin preferencia</option>
-                  <option value="today">Hoy</option>
-                  <option value="3d">Últimos 3 días</option>
-                  <option value="5d">Últimos 5 días</option>
-                  <option value="10d">Últimos 10 días</option>
-                  <option value="30d">Últimos 30 días</option>
-                </select>
+              <div class="fTitle">Publicado desde</div>
+              <div class="dd" id="ddSince">
+                <button class="ddBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="ddValue" id="sinceLabel">Sin preferencia</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6"></path>
+                  </svg>
+                </button>
+                <div class="ddMenu" role="listbox" aria-label="Publicado desde"></div>
               </div>
             </div>
           </div>
-
-          <datalist id="priceOptions"></datalist>
-          <datalist id="areaOptions"></datalist>
 
         </div>
       </main>
@@ -543,42 +589,114 @@
       const miniSearchForm = document.getElementById("miniSearchForm");
       const miniQ = document.getElementById("miniQ");
 
-      const priceMinEl = document.getElementById("priceMin");
-      const priceMaxEl = document.getElementById("priceMax");
-      const areaMinEl = document.getElementById("areaMin");
       const buildPeriodEl = document.getElementById("buildPeriod");
-      const offeredSinceEl = document.getElementById("offeredSince");
 
-      const priceOptionsEl = document.getElementById("priceOptions");
-      const areaOptionsEl = document.getElementById("areaOptions");
+      // Estado filtros
+      const state = {
+        price_min: null,
+        price_max: null,
+        area_min: null,
+        published_since: null
+      };
+
+      function euro(n){
+        try{
+          return new Intl.NumberFormat("es-ES", { style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(n);
+        }catch{
+          return n + " €";
+        }
+      }
 
       function getSelectedMode(){
         const el = document.querySelector('input[name="mode"]:checked');
         return el ? el.value : "buy";
       }
 
-      function buildDatalists(){
-        priceOptionsEl.innerHTML = "";
-        for(let v = 50000; v <= 2000000; v += 50000){
-          const opt = document.createElement("option");
-          opt.value = String(v);
-          priceOptionsEl.appendChild(opt);
-        }
-
-        areaOptionsEl.innerHTML = "";
-        for(let v = 30; v <= 300; v += 10){
-          const opt = document.createElement("option");
-          opt.value = String(v);
-          areaOptionsEl.appendChild(opt);
-        }
+      // Dropdowns
+      function closeAllDropdowns(exceptId){
+        document.querySelectorAll(".dd").forEach(dd => {
+          if (exceptId && dd.id === exceptId) return;
+          dd.classList.remove("open");
+          const btn = dd.querySelector(".ddBtn");
+          if (btn) btn.setAttribute("aria-expanded", "false");
+        });
       }
 
-      function cleanNumber(s){
-        return (s || "")
-          .replace(/\./g, "")
-          .replace(/€/g, "")
-          .replace(/\s/g, "")
-          .replace(/,/g, "");
+      function wireDropdown(ddId, options, onPick){
+        const dd = document.getElementById(ddId);
+        const btn = dd.querySelector(".ddBtn");
+        const menu = dd.querySelector(".ddMenu");
+
+        menu.innerHTML = "";
+        options.forEach(opt => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "ddOpt" + (opt.muted ? " muted" : "");
+          b.textContent = opt.label;
+          b.dataset.value = (opt.value == null ? "" : String(opt.value));
+          b.addEventListener("click", () => {
+            onPick(opt);
+            dd.classList.remove("open");
+            btn.setAttribute("aria-expanded", "false");
+          });
+          menu.appendChild(b);
+        });
+
+        btn.addEventListener("click", () => {
+          const willOpen = !dd.classList.contains("open");
+          closeAllDropdowns(ddId);
+          dd.classList.toggle("open", willOpen);
+          btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+        });
+      }
+
+      document.addEventListener("click", (e) => {
+        const inside = e.target.closest(".dd");
+        if (!inside) closeAllDropdowns();
+      });
+
+      function setupFilters(){
+        // Precio (50k en 50k)
+        const priceOpts = [{ label: "Sin preferencia", value: null, muted: true }];
+        for (let v=50000; v<=2000000; v+=50000){
+          priceOpts.push({ label: euro(v), value: v });
+        }
+
+        wireDropdown("ddPriceMin", priceOpts, (opt) => {
+          state.price_min = opt.value;
+          document.getElementById("priceMinLabel").textContent = opt.value == null ? "Mín." : euro(opt.value);
+        });
+
+        wireDropdown("ddPriceMax", priceOpts, (opt) => {
+          state.price_max = opt.value;
+          document.getElementById("priceMaxLabel").textContent = opt.value == null ? "Máx." : euro(opt.value);
+        });
+
+        // Superficie (30 en 10)
+        const areaOpts = [{ label: "Sin preferencia", value: null, muted: true }];
+        for (let v=30; v<=300; v+=10){
+          areaOpts.push({ label: v + " m²", value: v });
+        }
+
+        wireDropdown("ddAreaMin", areaOpts, (opt) => {
+          state.area_min = opt.value;
+          document.getElementById("areaMinLabel").textContent = opt.value == null ? "Mín. (m²)" : (opt.value + " m²");
+        });
+
+        // Publicado desde
+        const sinceOpts = [
+          { label: "Sin preferencia", value: null, muted: true },
+          { label: "Hoy", value: "today" },
+          { label: "Últimos 3 días", value: "3d" },
+          { label: "Últimos 5 días", value: "5d" },
+          { label: "Últimos 10 días", value: "10d" },
+          { label: "Últimos 30 días", value: "30d" },
+        ];
+
+        wireDropdown("ddSince", sinceOpts, (opt) => {
+          state.published_since = opt.value;
+          document.getElementById("sinceLabel").textContent = opt.value == null ? "Sin preferencia" : opt.label;
+        });
       }
 
       function getMultiSelectValues(sel){
@@ -591,24 +709,18 @@
 
       function go(city){
         const mode = getSelectedMode();
-
-        const priceMin = cleanNumber(priceMinEl.value);
-        const priceMax = cleanNumber(priceMaxEl.value);
-        const areaMin = cleanNumber(areaMinEl.value);
-
-        const buildPeriods = getMultiSelectValues(buildPeriodEl); // múltiples
-        const offeredSince = (offeredSinceEl.value || "").trim();
+        const buildPeriods = getMultiSelectValues(buildPeriodEl);
 
         const params = new URLSearchParams();
         params.set("city", city);
         params.set("mode", mode);
 
-        if (priceMin) params.set("price_min", priceMin);
-        if (priceMax) params.set("price_max", priceMax);
-        if (areaMin) params.set("area_min", areaMin);
+        if (state.price_min != null) params.set("price_min", String(state.price_min));
+        if (state.price_max != null) params.set("price_max", String(state.price_max));
+        if (state.area_min != null) params.set("area_min", String(state.area_min));
 
         if (buildPeriods.length) params.set("build_period", buildPeriods.join(","));
-        if (offeredSince) params.set("published_since", offeredSince);
+        if (state.published_since) params.set("published_since", state.published_since);
 
         window.location.href = "./map.html?" + params.toString();
       }
@@ -638,7 +750,7 @@
         alert("MVP: Iniciar sesión.");
       });
 
-      buildDatalists();
+      setupFilters();
       q.focus();
     </script>
   </body>
