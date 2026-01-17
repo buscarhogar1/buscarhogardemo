@@ -4,198 +4,328 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Buscar Hogar – Ficha</title>
+
     <style>
       :root{
-        --bg:#f6f7f8;
-        --card:#ffffff;
-        --border:#e9eaec;
+        --bg:#ffffff;
         --text:#111;
         --muted:#6b7280;
+        --border:#e6e7eb;
+        --chip:#f3f4f6;
+        --card:#ffffff;
         --shadow:0 10px 30px rgba(0,0,0,.08);
-        --radius:16px;
+        --radius:14px;
       }
 
-      html, body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: var(--text); background: var(--bg); }
+      html,body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--text); background:var(--bg);}
+      .wrap{max-width:1180px; margin:0 auto; padding:14px 16px 40px;}
 
-      .wrap { max-width: 1120px; margin: 0 auto; padding: 18px 16px 28px; }
+      /* Top row */
+      .topRow{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;}
+      .back{display:inline-flex; align-items:center; gap:8px; text-decoration:none; color:var(--text); border:1px solid var(--border); padding:9px 12px; border-radius:12px; background:#fff;}
+      .status{color:var(--muted); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 
-      .topbar {
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        margin-bottom:14px;
-      }
+      /* Breadcrumb */
+      .crumbs{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; margin:10px 0 12px;}
+      .crumbs a{color:#1f6feb; text-decoration:none;}
+      .sep{color:#c4c7cf;}
 
-      .leftTop { display:flex; align-items:center; gap:10px; }
-      .back {
-        text-decoration:none;
-        color:var(--text);
-        background:var(--card);
+      /* Media block (1 big + 4 small) */
+      .mediaBlock{
+        position:relative;
+        border-radius:18px;
+        overflow:hidden;
+        background:#f2f3f5;
         border:1px solid var(--border);
-        padding:10px 12px;
-        border-radius:12px;
-        box-shadow:0 2px 10px rgba(0,0,0,.04);
       }
 
-      .status { color: var(--muted); font-size: 13px; }
-
-      .header {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        padding: 18px 18px 16px;
-        margin-bottom: 14px;
-      }
-
-      .h1 { font-size: 28px; line-height: 1.12; font-weight: 800; margin: 0 0 6px; }
-      .subtitle { color: var(--muted); font-size: 14px; margin: 0; display:flex; gap:8px; flex-wrap:wrap; }
-      .subtitleDot { color: #c2c6cc; }
-
-      .grid {
+      .mediaGrid{
         display:grid;
-        grid-template-columns: 1.45fr 0.55fr;
-        gap: 14px;
-        align-items:start;
+        grid-template-columns: 2fr 1fr;
+        gap:6px;
+        padding:6px;
+        background:#fff;
       }
 
-      .card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-      }
-
-      .media {
-        padding: 14px;
-      }
-
-      .hero {
-        width: 100%;
-        aspect-ratio: 16/10;
-        border-radius: 14px;
-        border: 1px solid var(--border);
-        background: linear-gradient(135deg, #f1f2f4, #ffffff);
-        display: grid;
-        place-items: center;
-        color: #9aa1aa;
-        font-size: 13px;
+      .mediaBig{
+        border-radius:14px;
+        background:linear-gradient(135deg,#f0f1f3,#ffffff);
+        min-height:420px;
+        border:1px solid var(--border);
+        display:grid;
+        place-items:center;
+        color:#9aa1aa;
         user-select:none;
       }
 
-      .mediaMeta {
+      .mediaSmallGrid{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:6px;
+      }
+
+      .mediaSmall{
+        border-radius:14px;
+        background:linear-gradient(135deg,#f0f1f3,#ffffff);
+        min-height:206px;
+        border:1px solid var(--border);
+        display:grid;
+        place-items:center;
+        color:#9aa1aa;
+        user-select:none;
+        position:relative;
+      }
+
+      /* Overlay actions on top-right of media block */
+      .mediaActions{
+        position:absolute;
+        right:16px;
+        top:16px;
+        display:flex;
+        gap:10px;
+        z-index:5;
+      }
+      .actionBtn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        height:44px;
+        padding:0 14px;
+        border-radius:12px;
+        border:1px solid var(--border);
+        background:#fff;
+        box-shadow:0 10px 30px rgba(0,0,0,.10);
+        cursor:pointer;
+        font-size:14px;
+      }
+      .actionIcon{
+        width:44px;
+        padding:0;
+      }
+
+      /* Media tabs row */
+      .mediaTabs{
         display:flex;
         justify-content:space-between;
+        align-items:center;
         gap:12px;
-        margin-top: 12px;
-        align-items:flex-end;
+        border-bottom:1px solid var(--border);
+        padding:12px 6px 12px;
+        margin-bottom:18px;
+      }
+      .tabsLeft{display:flex; gap:18px; flex-wrap:wrap; align-items:center;}
+      .tab{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        color:#111;
+        text-decoration:none;
+        font-size:14px;
+        padding:6px 8px;
+        border-radius:10px;
+      }
+      .tab:hover{background:#f6f7f9;}
+      .tabCount{color:var(--muted);}
+      .tabsRight .tab{border:1px solid var(--border); background:#fff;}
+
+      /* Main content grid */
+      .contentGrid{
+        display:grid;
+        grid-template-columns: 2fr 1fr;
+        gap:20px;
+        align-items:start;
       }
 
-      .price { font-size: 34px; font-weight: 900; margin: 0; letter-spacing: -0.3px; }
-      .priceNote { color: var(--muted); font-size: 13px; margin-top: 4px; }
+      .mainLeft{min-width:0;}
+      .sideRight{min-width:0;}
 
-      .chips { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
-      .chip {
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        padding: 7px 10px;
-        font-size: 13px;
-        background: #fff;
-        color: #111;
-      }
-      .chipMuted { color: var(--muted); }
-
-      .side {
-        padding: 14px;
-        position: sticky;
-        top: 14px;
+      /* Left summary block */
+      .badge{
+        display:inline-flex;
+        align-items:center;
+        height:22px;
+        padding:0 8px;
+        border-radius:6px;
+        background:#ffefc6;
+        border:1px solid #ffe39a;
+        color:#8a5b00;
+        font-size:12px;
+        margin-bottom:10px;
       }
 
-      .sideTitle { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+      .title{font-size:34px; line-height:1.08; margin:0 0 6px; font-weight:900; letter-spacing:-0.2px;}
+      .metaLine{display:flex; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:14px; margin-bottom:10px;}
+      .metaLine a{color:#1f6feb; text-decoration:none;}
 
-      .kv { display:grid; gap: 10px; }
-      .kvLine { display:grid; grid-template-columns: 92px 1fr; gap: 10px; }
-      .k { color: var(--muted); font-size: 13px; }
-      .v { font-size: 14px; }
-      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; color: var(--muted); word-break: break-all; }
+      .priceRow{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin:12px 0 10px;}
+      .price{font-size:26px; font-weight:900; margin:0;}
+      .priceNote{color:var(--muted); font-size:14px; text-decoration:none;}
+      .priceNote:hover{text-decoration:underline;}
 
-      .section {
-        margin-top: 14px;
-        padding-top: 14px;
-        border-top: 1px solid var(--border);
+      .factsRow{
+        display:flex;
+        gap:18px;
+        flex-wrap:wrap;
+        align-items:center;
+        margin-top:10px;
+        color:#111;
+        font-size:15px;
+      }
+      .fact{display:inline-flex; align-items:center; gap:8px;}
+      .factIcon{
+        width:18px; height:18px;
+        border:1px solid var(--border);
+        border-radius:4px;
+        background:#fff;
+      }
+      .factMuted{color:var(--muted);}
+
+      /* Right cards */
+      .sideCard{
+        background:var(--card);
+        border:1px solid var(--border);
+        border-radius:16px;
+        box-shadow:var(--shadow);
+        padding:14px;
+      }
+      .sideSticky{position:sticky; top:14px; display:grid; gap:14px;}
+
+      .sideTitle{color:var(--muted); font-size:13px; margin:0 0 10px;}
+      .kv{display:grid; gap:10px;}
+      .kvLine{display:grid; grid-template-columns: 92px 1fr; gap:10px;}
+      .k{color:var(--muted); font-size:13px;}
+      .v{font-size:14px;}
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; font-size:12px; color:var(--muted); word-break:break-all;}
+
+      .mapMock{
+        height:120px;
+        border:1px solid var(--border);
+        border-radius:12px;
+        background:linear-gradient(135deg,#f0f1f3,#ffffff);
+        display:grid;
+        place-items:center;
+        color:#9aa1aa;
+        font-size:13px;
+        user-select:none;
       }
 
-      .sectionH { font-size: 14px; font-weight: 700; margin: 0 0 10px; }
-      .sectionP { color: var(--muted); font-size: 14px; margin: 0; }
-
-      @media (max-width: 920px) {
-        .grid { grid-template-columns: 1fr; }
-        .side { position: static; }
-        .mediaMeta { flex-direction: column; align-items:flex-start; }
-        .chips { justify-content:flex-start; }
+      /* Responsive */
+      @media (max-width: 980px){
+        .mediaGrid{grid-template-columns:1fr; }
+        .mediaSmallGrid{grid-template-columns:1fr 1fr;}
+        .mediaBig{min-height:300px;}
+        .mediaSmall{min-height:160px;}
+        .contentGrid{grid-template-columns:1fr;}
+        .sideSticky{position:static;}
+      }
+      @media (max-width: 560px){
+        .mediaSmallGrid{grid-template-columns:1fr;}
       }
     </style>
   </head>
 
   <body>
     <div class="wrap">
-      <div class="topbar">
-        <div class="leftTop">
-          <a class="back" href="./">Volver al mapa</a>
-          <div class="status" id="status">Cargando…</div>
-        </div>
+
+      <div class="topRow">
+        <a class="back" href="./">Volver al mapa</a>
+        <div class="status" id="status">Cargando…</div>
       </div>
 
-      <div class="header">
-        <h1 class="h1" id="title">Ficha</h1>
-        <div class="subtitle" id="subtitle"></div>
+      <div class="crumbs" id="crumbs">
+        <span>🏠</span>
+        <span class="sep">/</span>
+        <a href="#" id="crumbCity">Ciudad</a>
+        <span class="sep">/</span>
+        <a href="#" id="crumbNeighborhood">Barrio</a>
+        <span class="sep">/</span>
+        <span id="crumbAddress">Dirección</span>
       </div>
 
-      <div class="grid">
-        <div class="card">
-          <div class="media">
-            <div class="hero" id="hero">Imagen (pendiente)</div>
-
-            <div class="mediaMeta">
-              <div>
-                <p class="price" id="price">—</p>
-                <div class="priceNote" id="priceNote"></div>
-              </div>
-              <div class="chips" id="chips"></div>
-            </div>
-          </div>
+      <div class="mediaBlock">
+        <div class="mediaActions">
+          <button class="actionBtn actionIcon" id="shareBtn" title="Compartir">⤴</button>
+          <button class="actionBtn" id="saveBtn" title="Guardar">♡ Guardar</button>
         </div>
 
-        <div class="card">
-          <div class="side">
-            <p class="sideTitle">Datos</p>
-            <div class="kv">
-              <div class="kvLine">
-                <div class="k">Agencia</div>
-                <div class="v" id="agency">—</div>
-              </div>
-              <div class="kvLine">
-                <div class="k">Publicado</div>
-                <div class="v" id="listedAt">—</div>
-              </div>
-              <div class="kvLine">
-                <div class="k">Tipo</div>
-                <div class="v" id="ptype">—</div>
-              </div>
-              <div class="kvLine">
-                <div class="k">ID</div>
-                <div class="v mono" id="id">—</div>
-              </div>
-            </div>
-
-            <div class="section">
-              <div class="sectionH">Notas</div>
-              <p class="sectionP">Esta ficha es MVP. Las fotos y el plano se conectarán cuando el backend exponga esos campos.</p>
-            </div>
+        <div class="mediaGrid">
+          <div class="mediaBig">Foto principal (pendiente)</div>
+          <div class="mediaSmallGrid">
+            <div class="mediaSmall">Foto</div>
+            <div class="mediaSmall">Vídeo</div>
+            <div class="mediaSmall">Foto</div>
+            <div class="mediaSmall">Foto</div>
           </div>
         </div>
       </div>
+
+      <div class="mediaTabs">
+        <div class="tabsLeft">
+          <a class="tab" href="#"><span class="factIcon"></span> Foto’s <span class="tabCount" id="photosCount">0</span></a>
+          <a class="tab" href="#"><span class="factIcon"></span> Plano <span class="tabCount" id="floorCount">0</span></a>
+          <a class="tab" href="#"><span class="factIcon"></span> 360° <span class="tabCount" id="panoCount">0</span></a>
+          <a class="tab" href="#"><span class="factIcon"></span> Video</a>
+        </div>
+        <div class="tabsRight">
+          <a class="tab" href="#"><span class="factIcon"></span> Todo el media</a>
+        </div>
+      </div>
+
+      <div class="contentGrid">
+        <div class="mainLeft">
+          <div class="badge" id="badge" style="display:none;">Nuevo</div>
+
+          <h1 class="title" id="title">Dirección</h1>
+
+          <div class="metaLine">
+            <span id="metaPostal">—</span>
+            <span class="sep">•</span>
+            <span id="metaCity">—</span>
+            <span class="sep">•</span>
+            <a href="#" id="metaNeighborhood">Barrio</a>
+          </div>
+
+          <div class="priceRow">
+            <p class="price" id="price">—</p>
+            <a class="priceNote" href="#" id="monthlyLink">¿Cuánto pagaré al mes?</a>
+          </div>
+
+          <div class="factsRow" id="factsRow">
+            <!-- Se rellena por JS -->
+          </div>
+        </div>
+
+        <div class="sideRight">
+          <div class="sideSticky">
+            <div class="sideCard">
+              <div class="mapMock">Mapa (pendiente)</div>
+            </div>
+
+            <div class="sideCard">
+              <p class="sideTitle">Agencia</p>
+              <div class="kv">
+                <div class="kvLine">
+                  <div class="k">Nombre</div>
+                  <div class="v" id="agency">—</div>
+                </div>
+                <div class="kvLine">
+                  <div class="k">Publicado</div>
+                  <div class="v" id="listedAt">—</div>
+                </div>
+                <div class="kvLine">
+                  <div class="k">Tipo</div>
+                  <div class="v" id="ptype">—</div>
+                </div>
+                <div class="kvLine">
+                  <div class="k">ID</div>
+                  <div class="v mono" id="id">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <script>
@@ -205,14 +335,24 @@
 
       const statusEl = document.getElementById("status");
       const titleEl = document.getElementById("title");
-      const subtitleEl = document.getElementById("subtitle");
       const priceEl = document.getElementById("price");
-      const priceNoteEl = document.getElementById("priceNote");
-      const chipsEl = document.getElementById("chips");
-      const idEl = document.getElementById("id");
       const agencyEl = document.getElementById("agency");
       const listedAtEl = document.getElementById("listedAt");
+      const idEl = document.getElementById("id");
       const ptypeEl = document.getElementById("ptype");
+
+      const metaPostalEl = document.getElementById("metaPostal");
+      const metaCityEl = document.getElementById("metaCity");
+      const metaNeighborhoodEl = document.getElementById("metaNeighborhood");
+
+      const crumbsCityEl = document.getElementById("crumbCity");
+      const crumbsNeighborhoodEl = document.getElementById("crumbNeighborhood");
+      const crumbsAddressEl = document.getElementById("crumbAddress");
+
+      const factsRowEl = document.getElementById("factsRow");
+
+      const shareBtn = document.getElementById("shareBtn");
+      const saveBtn = document.getElementById("saveBtn");
 
       function euro(n) {
         try {
@@ -238,27 +378,17 @@
         return u.searchParams.get(name);
       }
 
-      function setSubtitle(parts) {
-        subtitleEl.innerHTML = "";
-        const clean = parts.filter(Boolean);
-        clean.forEach((t, i) => {
-          const span = document.createElement("span");
-          span.textContent = t;
-          subtitleEl.appendChild(span);
-          if (i < clean.length - 1) {
-            const dot = document.createElement("span");
-            dot.className = "subtitleDot";
-            dot.textContent = "•";
-            subtitleEl.appendChild(dot);
-          }
-        });
-      }
-
-      function addChip(text, muted=false) {
-        const c = document.createElement("div");
-        c.className = "chip" + (muted ? " chipMuted" : "");
-        c.textContent = text;
-        chipsEl.appendChild(c);
+      function addFact(text, muted=false) {
+        const wrap = document.createElement("div");
+        wrap.className = "fact";
+        const icon = document.createElement("span");
+        icon.className = "factIcon";
+        const t = document.createElement("span");
+        t.textContent = text;
+        if (muted) t.className = "factMuted";
+        wrap.appendChild(icon);
+        wrap.appendChild(t);
+        factsRowEl.appendChild(wrap);
       }
 
       async function fetchDetail(listingId) {
@@ -283,53 +413,78 @@
         return data[0] || null;
       }
 
+      shareBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          statusEl.textContent = "Enlace copiado";
+          setTimeout(() => statusEl.textContent = "OK", 900);
+        } catch {
+          alert("No se pudo copiar el enlace.");
+        }
+      });
+
+      let saved = false;
+      saveBtn.addEventListener("click", () => {
+        saved = !saved;
+        saveBtn.textContent = saved ? "♥ Guardado" : "♡ Guardar";
+      });
+
       (async () => {
         const listingId = getParam("id");
         if (!listingId) {
           statusEl.textContent = "Falta ?id=…";
           titleEl.textContent = "Ficha no disponible";
-          setSubtitle(["Abre esta página desde el mapa pulsando la dirección."]);
           return;
         }
 
         try {
-          statusEl.textContent = "Cargando ficha…";
+          statusEl.textContent = "Cargando…";
           const row = await fetchDetail(listingId);
 
           if (!row) {
             statusEl.textContent = "No encontrada";
             titleEl.textContent = "Ficha no encontrada";
-            setSubtitle(["No hay resultados para este anuncio."]);
             idEl.textContent = listingId;
             return;
           }
 
+          // Breadcrumb
+          crumbsCityEl.textContent = row.city || "Ciudad";
+          crumbsNeighborhoodEl.textContent = row.neighborhood || "Barrio";
+          crumbsAddressEl.textContent = row.address_display || "Dirección";
+
+          // Main title
           titleEl.textContent = row.address_display || "Dirección";
-          setSubtitle([row.neighborhood, row.city].filter(Boolean));
+          metaPostalEl.textContent = row.postcode || "—";
+          metaCityEl.textContent = row.city || "—";
+          metaNeighborhoodEl.textContent = row.neighborhood || "—";
 
+          // Price
           priceEl.textContent = row.price_eur != null ? euro(row.price_eur) : "—";
-          priceNoteEl.textContent = row.postcode ? row.postcode : "";
 
+          // Right card
           agencyEl.textContent = row.agency_name || "—";
           listedAtEl.textContent = fmtDate(row.listed_at);
           ptypeEl.textContent = row.property_type || "—";
           idEl.textContent = row.listing_id || listingId;
 
-          chipsEl.innerHTML = "";
-          if (row.useful_area_m2 != null) addChip(`${row.useful_area_m2} m² útiles`);
-          if (row.built_year != null) addChip(`Año ${row.built_year}`);
-          if (row.province) addChip(row.province, true);
+          // Facts row (tipo funda)
+          factsRowEl.innerHTML = "";
+          if (row.useful_area_m2 != null) addFact(`${row.useful_area_m2} m²`);
+          if (row.built_year != null) addFact(`Año ${row.built_year}`, true);
+          if (row.province) addFact(row.province, true);
 
           statusEl.textContent = "OK";
         } catch (e) {
           const msg = (e && e.message) ? e.message : String(e);
           statusEl.textContent = "Error";
           titleEl.textContent = "Error cargando ficha";
-          setSubtitle([msg]);
           console.error(e);
+          alert(msg);
         }
       })();
     </script>
   </body>
 </html>
+
 
