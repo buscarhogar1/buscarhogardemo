@@ -11,16 +11,17 @@
         --text:#111;
         --muted:#6b7280;
 
-        /* Terracota más intenso (topbar) */
+        /* Terracota topbar + titular */
         --terra:#a3472f;
 
-        /* Marrón pastel para acentos/bordes (sustituye al azul) */
-        --accent:#b08a66;
+        /* Azul botones (vuelta al azul) */
+        --btn:#1a73e8;
+        --btnText:#fff;
+
+        /* Bordes clásicos negros */
+        --borderBlack:#111;
 
         --white:#ffffff;
-        --border:#e6e7eb;
-
-        --btnText:#fff;
       }
 
       html,body{
@@ -55,6 +56,7 @@
         align-items:center;
         gap: 12px;
         min-width: 0;
+        flex: 0 0 auto;
       }
 
       .brand{
@@ -85,37 +87,20 @@
         letter-spacing: -0.2px;
       }
 
-      .topLinks{
-        display:flex;
-        align-items:center;
-        gap: 8px;
-      }
-
-      .topLinks a{
-        color: var(--white);
-        text-decoration:none;
-        font-size:14px;
-        font-weight:650;
-        padding: 8px 10px;
-        border-radius: 999px;
-        white-space: nowrap;
-      }
-
-      .topLinks a:hover{
-        background: rgba(255,255,255,0.14);
-      }
-
-      /* Buscador mini en topbar (minimal) */
+      /* Buscador mini en topbar (más a la derecha) */
       .miniSearch{
         display:flex;
         align-items:center;
-        gap:8px;
-        border: 1px solid rgba(255,255,255,0.28);
+        gap:10px;
+        border: 1px solid rgba(255,255,255,0.30);
         background: rgba(255,255,255,0.10);
         border-radius: 999px;
         padding: 6px 10px;
-        min-width: 260px;
-        max-width: 420px;
+        min-width: 280px;
+        max-width: 460px;
+
+        /* empuja hacia la derecha */
+        margin-left: auto;
       }
 
       .miniSearch input{
@@ -128,7 +113,7 @@
       }
 
       .miniSearch input::placeholder{
-        color: rgba(255,255,255,0.78);
+        color: rgba(255,255,255,0.80);
       }
 
       .miniSearch button{
@@ -136,8 +121,15 @@
         background: transparent;
         color: var(--white);
         cursor: pointer;
-        font-size: 13.5px;
         padding: 0 2px;
+        display:grid;
+        place-items:center;
+      }
+
+      .miniIcon{
+        width: 20px;
+        height: 20px;
+        display:block;
       }
 
       .rightGroup{
@@ -181,12 +173,12 @@
         justify-items:center;
       }
 
-      /* Titular más arriba */
+      /* Titular más arriba (reduce espacio con topbar ~40%) */
       .heroLine{
         width: 100%;
         display:grid;
         place-items:center;
-        padding: 18px 0 6px; /* más arriba que antes */
+        padding: 10px 0 6px;
       }
 
       .headline{
@@ -194,6 +186,7 @@
         font-weight: 720;
         letter-spacing: -0.2px;
         text-align:center;
+        color: var(--terra);
       }
 
       /* Opciones arriba del buscador */
@@ -210,7 +203,7 @@
         display:inline-flex;
         align-items:center;
         gap:8px;
-        border:1.5px solid var(--accent);
+        border:1.5px solid var(--borderBlack);
         background:#fff;
         padding:8px 10px;
         border-radius: 999px;
@@ -224,14 +217,14 @@
         width:16px;
         height:16px;
         margin:0;
-        accent-color: var(--accent);
+        accent-color: var(--btn);
         cursor:pointer;
       }
 
       /* Buscador */
       .searchBox{
         width: min(640px, 100%);
-        border: 1.5px solid var(--accent);
+        border: 1.5px solid var(--borderBlack);
         border-radius: 999px;
         padding: 10px;
         display:flex;
@@ -259,7 +252,7 @@
 
       .btn{
         border:0;
-        background: var(--accent);
+        background: var(--btn);
         color: var(--btnText);
         padding: 10px 16px;
         border-radius: 999px;
@@ -280,17 +273,18 @@
         margin-top: 2px;
       }
 
-      /* Filtros (un poco más abajo) */
+      /* Filtros: bajados para acercarlos al footer (reduce espacio inferior ~30%) */
       .filtersRow{
         width: min(860px, 100%);
         display:grid;
         grid-template-columns: 1.2fr 1fr 1fr 1fr;
         gap: 10px;
-        margin-top: 18px; /* bajados */
+        margin-top: 22px;
+        margin-bottom: 0;
       }
 
       .f{
-        border: 2px solid var(--accent);   /* borde más grueso + color marrón pastel */
+        border: 2px solid var(--borderBlack);
         border-radius: 12px;
         padding: 10px 12px;
         background:#fff;
@@ -301,14 +295,14 @@
 
       .f label{
         font-size: 12.8px;
-        color: #4b3a2a;
-        text-align:center; /* título centrado */
+        color: #111;
+        text-align:center;
         font-weight: 650;
       }
 
-      /* Inputs / selects mismo estilo */
+      /* Inputs / selects mismo estilo + dropdown hacia abajo (tamaño completo) */
       .control{
-        border: 1.5px solid var(--accent);
+        border: 1.5px solid var(--borderBlack);
         border-radius: 10px;
         padding: 8px 10px;
         background: #fff;
@@ -324,6 +318,30 @@
         font-size: 14px;
         background: transparent;
         width: 100%;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+      }
+
+      /* Flecha consistente para selects */
+      .selectWrap{
+        position: relative;
+      }
+      .selectWrap::after{
+        content:"";
+        position:absolute;
+        right:10px;
+        top:50%;
+        width:0;
+        height:0;
+        border-left:5px solid transparent;
+        border-right:5px solid transparent;
+        border-top:6px solid #111;
+        transform: translateY(-25%);
+        pointer-events:none;
+      }
+      .selectWrap select{
+        padding-right: 26px;
       }
 
       .twoCols{
@@ -356,6 +374,7 @@
       @media (max-width: 640px){
         .filtersRow{
           grid-template-columns: 1fr;
+          margin-top: 18px;
         }
       }
     </style>
@@ -370,16 +389,16 @@
               <span>BH</span>
             </div>
           </a>
-
-          <div class="topLinks" aria-label="Accesos">
-            <a href="#" id="navAccesoUsuario">Acceso usuario</a>
-            <a href="#" id="navAccesoProfesional">Acceso profesional</a>
-          </div>
         </div>
 
         <form class="miniSearch" id="miniSearchForm" autocomplete="off" aria-label="Búsqueda rápida">
           <input id="miniQ" placeholder="Buscar..." aria-label="Buscar rápido" />
-          <button type="submit" title="Buscar">⌕</button>
+          <button type="submit" title="Buscar" aria-label="Buscar">
+            <svg class="miniIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.3-4.3"></path>
+            </svg>
+          </button>
         </form>
 
         <div class="rightGroup" aria-label="Acciones">
@@ -403,6 +422,11 @@
               <span>Compra</span>
             </label>
 
+            <label class="toggle" title="Obra nueva">
+              <input type="radio" name="mode" value="new_build" />
+              <span>Obra nueva</span>
+            </label>
+
             <label class="toggle" title="Alquiler vivienda">
               <input type="radio" name="mode" value="rent_home" />
               <span>Alquiler vivienda</span>
@@ -411,11 +435,6 @@
             <label class="toggle" title="Alquiler habitación">
               <input type="radio" name="mode" value="rent_room" />
               <span>Alquiler habitación</span>
-            </label>
-
-            <label class="toggle" title="Obra nueva">
-              <input type="radio" name="mode" value="new_build" />
-              <span>Obra nueva</span>
             </label>
           </div>
 
@@ -459,7 +478,7 @@
 
             <div class="f">
               <label for="buildPeriod">Periodo de construcción</label>
-              <div class="control">
+              <div class="control selectWrap">
                 <select id="buildPeriod" aria-label="Periodo de construcción">
                   <option value="">Sin preferencia</option>
                   <option value="unknown">Desconocido</option>
@@ -480,7 +499,7 @@
 
             <div class="f">
               <label for="offeredSince">Publicado desde</label>
-              <div class="control">
+              <div class="control selectWrap">
                 <select id="offeredSince" aria-label="Publicado desde">
                   <option value="">Sin preferencia</option>
                   <option value="today">Hoy</option>
@@ -526,20 +545,18 @@
       }
 
       function buildDatalists(){
-        // Precio: desde 50.000, step 50.000 (tope 2.000.000)
-        // Importante: en datalist, value debe ser único (si no, algunos navegadores “repiten”).
+        // Importante: en datalist, value debe ser único para evitar “repeticiones” en algunos navegadores.
         priceOptionsEl.innerHTML = "";
         for(let v = 50000; v <= 2000000; v += 50000){
           const opt = document.createElement("option");
-          opt.value = String(v); // único
+          opt.value = String(v);
           priceOptionsEl.appendChild(opt);
         }
 
-        // Superficie: desde 30, step 10 (tope 300)
         areaOptionsEl.innerHTML = "";
         for(let v = 30; v <= 300; v += 10){
           const opt = document.createElement("option");
-          opt.value = String(v); // único
+          opt.value = String(v);
           areaOptionsEl.appendChild(opt);
         }
       }
@@ -591,12 +608,15 @@
         go(city);
       });
 
-      // placeholders topbar (MVP)
-      function mvp(msg){ alert(msg); }
-      document.getElementById("navAccesoUsuario").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Acceso usuario."); });
-      document.getElementById("navAccesoProfesional").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Acceso profesional."); });
-      document.getElementById("navFavoritos").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Favoritos (requiere registro)."); });
-      document.getElementById("navLogin").addEventListener("click", (e) => { e.preventDefault(); mvp("MVP: Iniciar sesión."); });
+      document.getElementById("navFavoritos").addEventListener("click", (e) => {
+        e.preventDefault();
+        alert("MVP: Favoritos (requiere registro).");
+      });
+
+      document.getElementById("navLogin").addEventListener("click", (e) => {
+        e.preventDefault();
+        alert("MVP: Iniciar sesión.");
+      });
 
       buildDatalists();
       q.focus();
