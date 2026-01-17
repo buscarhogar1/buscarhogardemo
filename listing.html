@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Buscar Hogar – Ficha</title>
+    <style>
+      html, body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: #111; background: #fff; }
+      .wrap { max-width: 980px; margin: 0 auto; padding: 16px; }
+      .top { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+      .back { text-decoration: none; border: 1px solid #eee; padding: 8px 10px; border-radius: 10px; color: #111; }
+      .status { color: #666; font-size: 13px; }
+
+      .h1 { font-size: 24px; font-weight: 800; margin: 8px 0 6px; }
+      .subtitle { color: #666; font-size: 14px; margin: 0 0 12px; }
+
+      .grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; }
+      .card { border: 1px solid #eee; border-radius: 14px; padding: 14px; }
+
+      .hero {
+        width: 100%;
+        aspect-ratio: 16/9;
+        border-radius: 12px;
+        border: 1px solid #eee;
+        background: linear-gradient(135deg, #f6f6f6, #ffffff);
+        display: grid;
+        place-items: center;
+        color: #999;
+        font-size: 13px;
+      }
+
+      .price { font-size: 28px; font-weight: 900; margin: 10px 0 8px; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+      .chip { border: 1px solid #eee; border-radius: 999px; padding: 6px 10px; font-size: 13px; background: #fff; }
+
+      .kv { display: grid; gap: 10px; margin-top: 10px; }
+      .kvLine { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
+      .k { color: #666; font-size: 13px; }
+      .v { font-size: 14px; }
+
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; color: #666; word-break: break-all; }
+
+      @media (max-width: 840px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <div class="top">
+        <a class="back" href="./">Volver al mapa</a>
+        <div class="status" id="status">Cargando…</div>
+      </div>
+
+      <h1 class="h1" id="title">Ficha</h1>
+      <p class="subtitle" id="subtitle"></p>
+
+      <div class="grid">
+        <div class="card">
+          <div class="hero">Imagen (pendiente)</div>
+          <div class="price" id="price">—</div>
+          <div class="row" id="chips"></div>
+        </div>
+
+        <div class="card">
+          <div class="kv">
+            <div class="kvLine">
+              <div class="k">Agencia</div>
+              <div class="v" id="agency">—</div>
+            </div>
+            <div class="kvLine">
+              <div class="k">Publicado</div>
+              <div class="v" id="listedAt">—</div>
+            </div>
+            <div class="kvLine">
+              <div class="k">ID</div>
+              <div class="v mono" id="id">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
+      const VIEW_DETAIL = "listing_detail_public";
+
+      const statusEl = document.getElementById("status");
+      const titleEl = document.getElementById("title");
+      const subtitleEl = document.getElementById("subtitle");
+      const priceEl = document.getElementById("price");
+      const chipsEl = document.getElementById("chips");
+      const idEl = document.getElementById("id");
+      const agencyEl = document.getElementById("agency");
+      const listedAtEl = document.getElementById("listedAt");
+
+      function euro(n) {
+        try {
+          return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+        } catch {
+          return `${n} EUR`;
+        }
+      }
+
+      function fmtDate(s) {
+        if (!s) return "—";
+        try {
+          const d = new Date(s);
+          if (isNaN(d.getTime())) return String(s);
+          return d.toLocaleDateString("es-ES");
+        } catch {
+          return String(s);
+        }
+      }
+
+      function getParam(name) {
+        const u = new URL(window.location.href);
+        return u.searchParams.get(name);
+      }
+
+      async function fetchDetail(listingId) {
+        const url =
+          `${SUPABASE_URL}/rest/v1/${VIEW_DETAIL}` +
+          `?select=listing_id,price_eur,listed_at,agency_name,city,neighborhood,address_display,postcode,province` +
+          `&listing_id=eq.${encodeURIComponent(listingId)}&limit=1`;
+
+        const res = await fetch(url, {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(txt);
+        }
+
+        const data = await res.json();
+        return data[0] || null;
+      }
+
+      (async () => {
+        const listingId = getParam("id");
+        if (!listingId) {
+          statusEl.textContent = "Falta ?id=… en la URL";
+          titleEl.textContent = "Ficha no disponible";
+          subtitleEl.textContent = "Abre esta página desde el mapa pulsando la dirección.";
+          return;
+        }
+
+        try {
+          statusEl.textContent = "Cargando ficha…";
+          const row = await fetchDetail(listingId);
+
+          if (!row) {
+            statusEl.textContent = "No encontrada";
+            titleEl.textContent = "Ficha no encontrada";
+            subtitleEl.textContent = "No hay resultados para este anuncio.";
+            idEl.textContent = listingId;
+            return;
+          }
+
+          titleEl.textContent = row.address_display || "Dirección";
+          subtitleEl.textContent = [row.neighborhood, row.city].filter(Boolean).join(" · ");
+
+          priceEl.textContent = row.price_eur != null ? euro(row.price_eur) : "—";
+
+          agencyEl.textContent = row.agency_name || "—";
+          listedAtEl.textContent = fmtDate(row.listed_at);
+          idEl.textContent = row.listing_id || listingId;
+
+          // Chips (solo datos “buenos”/neutros)
+          chipsEl.innerHTML = "";
+          if (row.postcode) {
+            const c = document.createElement("div");
+            c.className = "chip";
+            c.textContent = row.postcode;
+            chipsEl.appendChild(c);
+          }
+          // útil interior
+          // Nota: useful_area_m2 existe en la vista; si quieres, lo añadimos aquí en la siguiente iteración.
+          statusEl.textContent = "OK";
+        } catch (e) {
+          const msg = (e && e.message) ? e.message : String(e);
+          statusEl.textContent = "Error";
+          titleEl.textContent = "Error cargando ficha";
+          subtitleEl.textContent = msg;
+          console.error(e);
+        }
+      })();
+    </script>
+  </body>
+</html>
