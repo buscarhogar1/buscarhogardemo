@@ -17,15 +17,16 @@
         --btnText:#fff;
 
         --border:#111;
+        --softBorder:#e6e7eb;
         --shadow: 0 10px 30px rgba(0,0,0,0.10);
       }
 
       html,body{
         height:100%;
         margin:0;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         background:var(--bg);
         color:var(--text);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       }
 
       /* ===== Topbar ===== */
@@ -44,13 +45,6 @@
         display:flex;
         align-items:center;
         gap: 12px;
-      }
-
-      .leftGroup{
-        display:flex;
-        align-items:center;
-        gap: 10px;
-        flex: 0 0 auto;
       }
 
       .brand{
@@ -153,7 +147,6 @@
         grid-template-rows: 1fr auto;
       }
 
-      /* Querías el bloque central en mitad de la página */
       .main{
         display:flex;
         align-items:center;
@@ -164,29 +157,19 @@
       .center{
         width:min(980px, 100%);
         display:grid;
-        gap: 14px;
         justify-items:center;
       }
 
-      /* Titular: +50% y en 3 líneas */
-      .heroLine{
-        width: 100%;
-        display:grid;
-        place-items:center;
-        margin-bottom: 6px;
-      }
-
+      /* Titular estilo “iPhone” (SF) */
       .headline{
-        color: var(--terra);
-        text-align:center;
-        letter-spacing:-0.2px;
-        font-weight: 720;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, Segoe UI, Roboto, sans-serif;
+        font-weight: 800;
+        letter-spacing: -0.6px;
+        font-size: 44px;
         line-height: 1.05;
-        font-size: 36px; /* referencia; ajusta si lo ves enorme en tu pantalla */
-      }
-
-      .headline span{
-        display:block;
+        text-align:center;
+        color: #111;
+        margin: 0 0 14px 0;
       }
 
       /* Opciones arriba del buscador: centradas sobre la barra */
@@ -196,28 +179,55 @@
         justify-content:center;
         gap:12px;
         flex-wrap:wrap;
+        margin-bottom: 12px;
       }
 
-      .toggle{
+      /* Pills con radio custom, más fino (-40% grosor aprox) */
+      .pill{
+        position: relative;
         display:inline-flex;
         align-items:center;
-        gap:8px;
-        border:1px solid var(--border);
+        gap:10px;
+        border: 1px solid var(--border);
         background:#fff;
-        padding:8px 12px;
+        padding: 10px 14px;
         border-radius: 999px;
         cursor:pointer;
-        font-size: 14px;
-        color:#111;
         user-select:none;
+        font-size: 16px;
+        color:#111;
       }
 
-      .toggle input{
-        width:16px;
-        height:16px;
-        margin:0;
-        accent-color: var(--btn);
-        cursor:pointer;
+      .pill input{
+        position:absolute;
+        opacity:0;
+        pointer-events:none;
+      }
+
+      .dot{
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        border: 1px solid #6b7280; /* más fino */
+        display:grid;
+        place-items:center;
+        flex: 0 0 auto;
+      }
+
+      .dot::after{
+        content:"";
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: transparent;
+      }
+
+      .pill input:checked + .dot{
+        border-color: var(--btn);
+      }
+
+      .pill input:checked + .dot::after{
+        background: var(--btn);
       }
 
       /* Buscador */
@@ -269,106 +279,50 @@
         font-size: 14px;
         color: var(--muted);
         text-align:center;
-        margin-top: 4px;
-        letter-spacing: 0.8px;
+        margin-top: 10px;
       }
 
-      /* Filtros */
+      /* ===== Filtros (rehechos de cero) ===== */
       .filtersRow{
         width: min(960px, 100%);
         display:grid;
-        grid-template-columns: 1.35fr 1fr 1fr 1fr;
+        grid-template-columns: 1.4fr 1fr 1fr 1fr;
         gap: 12px;
-        margin-top: 24px;
+        margin-top: 50px; /* 50 puntos debajo de “Una vivienda, un anuncio.” */
+        justify-items: stretch;
       }
 
-      .f{
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 12px;
+      .filter{
+        border: 1px solid var(--softBorder);
+        border-radius: 16px;
         background:#fff;
+        padding: 12px;
         display:grid;
         gap: 10px;
-        align-content:start;
       }
 
-      /* títulos en mayúscula + menos “negrita” (aprox -30%) */
-      .fTitle{
+      .filterLabel{
         font-size: 12px;
-        letter-spacing: 0.9px;
-        text-transform: uppercase;
-        text-align:center;
-        font-weight: 480;
         color: #111;
+        font-weight: 600;
+        letter-spacing: 0.4px;
       }
 
-      /* Dropdown estilo “caja grande” como tu ejemplo */
-      .dd{
-        position: relative;
-      }
-
-      .ddBtn{
-        width: 100%;
-        border: 1px solid var(--border);
-        background:#fff;
+      .filterControl{
+        border: 1px solid var(--softBorder);
         border-radius: 14px;
-        padding: 14px 14px;
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap: 12px;
-        cursor:pointer;
-        font-size: 18px;
-        color:#111;
-      }
-
-      .ddBtn .ddValue{
-        overflow:hidden;
-        text-overflow:ellipsis;
-        white-space:nowrap;
-      }
-
-      .chev{
-        width: 20px;
-        height: 20px;
-        flex: 0 0 auto;
-      }
-
-      .ddMenu{
-        position: absolute;
-        left: 0;
-        top: calc(100% + 8px);
-        width: 100%;
+        padding: 12px 12px;
+        font-size: 16px;
+        outline: none;
         background:#fff;
-        border: 1px solid rgba(0,0,0,0.12);
-        border-radius: 14px;
-        box-shadow: var(--shadow);
-        padding: 10px;
-        display:none;
-        z-index: 50;
-        max-height: 320px;
-        overflow:auto;
+        width: 100%;
+        box-sizing: border-box;
       }
 
-      .dd.open .ddMenu{ display:block; }
-
-      .ddOpt{
-        width:100%;
-        text-align:left;
-        border:0;
-        background: transparent;
-        padding: 12px 10px;
-        border-radius: 10px;
-        cursor:pointer;
-        font-size: 18px;
-        color:#111;
+      .filterControl:focus{
+        border-color: rgba(26,115,232,0.7);
+        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
       }
-
-      .ddOpt:hover{
-        background: #f3f4f6;
-      }
-
-      .ddOpt.muted{ color: #6b7280; }
 
       .twoCols{
         display:grid;
@@ -376,20 +330,19 @@
         gap: 10px;
       }
 
-      /* Multi-select para periodo de construcción */
-      .multiBox{
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 10px;
-      }
-
-      .multi{
-        width:100%;
-        border:0;
-        outline:0;
-        background: transparent;
-        font-size: 16px;
-        min-height: 168px;
+      /* Select estilo uniforme (mismo look que inputs) */
+      select.filterControl{
+        -webkit-appearance: none;
+        appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, #111 50%),
+          linear-gradient(135deg, #111 50%, transparent 50%);
+        background-position:
+          calc(100% - 18px) calc(50% - 3px),
+          calc(100% - 12px) calc(50% - 3px);
+        background-size: 6px 6px, 6px 6px;
+        background-repeat: no-repeat;
+        padding-right: 34px;
       }
 
       .footer{
@@ -405,14 +358,14 @@
       @media (max-width: 980px){
         .filtersRow{ grid-template-columns: 1fr 1fr; }
       }
+
       @media (max-width: 720px){
         .miniSearch{ display:none; }
-        .headline{ font-size: 30px; }
+        .headline{ font-size: 36px; }
       }
+
       @media (max-width: 620px){
         .filtersRow{ grid-template-columns: 1fr; }
-        .ddBtn{ font-size: 17px; }
-        .ddOpt{ font-size: 17px; }
       }
     </style>
   </head>
@@ -420,23 +373,21 @@
   <body>
     <header class="topbar">
       <div class="topbarInner">
-        <div class="leftGroup">
-          <a class="brand" href="./">
-            <div class="logoMark" aria-label="Logo">
-              <span>BH</span>
-            </div>
-          </a>
+        <a class="brand" href="./">
+          <div class="logoMark" aria-label="Logo">
+            <span>BH</span>
+          </div>
+        </a>
 
-          <form class="miniSearch" id="miniSearchForm" autocomplete="off" aria-label="Búsqueda rápida">
-            <input id="miniQ" placeholder="Buscar..." aria-label="Buscar rápido" />
-            <button type="submit" title="Buscar" aria-label="Buscar">
-              <svg class="miniIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="7"></circle>
-                <path d="M21 21l-4.3-4.3"></path>
-              </svg>
-            </button>
-          </form>
-        </div>
+        <form class="miniSearch" id="miniSearchForm" autocomplete="off" aria-label="Búsqueda rápida">
+          <input id="miniQ" placeholder="Buscar..." aria-label="Buscar rápido" />
+          <button type="submit" title="Buscar" aria-label="Buscar">
+            <svg class="miniIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.3-4.3"></path>
+            </svg>
+          </button>
+        </form>
 
         <div class="rightGroup" aria-label="Acciones">
           <a href="#" id="navFavoritos">Favoritos</a>
@@ -448,34 +399,31 @@
     <div class="wrap">
       <main class="main">
         <div class="center">
-
-          <div class="heroLine">
-            <div class="headline">
-              <span>Publicaciones únicamente</span>
-              <span>por</span>
-              <span>profesionales inmobiliarios</span>
-            </div>
-          </div>
+          <h1 class="headline">Anuncios publicados únicamente por profesionales inmobiliarios</h1>
 
           <div class="modeRow" aria-label="Tipo de búsqueda">
-            <label class="toggle">
+            <label class="pill">
               <input type="radio" name="mode" value="buy" checked />
-              <span>Compra</span>
+              <span class="dot" aria-hidden="true"></span>
+              <span>Comprar</span>
             </label>
 
-            <label class="toggle">
+            <label class="pill">
+              <input type="radio" name="mode" value="rent" />
+              <span class="dot" aria-hidden="true"></span>
+              <span>Alquilar</span>
+            </label>
+
+            <label class="pill">
+              <input type="radio" name="mode" value="room" />
+              <span class="dot" aria-hidden="true"></span>
+              <span>Habitación</span>
+            </label>
+
+            <label class="pill">
               <input type="radio" name="mode" value="new_build" />
+              <span class="dot" aria-hidden="true"></span>
               <span>Obra nueva</span>
-            </label>
-
-            <label class="toggle">
-              <input type="radio" name="mode" value="rent_home" />
-              <span>Alquiler vivienda</span>
-            </label>
-
-            <label class="toggle">
-              <input type="radio" name="mode" value="rent_room" />
-              <span>Alquiler habitación</span>
             </label>
           </div>
 
@@ -495,85 +443,57 @@
             <button class="btn" type="submit">Buscar</button>
           </form>
 
-          <div class="subTag">UNA VIVIENDA, UN ANUNCIO</div>
+          <div class="subTag">Una vivienda, un anuncio.</div>
 
           <div class="filtersRow" aria-label="Filtros principales">
             <!-- Precio -->
-            <div class="f">
-              <div class="fTitle">Precio</div>
+            <div class="filter">
+              <div class="filterLabel">Precio</div>
               <div class="twoCols">
-                <div class="dd" id="ddPriceMin">
-                  <button class="ddBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
-                    <span class="ddValue" id="priceMinLabel">Mín.</span>
-                    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M6 9l6 6 6-6"></path>
-                    </svg>
-                  </button>
-                  <div class="ddMenu" role="listbox" aria-label="Precio mínimo"></div>
-                </div>
-
-                <div class="dd" id="ddPriceMax">
-                  <button class="ddBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
-                    <span class="ddValue" id="priceMaxLabel">Máx.</span>
-                    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M6 9l6 6 6-6"></path>
-                    </svg>
-                  </button>
-                  <div class="ddMenu" role="listbox" aria-label="Precio máximo"></div>
-                </div>
+                <input id="priceMin" class="filterControl" inputmode="numeric" placeholder="Mín." aria-label="Precio mínimo" />
+                <input id="priceMax" class="filterControl" inputmode="numeric" placeholder="Máx." aria-label="Precio máximo" />
               </div>
             </div>
 
-            <!-- Superficie -->
-            <div class="f">
-              <div class="fTitle">Superficie útil</div>
-              <div class="dd" id="ddAreaMin">
-                <button class="ddBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
-                  <span class="ddValue" id="areaMinLabel">Mín. (m²)</span>
-                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 9l6 6 6-6"></path>
-                  </svg>
-                </button>
-                <div class="ddMenu" role="listbox" aria-label="Superficie mínima"></div>
-              </div>
+            <!-- Superficie útil interior -->
+            <div class="filter">
+              <div class="filterLabel">Superficie útil interior</div>
+              <input id="areaMin" class="filterControl" inputmode="numeric" placeholder="Mín. (m²)" aria-label="Superficie mínima" />
             </div>
 
-            <!-- Periodo de construcción (multi) -->
-            <div class="f">
-              <div class="fTitle">Periodo de construcción</div>
-              <div class="multiBox">
-                <select id="buildPeriod" class="multi" multiple aria-label="Periodo de construcción (múltiple)">
-                  <option value="unknown">Desconocido</option>
-                  <option value="before_1906">Antes de 1906</option>
-                  <option value="1906_1930">1906–1930</option>
-                  <option value="1931_1944">1931–1944</option>
-                  <option value="1945_1959">1945–1959</option>
-                  <option value="1960_1970">1960–1970</option>
-                  <option value="1971_1980">1971–1980</option>
-                  <option value="1981_1990">1981–1990</option>
-                  <option value="1991_2000">1991–2000</option>
-                  <option value="2001_2010">2001–2010</option>
-                  <option value="2011_2020">2011–2020</option>
-                  <option value="after_2020">Después de 2020</option>
-                </select>
-              </div>
+            <!-- Periodo de construcción -->
+            <div class="filter">
+              <div class="filterLabel">Periodo de construcción</div>
+              <select id="buildPeriod" class="filterControl" aria-label="Periodo de construcción">
+                <option value="">Sin preferencia</option>
+                <option value="unknown">Desconocido</option>
+                <option value="before_1906">Antes de 1906</option>
+                <option value="1906_1930">1906–1930</option>
+                <option value="1931_1944">1931–1944</option>
+                <option value="1945_1959">1945–1959</option>
+                <option value="1960_1970">1960–1970</option>
+                <option value="1971_1980">1971–1980</option>
+                <option value="1981_1990">1981–1990</option>
+                <option value="1991_2000">1991–2000</option>
+                <option value="2001_2010">2001–2010</option>
+                <option value="2011_2020">2011–2020</option>
+                <option value="after_2020">Después de 2020</option>
+              </select>
             </div>
 
             <!-- Publicado desde -->
-            <div class="f">
-              <div class="fTitle">Publicado desde</div>
-              <div class="dd" id="ddSince">
-                <button class="ddBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
-                  <span class="ddValue" id="sinceLabel">Sin preferencia</span>
-                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 9l6 6 6-6"></path>
-                  </svg>
-                </button>
-                <div class="ddMenu" role="listbox" aria-label="Publicado desde"></div>
-              </div>
+            <div class="filter">
+              <div class="filterLabel">Publicado desde</div>
+              <select id="publishedSince" class="filterControl" aria-label="Publicado desde">
+                <option value="">Sin preferencia</option>
+                <option value="today">Hoy</option>
+                <option value="3d">Últimos 3 días</option>
+                <option value="5d">Últimos 5 días</option>
+                <option value="10d">Últimos 10 días</option>
+                <option value="30d">Últimos 30 días</option>
+              </select>
             </div>
           </div>
-
         </div>
       </main>
 
@@ -589,138 +509,36 @@
       const miniSearchForm = document.getElementById("miniSearchForm");
       const miniQ = document.getElementById("miniQ");
 
-      const buildPeriodEl = document.getElementById("buildPeriod");
-
-      // Estado filtros
-      const state = {
-        price_min: null,
-        price_max: null,
-        area_min: null,
-        published_since: null
-      };
-
-      function euro(n){
-        try{
-          return new Intl.NumberFormat("es-ES", { style:"currency", currency:"EUR", maximumFractionDigits:0 }).format(n);
-        }catch{
-          return n + " €";
-        }
-      }
-
       function getSelectedMode(){
         const el = document.querySelector('input[name="mode"]:checked');
         return el ? el.value : "buy";
       }
 
-      // Dropdowns
-      function closeAllDropdowns(exceptId){
-        document.querySelectorAll(".dd").forEach(dd => {
-          if (exceptId && dd.id === exceptId) return;
-          dd.classList.remove("open");
-          const btn = dd.querySelector(".ddBtn");
-          if (btn) btn.setAttribute("aria-expanded", "false");
-        });
-      }
-
-      function wireDropdown(ddId, options, onPick){
-        const dd = document.getElementById(ddId);
-        const btn = dd.querySelector(".ddBtn");
-        const menu = dd.querySelector(".ddMenu");
-
-        menu.innerHTML = "";
-        options.forEach(opt => {
-          const b = document.createElement("button");
-          b.type = "button";
-          b.className = "ddOpt" + (opt.muted ? " muted" : "");
-          b.textContent = opt.label;
-          b.dataset.value = (opt.value == null ? "" : String(opt.value));
-          b.addEventListener("click", () => {
-            onPick(opt);
-            dd.classList.remove("open");
-            btn.setAttribute("aria-expanded", "false");
-          });
-          menu.appendChild(b);
-        });
-
-        btn.addEventListener("click", () => {
-          const willOpen = !dd.classList.contains("open");
-          closeAllDropdowns(ddId);
-          dd.classList.toggle("open", willOpen);
-          btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
-        });
-      }
-
-      document.addEventListener("click", (e) => {
-        const inside = e.target.closest(".dd");
-        if (!inside) closeAllDropdowns();
-      });
-
-      function setupFilters(){
-        // Precio (50k en 50k)
-        const priceOpts = [{ label: "Sin preferencia", value: null, muted: true }];
-        for (let v=50000; v<=2000000; v+=50000){
-          priceOpts.push({ label: euro(v), value: v });
-        }
-
-        wireDropdown("ddPriceMin", priceOpts, (opt) => {
-          state.price_min = opt.value;
-          document.getElementById("priceMinLabel").textContent = opt.value == null ? "Mín." : euro(opt.value);
-        });
-
-        wireDropdown("ddPriceMax", priceOpts, (opt) => {
-          state.price_max = opt.value;
-          document.getElementById("priceMaxLabel").textContent = opt.value == null ? "Máx." : euro(opt.value);
-        });
-
-        // Superficie (30 en 10)
-        const areaOpts = [{ label: "Sin preferencia", value: null, muted: true }];
-        for (let v=30; v<=300; v+=10){
-          areaOpts.push({ label: v + " m²", value: v });
-        }
-
-        wireDropdown("ddAreaMin", areaOpts, (opt) => {
-          state.area_min = opt.value;
-          document.getElementById("areaMinLabel").textContent = opt.value == null ? "Mín. (m²)" : (opt.value + " m²");
-        });
-
-        // Publicado desde
-        const sinceOpts = [
-          { label: "Sin preferencia", value: null, muted: true },
-          { label: "Hoy", value: "today" },
-          { label: "Últimos 3 días", value: "3d" },
-          { label: "Últimos 5 días", value: "5d" },
-          { label: "Últimos 10 días", value: "10d" },
-          { label: "Últimos 30 días", value: "30d" },
-        ];
-
-        wireDropdown("ddSince", sinceOpts, (opt) => {
-          state.published_since = opt.value;
-          document.getElementById("sinceLabel").textContent = opt.value == null ? "Sin preferencia" : opt.label;
-        });
-      }
-
-      function getMultiSelectValues(sel){
-        const out = [];
-        for (const opt of sel.options){
-          if (opt.selected) out.push(opt.value);
-        }
-        return out;
+      function normalizeInt(v){
+        const s = String(v || "").replace(/[^\d]/g, "");
+        if(!s) return null;
+        const n = parseInt(s, 10);
+        return Number.isFinite(n) ? n : null;
       }
 
       function go(city){
-        const mode = getSelectedMode();
-        const buildPeriods = getMultiSelectValues(buildPeriodEl);
-
         const params = new URLSearchParams();
         params.set("city", city);
-        params.set("mode", mode);
+        params.set("mode", getSelectedMode());
 
-        if (state.price_min != null) params.set("price_min", String(state.price_min));
-        if (state.price_max != null) params.set("price_max", String(state.price_max));
-        if (state.area_min != null) params.set("area_min", String(state.area_min));
+        const priceMin = normalizeInt(document.getElementById("priceMin").value);
+        const priceMax = normalizeInt(document.getElementById("priceMax").value);
+        const areaMin = normalizeInt(document.getElementById("areaMin").value);
 
-        if (buildPeriods.length) params.set("build_period", buildPeriods.join(","));
-        if (state.published_since) params.set("published_since", state.published_since);
+        const buildPeriod = document.getElementById("buildPeriod").value;
+        const publishedSince = document.getElementById("publishedSince").value;
+
+        if (priceMin != null) params.set("price_min", String(priceMin));
+        if (priceMax != null) params.set("price_max", String(priceMax));
+        if (areaMin != null) params.set("area_min", String(areaMin));
+
+        if (buildPeriod) params.set("build_period", buildPeriod);
+        if (publishedSince) params.set("published_since", publishedSince);
 
         window.location.href = "./map.html?" + params.toString();
       }
@@ -750,7 +568,6 @@
         alert("MVP: Iniciar sesión.");
       });
 
-      setupFilters();
       q.focus();
     </script>
   </body>
