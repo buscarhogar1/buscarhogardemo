@@ -11,26 +11,33 @@
         --text:#111;
         --muted:#6b7280;
         --border:#e6e7eb;
-        --chip:#f3f4f6;
         --card:#ffffff;
         --shadow:0 10px 30px rgba(0,0,0,.08);
-        --radius:14px;
       }
 
       html,body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--text); background:var(--bg);}
       .wrap{max-width:1180px; margin:0 auto; padding:14px 16px 40px;}
 
-      /* Top row */
-      .topRow{display:flex; align-items:center; justify-content:flex-start; gap:12px; margin-bottom:10px;}
+      .topRow{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;}
       .back{display:inline-flex; align-items:center; gap:8px; text-decoration:none; color:var(--text); border:1px solid var(--border); padding:9px 12px; border-radius:12px; background:#fff;}
 
-      /* Breadcrumb */
-      .crumbs{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; margin:10px 0 12px;}
-      .crumbItem{color:#1f6feb; text-decoration:none;}
-      .crumbText{color:var(--muted);}
-      .sep{color:#c4c7cf;}
+      .banner{
+        border:1px solid #f3b4b4;
+        background:#fff5f5;
+        color:#7a1b1b;
+        padding:10px 12px;
+        border-radius:12px;
+        margin:10px 0 12px;
+        font-size:13px;
+        white-space:pre-wrap;
+        display:none;
+      }
 
-      /* Media block (1 big + 4 small) */
+      .crumbs{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; margin:10px 0 12px;}
+      .sep{color:#c4c7cf;}
+      .crumbItem{color:#1f6feb;}
+      .crumbText{color:var(--muted);}
+
       .mediaBlock{
         position:relative;
         border-radius:18px;
@@ -38,7 +45,6 @@
         background:#f2f3f5;
         border:1px solid var(--border);
       }
-
       .mediaGrid{
         display:grid;
         grid-template-columns: 2fr 1fr;
@@ -46,7 +52,6 @@
         padding:6px;
         background:#fff;
       }
-
       .mediaBig{
         border-radius:14px;
         background:linear-gradient(135deg,#f0f1f3,#ffffff);
@@ -57,13 +62,7 @@
         color:#9aa1aa;
         user-select:none;
       }
-
-      .mediaSmallGrid{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        gap:6px;
-      }
-
+      .mediaSmallGrid{display:grid; grid-template-columns: 1fr 1fr; gap:6px;}
       .mediaSmall{
         border-radius:14px;
         background:linear-gradient(135deg,#f0f1f3,#ffffff);
@@ -73,10 +72,7 @@
         place-items:center;
         color:#9aa1aa;
         user-select:none;
-        position:relative;
       }
-
-      /* Overlay actions on top-right of media block */
       .mediaActions{
         position:absolute;
         right:16px;
@@ -98,10 +94,8 @@
         cursor:pointer;
         font-size:14px;
       }
-      .actionBtn:active{transform:translateY(1px);}
       .actionIcon{width:44px; padding:0;}
 
-      /* Media tabs row */
       .mediaTabs{
         display:flex;
         justify-content:space-between;
@@ -127,8 +121,8 @@
       .tabBtn:hover{background:#f6f7f9;}
       .tabCount{color:var(--muted);}
       .tabsRight .tabBtn{border:1px solid var(--border); background:#fff;}
+      .factIcon{width:18px; height:18px; border:1px solid var(--border); border-radius:4px; background:#fff;}
 
-      /* Main content grid */
       .contentGrid{
         display:grid;
         grid-template-columns: 2fr 1fr;
@@ -136,27 +130,8 @@
         align-items:start;
       }
 
-      .mainLeft{min-width:0;}
-      .sideRight{min-width:0;}
-
-      /* Left summary block */
-      .badge{
-        display:inline-flex;
-        align-items:center;
-        height:22px;
-        padding:0 8px;
-        border-radius:6px;
-        background:#ffefc6;
-        border:1px solid #ffe39a;
-        color:#8a5b00;
-        font-size:12px;
-        margin-bottom:10px;
-      }
-
       .title{font-size:34px; line-height:1.08; margin:0 0 6px; font-weight:900; letter-spacing:-0.2px;}
       .metaLine{display:flex; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:14px; margin-bottom:10px;}
-      .metaLine .linkish{color:#1f6feb; text-decoration:none;}
-
       .priceRow{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin:12px 0 10px;}
       .price{font-size:34px; font-weight:900; margin:0;}
       .priceNoteBtn{
@@ -169,25 +144,10 @@
       }
       .priceNoteBtn:hover{text-decoration:underline;}
 
-      .factsRow{
-        display:flex;
-        gap:18px;
-        flex-wrap:wrap;
-        align-items:center;
-        margin-top:10px;
-        color:#111;
-        font-size:15px;
-      }
+      .factsRow{display:flex; gap:18px; flex-wrap:wrap; align-items:center; margin-top:10px; color:#111; font-size:15px;}
       .fact{display:inline-flex; align-items:center; gap:8px;}
-      .factIcon{
-        width:18px; height:18px;
-        border:1px solid var(--border);
-        border-radius:4px;
-        background:#fff;
-      }
       .factMuted{color:var(--muted);}
 
-      /* Right cards */
       .sideCard{
         background:var(--card);
         border:1px solid var(--border);
@@ -196,14 +156,12 @@
         padding:14px;
       }
       .sideSticky{position:sticky; top:14px; display:grid; gap:14px;}
-
       .sideTitle{color:var(--muted); font-size:13px; margin:0 0 10px;}
       .kv{display:grid; gap:10px;}
       .kvLine{display:grid; grid-template-columns: 92px 1fr; gap:10px;}
       .k{color:var(--muted); font-size:13px;}
       .v{font-size:14px;}
       .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; font-size:12px; color:var(--muted); word-break:break-all;}
-
       .mapMock{
         height:120px;
         border:1px solid var(--border);
@@ -216,9 +174,8 @@
         user-select:none;
       }
 
-      /* Responsive */
       @media (max-width: 980px){
-        .mediaGrid{grid-template-columns:1fr; }
+        .mediaGrid{grid-template-columns:1fr;}
         .mediaSmallGrid{grid-template-columns:1fr 1fr;}
         .mediaBig{min-height:300px;}
         .mediaSmall{min-height:160px;}
@@ -238,7 +195,9 @@
         <a class="back" href="./">Volver al mapa</a>
       </div>
 
-      <div class="crumbs" id="crumbs">
+      <div id="banner" class="banner"></div>
+
+      <div class="crumbs">
         <span>🏠</span>
         <span class="sep">/</span>
         <span class="crumbItem" id="crumbCity">Ciudad</span>
@@ -278,9 +237,7 @@
       </div>
 
       <div class="contentGrid">
-        <div class="mainLeft">
-          <div class="badge" id="badge" style="display:none;">Nuevo</div>
-
+        <div>
           <h1 class="title" id="title">Dirección</h1>
 
           <div class="metaLine">
@@ -288,7 +245,7 @@
             <span class="sep">•</span>
             <span id="metaCity">—</span>
             <span class="sep">•</span>
-            <span class="linkish" id="metaNeighborhood">Barrio</span>
+            <span id="metaNeighborhood">Barrio</span>
           </div>
 
           <div class="priceRow">
@@ -299,7 +256,7 @@
           <div class="factsRow" id="factsRow"></div>
         </div>
 
-        <div class="sideRight">
+        <div>
           <div class="sideSticky">
             <div class="sideCard">
               <div class="mapMock">Mapa (pendiente)</div>
@@ -326,12 +283,6 @@
                 </div>
               </div>
             </div>
-
-            <div class="sideCard" style="display:none;">
-              <p class="sideTitle">Notas</p>
-              <div class="k">Esta ficha es MVP. Las fotos y el plano se conectarán cuando el backend exponga esos campos.</div>
-            </div>
-
           </div>
         </div>
       </div>
@@ -342,6 +293,8 @@
       const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
       const VIEW_DETAIL = "listing_detail_public";
+
+      const bannerEl = document.getElementById("banner");
 
       const titleEl = document.getElementById("title");
       const priceEl = document.getElementById("price");
@@ -364,11 +317,16 @@
       const saveBtn = document.getElementById("saveBtn");
       const monthlyBtn = document.getElementById("monthlyLink");
 
+      function showBanner(msg) {
+        bannerEl.style.display = "block";
+        bannerEl.textContent = msg;
+      }
+
       function euro(n) {
         try {
           return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
         } catch {
-          return `${n} EUR`;
+          return String(n) + " EUR";
         }
       }
 
@@ -402,24 +360,28 @@
       }
 
       async function fetchDetail(listingId) {
-        const url =
-          `${SUPABASE_URL}/rest/v1/${VIEW_DETAIL}` +
-          `?select=listing_id,price_eur,listed_at,agency_name,property_type,useful_area_m2,built_year,city,neighborhood,address_display,postcode,province` +
-          `&listing_id=eq.${encodeURIComponent(listingId)}&limit=1`;
+        const params = new URLSearchParams();
+        params.set("select", "listing_id,price_eur,listed_at,agency_name,property_type,useful_area_m2,built_year,city,neighborhood,address_display,postcode,province");
+        params.set("listing_id", "eq." + listingId);
+        params.set("limit", "1");
+
+        const url = SUPABASE_URL + "/rest/v1/" + VIEW_DETAIL + "?" + params.toString();
 
         const res = await fetch(url, {
           headers: {
             apikey: SUPABASE_ANON_KEY,
-            Authorization: \`Bearer ${SUPABASE_ANON_KEY}\`
+            Authorization: "Bearer " + SUPABASE_ANON_KEY
           }
         });
 
+        const text = await res.text();
         if (!res.ok) {
-          const txt = await res.text();
-          throw new Error(txt);
+          throw new Error("Supabase " + res.status + ": " + text);
         }
 
-        const data = await res.json();
+        let data = [];
+        try { data = JSON.parse(text); } catch { data = []; }
+
         return data[0] || null;
       }
 
@@ -434,9 +396,7 @@
 
       shareBtn.addEventListener("click", async () => {
         const ok = await copyToClipboard(window.location.href);
-        if (ok) return;
-        // fallback
-        window.prompt("Copia el enlace:", window.location.href);
+        if (!ok) window.prompt("Copia el enlace:", window.location.href);
       });
 
       let saved = false;
@@ -452,7 +412,8 @@
       (async () => {
         const listingId = getParam("id");
         if (!listingId) {
-          titleEl.textContent = "Ficha no disponible (falta ?id=...)";
+          showBanner("Falta el parámetro ?id=...");
+          titleEl.textContent = "Ficha no disponible";
           return;
         }
 
@@ -460,6 +421,7 @@
           const row = await fetchDetail(listingId);
 
           if (!row) {
+            showBanner("No hay fila en listing_detail_public para este id: " + listingId);
             titleEl.textContent = "Ficha no encontrada";
             idEl.textContent = listingId;
             return;
@@ -482,20 +444,20 @@
           idEl.textContent = row.listing_id || listingId;
 
           factsRowEl.innerHTML = "";
-          if (row.useful_area_m2 != null) addFact(\`\${row.useful_area_m2} m²\`);
-          if (row.built_year != null) addFact(\`Año \${row.built_year}\`, true);
+          if (row.useful_area_m2 != null) addFact(String(row.useful_area_m2) + " m²");
+          if (row.built_year != null) addFact("Año " + row.built_year, true);
           if (row.province) addFact(row.province, true);
 
         } catch (e) {
-          const msg = (e && e.message) ? e.message : String(e);
-          titleEl.textContent = "Error cargando ficha";
           console.error(e);
-          alert(msg);
+          showBanner(String(e && e.message ? e.message : e));
+          titleEl.textContent = "Error cargando ficha";
         }
       })();
     </script>
   </body>
 </html>
+
 
 
 
