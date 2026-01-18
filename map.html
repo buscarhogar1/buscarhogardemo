@@ -155,7 +155,6 @@
         color: rgba(0,0,0,0.75);
       }
 
-      /* flex para pegar agencia abajo */
       .textSide {
         position: relative;
         padding: 12px 14px 12px;
@@ -204,13 +203,12 @@
         color: #fff;
       }
 
-      /* Línea 1: calle + número + (opcionales) */
       .addrTop {
         color: #1a73e8;
         text-decoration: none;
         font-size: 18px;
         line-height: 1.08;
-        font-weight: 650; /* antes ~750 */
+        font-weight: 650;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -219,16 +217,14 @@
       }
       .addrTop:hover { text-decoration: underline; }
 
-      /* Línea 2: CP + ciudad (tamaño +20%) */
       .addrBottom {
         margin-top: 5px;
-        font-size: 16px; /* antes 13, +20% sobre 13 = 15.6 aprox */
+        font-size: 16px;
         color: #111;
       }
 
-      /* Espacio entre CP+ciudad y precio +20% */
       .price {
-        margin-top: 10px; /* antes 8 -> +20% = 9.6 */
+        margin-top: 10px;
         font-size: 16px;
         font-weight: 900;
         color: #111;
@@ -380,11 +376,7 @@
 
       function euro(n) {
         try {
-          return new Intl.NumberFormat("es-ES", {
-            style: "currency",
-            currency: "EUR",
-            maximumFractionDigits: 0
-          }).format(n);
+          return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
         } catch {
           return `${n} EUR`;
         }
@@ -443,10 +435,7 @@
 
       function buildAddressTop(p) {
         const base = joinNonEmpty([p.street_name, p.street_number], " ");
-        const extras = joinNonEmpty(
-          [p.building, p.staircase, p.floor, p.door],
-          ", "
-        );
+        const extras = joinNonEmpty([p.building, p.staircase, p.floor, p.door], ", ");
         if (base && extras) return base + ", " + extras;
         return base || extras || "Dirección";
       }
@@ -480,6 +469,31 @@
 
         openCard();
       }
+
+      // ===== Params desde index.html =====
+      function getParams() {
+        const u = new URL(window.location.href);
+        return {
+          city: (u.searchParams.get("city") || "").trim(),
+          mode: (u.searchParams.get("mode") || "").trim(), // buy|rent|room|new_build
+          priceMin: u.searchParams.get("price_min"),
+          priceMax: u.searchParams.get("price_max"),
+          areaMin: u.searchParams.get("area_min"),
+
+          // preparados para después
+          buildPeriod: (u.searchParams.get("build_period") || "").trim(),
+          publishedSince: (u.searchParams.get("published_since") || "").trim()
+        };
+      }
+
+      function toInt(v) {
+        if (v == null || v === "") return null;
+        const n = parseInt(String(v), 10);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      const initialParams = getParams();
+      if (initialParams.city) cityInput.value = initialParams.city;
 
       let map = L.map("map").setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
@@ -531,7 +545,7 @@
         };
       }
 
-      async function fetchMapPointsByBounds(bounds) {
+      async function fetchMapPointsByBounds(bounds, filters) {
         const params = new URLSearchParams();
         params.set("select", [
           "listing_id",
@@ -550,13 +564,23 @@
           "building",
           "staircase",
           "floor",
-          "door"
+          "door",
+          "listing_mode"
         ].join(","));
 
+        // bounds
         params.set("lat", `gte.${bounds.south}`);
         params.append("lat", `lte.${bounds.north}`);
         params.set("lng", `gte.${bounds.west}`);
         params.append("lng", `lte.${bounds.east}`);
+
+        // filtros MVP
+        if (filters.mode) params.set("listing_mode", `eq.${filters.mode}`);
+
+        if (filters.priceMin != null) params.set("price_eur", `gte.${filters.priceMin}`);
+        if (filters.priceMax != null) params.append("price_eur", `lte.${filters.priceMax}`);
+
+        if (filters.areaMin != null) params.set("useful_area_m2", `gte.${filters.areaMin}`);
 
         const url = `${SUPABASE_URL}/rest/v1/${VIEW_MAP_POINTS}?${params.toString()}`;
 
@@ -581,14 +605,28 @@
         const b = getCurrentBounds();
         const z = map.getZoom();
 
-        setStatus(`Cargando... (zoom ${z})`);
+        const p = getParams();
 
-        const rows = await fetchMapPointsByBounds(b);
+        const filters = {
+          mode: p.mode && ["buy","rent","room","new_build"].includes(p.mode) ? p.mode : null,
+          priceMin: toInt(p.priceMin),
+          priceMax: toInt(p.priceMax),
+          areaMin: toInt(p.areaMin)
+        };
+
+        const parts = [];
+        if (filters.mode) parts.push(`modo=${filters.mode}`);
+        if (filters.priceMin != null || filters.priceMax != null) parts.push(`precio=${filters.priceMin ?? "—"}–${filters.priceMax ?? "—"}`);
+        if (filters.areaMin != null) parts.push(`m²≥${filters.areaMin}`);
+
+        setStatus(`Cargando... (zoom ${z}${parts.length ? " | " + parts.join(" | ") : ""})`);
+
+        const rows = await fetchMapPointsByBounds(b, filters);
 
         clearMarkers();
         rows.forEach(addPoint);
 
-        setStatus(`Anuncios en el mapa: ${rows.length} | zoom ${z}`);
+        setStatus(`Anuncios en el mapa: ${rows.length} | zoom ${z}${parts.length ? " | " + parts.join(" | ") : ""}`);
       }
 
       function scheduleReload() {
@@ -613,15 +651,17 @@
         return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
       }
 
-      searchBtn.addEventListener("click", async () => {
-        const city = cityInput.value.trim();
-        if (!city) return;
-
+      async function goToCity(city) {
         setStatus("Buscando ciudad...");
         const center = await geocodeCity(city);
         if (center) map.setView(center, 13);
-
         scheduleReload();
+      }
+
+      searchBtn.addEventListener("click", async () => {
+        const city = cityInput.value.trim();
+        if (!city) return;
+        await goToCity(city);
       });
 
       map.on("moveend", scheduleReload);
@@ -630,7 +670,11 @@
 
       (async () => {
         try {
-          await loadPointsForCurrentView();
+          if (initialParams.city) {
+            await goToCity(initialParams.city);
+          } else {
+            await loadPointsForCurrentView();
+          }
         } catch (e) {
           const msg = (e && e.message) ? e.message : String(e);
           setStatus(`Error al cargar datos: ${msg}`);
@@ -641,5 +685,4 @@
     </script>
   </body>
 </html>
-
 
