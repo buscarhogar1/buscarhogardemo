@@ -17,12 +17,9 @@
         --bg:#ffffff;
         --text:#111;
         --muted:#6b7280;
-
         --terra:#a3472f;
-
         --btn:#1a73e8;
         --btnText:#fff;
-
         --border:#111;
         --softBorder:#e6e7eb;
       }
@@ -212,7 +209,6 @@
         box-shadow: 0 14px 38px rgba(0,0,0,0.18);
         z-index: 9999;
         overflow: hidden;
-
         opacity: 0;
         pointer-events: none;
         transform: translateX(-50%) translateY(10px);
@@ -406,7 +402,6 @@
 
       @media (max-width: 720px) {
         .miniSearch{ display:none; }
-
         .page{ padding: 10px 10px 10px; }
         .mapShell{ width: 100%; }
 
@@ -529,7 +524,6 @@
     <script>
       const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
-      const RPC = "search_map_points_filtered";
 
       const DEFAULT_CENTER = [37.9838, -1.1280];
       const DEFAULT_ZOOM = 13;
@@ -653,42 +647,28 @@
 
       function getParams() {
         const u = new URL(window.location.href);
-        const city = (u.searchParams.get("city") || "").trim();
 
+        const city = (u.searchParams.get("city") || "").trim();
         let mode = (u.searchParams.get("mode") || "").trim().toLowerCase();
-        if (!mode) mode = "buy";
+        const allowed = ["buy","rent","room","new_build","all"];
+        if (!allowed.includes(mode)) mode = "buy";
+
+        function toInt(v){
+          if (v == null || v === "") return null;
+          const n = parseInt(String(v), 10);
+          return Number.isFinite(n) ? n : null;
+        }
 
         return {
           city,
           mode,
-
-          priceMin: u.searchParams.get("price_min"),
-          priceMax: u.searchParams.get("price_max"),
-
-          listedSince: u.searchParams.get("listed_since_days"),
-          availability: u.searchParams.get("availability"),
-
-          usefulMin: u.searchParams.get("useful_min"),
-          usefulMax: u.searchParams.get("useful_max"),
-
-          builtMin: u.searchParams.get("built_min"),
-          builtMax: u.searchParams.get("built_max"),
-
-          bedroomsMin: u.searchParams.get("bedrooms_min"),
-          bathroomsMin: u.searchParams.get("bathrooms_min")
+          priceMin: toInt(u.searchParams.get("price_min")),
+          priceMax: toInt(u.searchParams.get("price_max")),
+          usefulMin: toInt(u.searchParams.get("useful_min")),
+          usefulMax: toInt(u.searchParams.get("useful_max")),
+          listedSinceDays: toInt(u.searchParams.get("listed_since_days")),
+          availability: (u.searchParams.get("availability") || "").trim() || null
         };
-      }
-
-      function toInt(v) {
-        if (v == null || v === "") return null;
-        const n = parseInt(String(v), 10);
-        return Number.isFinite(n) ? n : null;
-      }
-
-      function toText(v) {
-        if (v == null) return null;
-        const s = String(v).trim();
-        return s.length ? s : null;
       }
 
       const initialParams = getParams();
@@ -743,35 +723,33 @@
         };
       }
 
-      async function rpcSearch(bounds, q) {
-        const allowed = ["buy","rent","room","new_build"];
-        const safeMode = allowed.includes((q.mode||"").toLowerCase()) ? q.mode.toLowerCase() : "buy";
-
+      async function fetchMapPointsRPC(bounds, filters) {
         const body = {
           p_south: bounds.south,
           p_west: bounds.west,
           p_north: bounds.north,
           p_east: bounds.east,
 
-          p_mode: safeMode,
+          p_mode: (filters.mode && filters.mode !== "all") ? filters.mode : null,
 
-          p_price_min: toInt(q.priceMin),
-          p_price_max: toInt(q.priceMax),
+          p_price_min: filters.priceMin,
+          p_price_max: filters.priceMax,
 
-          p_listed_since_days: toInt(q.listedSince),
-          p_availability: toText(q.availability),
+          p_listed_since_days: filters.listedSinceDays,
 
-          p_useful_min: toInt(q.usefulMin),
-          p_useful_max: toInt(q.usefulMax),
+          p_availability: filters.availability,
 
-          p_built_min: toInt(q.builtMin),
-          p_built_max: toInt(q.builtMax),
+          p_useful_min: filters.usefulMin,
+          p_useful_max: filters.usefulMax,
 
-          p_bedrooms_min: toInt(q.bedroomsMin),
-          p_bathrooms_min: toInt(q.bathroomsMin),
+          p_built_min: null,
+          p_built_max: null,
+          p_bedrooms_min: null,
+          p_bathrooms_min: null,
 
           p_outdoor_type: null,
           p_orientations: null,
+
           p_energy_choice: null,
           p_build_periods: null,
           p_parking_types: null,
@@ -779,13 +757,14 @@
           p_accessibility: null
         };
 
-        const url = `${SUPABASE_URL}/rest/v1/rpc/${RPC}`;
+        const url = `${SUPABASE_URL}/rest/v1/rpc/search_map_points_filtered`;
+
         const res = await fetch(url, {
           method: "POST",
           headers: {
+            "Content-Type": "application/json",
             apikey: SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-            "Content-Type": "application/json"
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
           },
           body: JSON.stringify(body)
         });
@@ -803,16 +782,27 @@
       async function loadPointsForCurrentView() {
         const b = getCurrentBounds();
         const z = map.getZoom();
-        const q = getParams();
 
-        setStatus(`Cargando...`);
+        const p = getParams();
+        const filters = {
+          mode: p.mode,
+          priceMin: p.priceMin,
+          priceMax: p.priceMax,
+          usefulMin: p.usefulMin,
+          usefulMax: p.usefulMax,
+          listedSinceDays: p.listedSinceDays,
+          availability: p.availability
+        };
 
-        const rows = await rpcSearch(b, q);
+        setStatus("Cargando...");
+
+        const rows = await fetchMapPointsRPC(b, filters);
 
         clearMarkers();
         rows.forEach(addPoint);
 
-        setStatus(`Anuncios: ${rows.length} | zoom ${z} | modo=${(q.mode||"buy")}`);
+        const ls = (filters.listedSinceDays != null) ? ` | ofertado<=${filters.listedSinceDays}d` : "";
+        setStatus(`Anuncios: ${rows.length} | zoom ${z} | modo=${filters.mode}${ls}`);
       }
 
       function scheduleReload() {
@@ -825,7 +815,7 @@
             setStatus(`Error: ${msg}`);
             console.error(e);
           }
-        }, 300);
+        }, 250);
       }
 
       async function geocodeCity(city) {
