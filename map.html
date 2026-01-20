@@ -35,7 +35,6 @@
         color: var(--text);
       }
 
-      /* ===== Topbar (igual que index) ===== */
       .topbar{
         height:56px;
         background:var(--terra);
@@ -147,7 +146,6 @@
         background: rgba(255,255,255,0.14);
       }
 
-      /* ===== Layout del mapa con márgenes laterales ===== */
       .page{
         height: calc(100% - 56px);
         padding: 14px 16px 16px;
@@ -168,7 +166,6 @@
         border: 1px solid #f0f1f3;
       }
 
-      /* Status overlay discreto */
       #status{
         position: absolute;
         left: 50%;
@@ -188,7 +185,6 @@
         pointer-events: none;
       }
 
-      /* ===== Marcadores ===== */
       .dot {
         width: 14px;
         height: 14px;
@@ -205,7 +201,6 @@
         transform: scale(1.15);
       }
 
-      /* ===== Card (altura fija) ===== */
       .card {
         position: fixed;
         left: 50%;
@@ -534,7 +529,8 @@
     <script>
       const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
-      const VIEW_MAP_POINTS = "listings_map_points";
+
+      const RPC_SEARCH = "search_map_points_filtered";
 
       const DEFAULT_CENTER = [37.9838, -1.1280];
       const DEFAULT_ZOOM = 13;
@@ -732,46 +728,47 @@
       }
 
       async function fetchMapPointsByBounds(bounds, filters) {
-        const params = new URLSearchParams();
-        params.set("select", [
-          "listing_id",
-          "price_eur",
-          "lat",
-          "lng",
-          "postcode",
-          "city",
-          "agency_name",
-          "property_type",
-          "useful_area_m2",
-          "listed_at",
-          "main_photo_url",
-          "street_name",
-          "street_number",
-          "building",
-          "staircase",
-          "floor",
-          "door",
-          "listing_mode"
-        ].join(","));
+        const payload = {
+          p_south: bounds.south,
+          p_west: bounds.west,
+          p_north: bounds.north,
+          p_east: bounds.east,
 
-        params.set("lat", `gte.${bounds.south}`);
-        params.append("lat", `lte.${bounds.north}`);
-        params.set("lng", `gte.${bounds.west}`);
-        params.append("lng", `lte.${bounds.east}`);
+          p_mode: (filters.mode && filters.mode !== "all") ? filters.mode : null,
+          p_price_min: filters.priceMin,
+          p_price_max: filters.priceMax,
+          p_listed_since_days: null,
+          p_availability: null,
 
-        if (filters.mode && filters.mode !== "all") params.set("listing_mode", `eq.${filters.mode}`);
+          p_useful_min: filters.areaMin,
+          p_useful_max: null,
+          p_built_min: null,
+          p_built_max: null,
 
-        if (filters.priceMin != null) params.set("price_eur", `gte.${filters.priceMin}`);
-        if (filters.priceMax != null) params.append("price_eur", `lte.${filters.priceMax}`);
-        if (filters.areaMin != null) params.set("useful_area_m2", `gte.${filters.areaMin}`);
+          p_bedrooms_min: null,
+          p_bathrooms_min: null,
 
-        const url = `${SUPABASE_URL}/rest/v1/${VIEW_MAP_POINTS}?${params.toString()}`;
+          p_outdoor_type: null,
+          p_orientations: null,
+
+          p_energy_choice: null,
+          p_build_periods: null,
+
+          p_parking_types: null,
+          p_storage_types: null,
+          p_accessibility: null
+        };
+
+        const url = `${SUPABASE_URL}/rest/v1/rpc/${RPC_SEARCH}`;
 
         const res = await fetch(url, {
+          method: "POST",
           headers: {
             apikey: SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-          }
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
         });
 
         if (!res.ok) {
@@ -800,7 +797,7 @@
           areaMin: toInt(p.areaMin)
         };
 
-        setStatus(`Cargando...`);
+        setStatus("Cargando...");
 
         const rows = await fetchMapPointsByBounds(b, filters);
 
@@ -839,13 +836,11 @@
         scheduleReload();
       }
 
-      // Topbar: búsqueda
       miniSearchForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const city = (miniQ.value || "").trim();
         if (!city) return;
 
-        // actualiza querystring (solo city) manteniendo el resto
         const u = new URL(window.location.href);
         u.searchParams.set("city", city);
         history.replaceState(null, "", u.toString());
@@ -885,5 +880,4 @@
     </script>
   </body>
 </html>
-
 
