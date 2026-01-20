@@ -35,6 +35,7 @@
         color: var(--text);
       }
 
+      /* ===== Topbar (igual que index) ===== */
       .topbar{
         height:56px;
         background:var(--terra);
@@ -146,6 +147,7 @@
         background: rgba(255,255,255,0.14);
       }
 
+      /* ===== Layout del mapa con márgenes laterales ===== */
       .page{
         height: calc(100% - 56px);
         padding: 14px 16px 16px;
@@ -166,6 +168,7 @@
         border: 1px solid #f0f1f3;
       }
 
+      /* Status overlay discreto */
       #status{
         position: absolute;
         left: 50%;
@@ -185,6 +188,7 @@
         pointer-events: none;
       }
 
+      /* ===== Marcadores ===== */
       .dot {
         width: 14px;
         height: 14px;
@@ -201,6 +205,7 @@
         transform: scale(1.15);
       }
 
+      /* ===== Card (altura fija) ===== */
       .card {
         position: fixed;
         left: 50%;
@@ -529,7 +534,6 @@
     <script>
       const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
-
       const RPC_SEARCH = "search_map_points_filtered";
 
       const DEFAULT_CENTER = [37.9838, -1.1280];
@@ -665,7 +669,28 @@
           mode,
           priceMin: u.searchParams.get("price_min"),
           priceMax: u.searchParams.get("price_max"),
-          areaMin: u.searchParams.get("area_min")
+          areaMin: u.searchParams.get("area_min"),
+          areaMax: u.searchParams.get("area_max"),
+
+          builtMin: u.searchParams.get("built_min"),
+          builtMax: u.searchParams.get("built_max"),
+
+          listedSinceDays: u.searchParams.get("listed_since_days"),
+          availability: u.searchParams.get("availability"),
+
+          bedroomsMin: u.searchParams.get("bedrooms_min"),
+          bathroomsMin: u.searchParams.get("bathrooms_min"),
+
+          outdoorType: u.searchParams.get("outdoor_type"),
+          orientations: u.searchParams.get("orientations"),  // ejemplo: N,E,S
+
+          energy: u.searchParams.get("energy"),              // ejemplo: pending o C
+
+          buildPeriods: u.searchParams.get("build_periods"), // ejemplo: pre_1950,1950_1999
+
+          parking: u.searchParams.get("parking"),            // ejemplo: included,none
+          storage: u.searchParams.get("storage"),            // ejemplo: optional,none
+          accessibility: u.searchParams.get("accessibility") // ejemplo: elevator,adapted
         };
       }
 
@@ -673,6 +698,14 @@
         if (v == null || v === "") return null;
         const n = parseInt(String(v), 10);
         return Number.isFinite(n) ? n : null;
+      }
+
+      function toTextArray(csv) {
+        if (csv == null) return null;
+        const s = String(csv).trim();
+        if (!s) return null;
+        const arr = s.split(",").map(x => x.trim()).filter(Boolean);
+        return arr.length ? arr : null;
       }
 
       const initialParams = getParams();
@@ -728,38 +761,43 @@
       }
 
       async function fetchMapPointsByBounds(bounds, filters) {
-        const payload = {
+        const url = `${SUPABASE_URL}/rest/v1/rpc/${RPC_SEARCH}`;
+
+        const body = {
           p_south: bounds.south,
           p_west: bounds.west,
           p_north: bounds.north,
           p_east: bounds.east,
 
           p_mode: (filters.mode && filters.mode !== "all") ? filters.mode : null,
+
           p_price_min: filters.priceMin,
           p_price_max: filters.priceMax,
-          p_listed_since_days: null,
-          p_availability: null,
 
-          p_useful_min: filters.areaMin,
-          p_useful_max: null,
-          p_built_min: null,
-          p_built_max: null,
+          p_listed_since_days: filters.listedSinceDays,
 
-          p_bedrooms_min: null,
-          p_bathrooms_min: null,
+          p_availability: filters.availability,
 
-          p_outdoor_type: null,
-          p_orientations: null,
+          p_useful_min: filters.usefulMin,
+          p_useful_max: filters.usefulMax,
 
-          p_energy_choice: null,
-          p_build_periods: null,
+          p_built_min: filters.builtMin,
+          p_built_max: filters.builtMax,
 
-          p_parking_types: null,
-          p_storage_types: null,
-          p_accessibility: null
+          p_bedrooms_min: filters.bedroomsMin,
+          p_bathrooms_min: filters.bathroomsMin,
+
+          p_outdoor_type: filters.outdoorType,
+          p_orientations: filters.orientations,
+
+          p_energy_choice: filters.energy,
+
+          p_build_periods: filters.buildPeriods,
+
+          p_parking_types: filters.parkingTypes,
+          p_storage_types: filters.storageTypes,
+          p_accessibility: filters.accessibility
         };
-
-        const url = `${SUPABASE_URL}/rest/v1/rpc/${RPC_SEARCH}`;
 
         const res = await fetch(url, {
           method: "POST",
@@ -768,7 +806,7 @@
             Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(body)
         });
 
         if (!res.ok) {
@@ -776,7 +814,8 @@
           throw new Error(txt);
         }
 
-        return await res.json();
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
       }
 
       let debounceTimer = null;
@@ -792,9 +831,32 @@
 
         const filters = {
           mode: safeMode,
+
           priceMin: toInt(p.priceMin),
           priceMax: toInt(p.priceMax),
-          areaMin: toInt(p.areaMin)
+
+          listedSinceDays: toInt(p.listedSinceDays),
+          availability: (p.availability || "").trim() || null,
+
+          usefulMin: toInt(p.areaMin),
+          usefulMax: toInt(p.areaMax),
+
+          builtMin: toInt(p.builtMin),
+          builtMax: toInt(p.builtMax),
+
+          bedroomsMin: toInt(p.bedroomsMin),
+          bathroomsMin: toInt(p.bathroomsMin),
+
+          outdoorType: (p.outdoorType || "").trim() || null,
+          orientations: toTextArray(p.orientations),
+
+          energy: (p.energy || "").trim() || null,
+
+          buildPeriods: toTextArray(p.buildPeriods),
+
+          parkingTypes: toTextArray(p.parking),
+          storageTypes: toTextArray(p.storage),
+          accessibility: toTextArray(p.accessibility)
         };
 
         setStatus("Cargando...");
@@ -836,11 +898,13 @@
         scheduleReload();
       }
 
+      // Topbar: búsqueda
       miniSearchForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const city = (miniQ.value || "").trim();
         if (!city) return;
 
+        // actualiza querystring (solo city) manteniendo el resto
         const u = new URL(window.location.href);
         u.searchParams.set("city", city);
         history.replaceState(null, "", u.toString());
@@ -880,4 +944,3 @@
     </script>
   </body>
 </html>
-
