@@ -209,6 +209,7 @@
         box-shadow: 0 14px 38px rgba(0,0,0,0.18);
         z-index: 9999;
         overflow: hidden;
+
         opacity: 0;
         pointer-events: none;
         transform: translateX(-50%) translateY(10px);
@@ -645,29 +646,63 @@
         openCard();
       }
 
+      function toInt(v) {
+        if (v == null || v === "") return null;
+        const n = parseInt(String(v), 10);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function toText(v) {
+        if (v == null) return null;
+        const s = String(v).trim();
+        return s.length ? s : null;
+      }
+
+      function toTextArray(csv) {
+        if (!csv) return null;
+        const arr = String(csv).split(",").map(s => s.trim()).filter(Boolean);
+        return arr.length ? arr : null;
+      }
+
       function getParams() {
         const u = new URL(window.location.href);
 
-        const city = (u.searchParams.get("city") || "").trim();
         let mode = (u.searchParams.get("mode") || "").trim().toLowerCase();
+        if (!mode) mode = "buy";
+
         const allowed = ["buy","rent","room","new_build","all"];
         if (!allowed.includes(mode)) mode = "buy";
 
-        function toInt(v){
-          if (v == null || v === "") return null;
-          const n = parseInt(String(v), 10);
-          return Number.isFinite(n) ? n : null;
-        }
-
         return {
-          city,
+          city: (u.searchParams.get("city") || "").trim(),
           mode,
+
           priceMin: toInt(u.searchParams.get("price_min")),
           priceMax: toInt(u.searchParams.get("price_max")),
+
+          listedSinceDays: toInt(u.searchParams.get("since_days")),  // 1,5,10,30,60
+          availability: toText(u.searchParams.get("availability")),  // available/negotiable/closed
+
           usefulMin: toInt(u.searchParams.get("useful_min")),
           usefulMax: toInt(u.searchParams.get("useful_max")),
-          listedSinceDays: toInt(u.searchParams.get("listed_since_days")),
-          availability: (u.searchParams.get("availability") || "").trim() || null
+
+          builtMin: toInt(u.searchParams.get("built_min")),
+          builtMax: toInt(u.searchParams.get("built_max")),
+
+          bedroomsMin: toInt(u.searchParams.get("bedrooms_min")),
+          bathroomsMin: toInt(u.searchParams.get("bathrooms_min")),
+
+          outdoorType: toText(u.searchParams.get("outdoor_type")),         // balcony/terrace/garden/patio
+          orientations: toTextArray(u.searchParams.get("orientations")),   // N,E,S,W,...
+
+          energyChoice: toText(u.searchParams.get("energy")),              // pending o A..G
+
+          buildPeriods: toTextArray(u.searchParams.get("build_periods")),  // pre_1950,1950_1999,2000_plus
+
+          parkingTypes: toTextArray(u.searchParams.get("parking")),        // included,optional,none
+          storageTypes: toTextArray(u.searchParams.get("storage")),        // included,optional,none
+
+          accessibility: toTextArray(u.searchParams.get("accessibility"))  // elevator,reduced_mobility
         };
       }
 
@@ -723,7 +758,7 @@
         };
       }
 
-      async function fetchMapPointsRPC(bounds, filters) {
+      async function rpcSearchMapPoints(bounds, filters) {
         const body = {
           p_south: bounds.south,
           p_west: bounds.west,
@@ -736,25 +771,28 @@
           p_price_max: filters.priceMax,
 
           p_listed_since_days: filters.listedSinceDays,
-
           p_availability: filters.availability,
 
           p_useful_min: filters.usefulMin,
           p_useful_max: filters.usefulMax,
 
-          p_built_min: null,
-          p_built_max: null,
-          p_bedrooms_min: null,
-          p_bathrooms_min: null,
+          p_built_min: filters.builtMin,
+          p_built_max: filters.builtMax,
 
-          p_outdoor_type: null,
-          p_orientations: null,
+          p_bedrooms_min: filters.bedroomsMin,
+          p_bathrooms_min: filters.bathroomsMin,
 
-          p_energy_choice: null,
-          p_build_periods: null,
-          p_parking_types: null,
-          p_storage_types: null,
-          p_accessibility: null
+          p_outdoor_type: filters.outdoorType,
+          p_orientations: filters.orientations,
+
+          p_energy_choice: filters.energyChoice,
+
+          p_build_periods: filters.buildPeriods,
+
+          p_parking_types: filters.parkingTypes,
+          p_storage_types: filters.storageTypes,
+
+          p_accessibility: filters.accessibility
         };
 
         const url = `${SUPABASE_URL}/rest/v1/rpc/search_map_points_filtered`;
@@ -783,26 +821,16 @@
         const b = getCurrentBounds();
         const z = map.getZoom();
 
-        const p = getParams();
-        const filters = {
-          mode: p.mode,
-          priceMin: p.priceMin,
-          priceMax: p.priceMax,
-          usefulMin: p.usefulMin,
-          usefulMax: p.usefulMax,
-          listedSinceDays: p.listedSinceDays,
-          availability: p.availability
-        };
+        const f = getParams();
 
-        setStatus("Cargando...");
+        setStatus(`Cargando...`);
 
-        const rows = await fetchMapPointsRPC(b, filters);
+        const rows = await rpcSearchMapPoints(b, f);
 
         clearMarkers();
         rows.forEach(addPoint);
 
-        const ls = (filters.listedSinceDays != null) ? ` | ofertado<=${filters.listedSinceDays}d` : "";
-        setStatus(`Anuncios: ${rows.length} | zoom ${z} | modo=${filters.mode}${ls}`);
+        setStatus(`Anuncios: ${rows.length} | zoom ${z} | modo=${f.mode}`);
       }
 
       function scheduleReload() {
@@ -815,7 +843,7 @@
             setStatus(`Error: ${msg}`);
             console.error(e);
           }
-        }, 250);
+        }, 300);
       }
 
       async function geocodeCity(city) {
