@@ -66,16 +66,13 @@
         border: 1px solid rgba(255,255,255,0.25);
         display:grid;
         place-items:center;
-        overflow:hidden;
       }
 
       .logoMark span{
         font-size: 12px;
         font-weight: 900;
-        letter-spacing: -0.2px;
       }
 
-      /* Mini search junto al logo */
       .miniSearch{
         display:flex;
         align-items:center;
@@ -86,7 +83,7 @@
         padding: 6px 10px;
         min-width: 280px;
         max-width: 460px;
-        margin-left: 34px; /* distancia ~tamaño del símbolo */
+        margin-left: 34px;
       }
 
       .miniSearch input{
@@ -112,18 +109,11 @@
         place-items:center;
       }
 
-      .miniIcon{
-        width: 22px;
-        height: 22px;
-        display:block;
-      }
-
       .rightGroup{
         margin-left: auto;
         display:flex;
         align-items:center;
         gap: 10px;
-        flex: 0 0 auto;
       }
 
       .rightGroup a{
@@ -133,7 +123,6 @@
         font-weight:650;
         padding: 8px 10px;
         border-radius: 999px;
-        white-space: nowrap;
       }
 
       .rightGroup a:hover{
@@ -151,7 +140,7 @@
         display:flex;
         align-items:center;
         justify-content:center;
-        padding: 22px 16px 22px;
+        padding: 22px 16px;
       }
 
       .center{
@@ -160,58 +149,44 @@
         justify-items:center;
       }
 
-      /* Titular estilo “iPhone” (SF) */
       .headline{
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, Segoe UI, Roboto, sans-serif;
         font-weight: 800;
         letter-spacing: -0.6px;
         font-size: 44px;
         line-height: 1.05;
         text-align:center;
-        color: #111;
         margin: 0 0 14px 0;
       }
 
-      /* Opciones arriba del buscador: centradas sobre la barra */
       .modeRow{
         width: min(720px, 100%);
         display:flex;
         justify-content:center;
         gap:12px;
-        flex-wrap:wrap;
         margin-bottom: 12px;
+        flex-wrap:wrap;
       }
 
-      /* Pills con radio custom, más fino (-40% grosor aprox) */
       .pill{
-        position: relative;
         display:inline-flex;
         align-items:center;
         gap:10px;
         border: 1px solid var(--border);
-        background:#fff;
         padding: 10px 14px;
         border-radius: 999px;
         cursor:pointer;
-        user-select:none;
         font-size: 16px;
-        color:#111;
       }
 
-      .pill input{
-        position:absolute;
-        opacity:0;
-        pointer-events:none;
-      }
+      .pill input{ display:none; }
 
       .dot{
         width: 18px;
         height: 18px;
         border-radius: 999px;
-        border: 1px solid #6b7280; /* más fino */
+        border: 1px solid #6b7280;
         display:grid;
         place-items:center;
-        flex: 0 0 auto;
       }
 
       .dot::after{
@@ -219,7 +194,6 @@
         width: 10px;
         height: 10px;
         border-radius: 999px;
-        background: transparent;
       }
 
       .pill input:checked + .dot{
@@ -230,7 +204,6 @@
         background: var(--btn);
       }
 
-      /* Buscador */
       .searchBox{
         width: min(720px, 100%);
         border: 1px solid var(--border);
@@ -239,24 +212,14 @@
         display:flex;
         align-items:center;
         gap: 10px;
-        background:#fff;
-      }
-
-      .searchIcon{
-        width: 22px;
-        height: 22px;
-        color: var(--muted);
-        flex: 0 0 auto;
-        margin-left: 10px;
       }
 
       .input{
         border:0;
         outline:0;
         font-size: 18px;
-        flex: 1 1 auto;
+        flex: 1;
         padding: 12px 6px;
-        background: transparent;
       }
 
       .btn{
@@ -268,81 +231,13 @@
         cursor: pointer;
         font-size: 16px;
         font-weight: 650;
-        margin-right: 10px;
       }
 
-      .btn:active{ transform: translateY(1px); }
-
-      /* Frase debajo del buscador */
       .subTag{
-        width: min(720px, 100%);
         font-size: 14px;
         color: var(--muted);
-        text-align:center;
         margin-top: 10px;
-      }
-
-      /* ===== Filtros (rehechos de cero) ===== */
-      .filtersRow{
-        width: min(960px, 100%);
-        display:grid;
-        grid-template-columns: 1.4fr 1fr 1fr 1fr;
-        gap: 12px;
-        margin-top: 50px; /* 50 puntos debajo de “Una vivienda, un anuncio.” */
-        justify-items: stretch;
-      }
-
-      .filter{
-        border: 1px solid var(--softBorder);
-        border-radius: 16px;
-        background:#fff;
-        padding: 12px;
-        display:grid;
-        gap: 10px;
-      }
-
-      .filterLabel{
-        font-size: 12px;
-        color: #111;
-        font-weight: 600;
-        letter-spacing: 0.4px;
-      }
-
-      .filterControl{
-        border: 1px solid var(--softBorder);
-        border-radius: 14px;
-        padding: 12px 12px;
-        font-size: 16px;
-        outline: none;
-        background:#fff;
-        width: 100%;
-        box-sizing: border-box;
-      }
-
-      .filterControl:focus{
-        border-color: rgba(26,115,232,0.7);
-        box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
-      }
-
-      .twoCols{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-
-      /* Select estilo uniforme (mismo look que inputs) */
-      select.filterControl{
-        -webkit-appearance: none;
-        appearance: none;
-        background-image:
-          linear-gradient(45deg, transparent 50%, #111 50%),
-          linear-gradient(135deg, #111 50%, transparent 50%);
-        background-position:
-          calc(100% - 18px) calc(50% - 3px),
-          calc(100% - 12px) calc(50% - 3px);
-        background-size: 6px 6px, 6px 6px;
-        background-repeat: no-repeat;
-        padding-right: 34px;
+        text-align:center;
       }
 
       .footer{
@@ -350,23 +245,90 @@
         border-top: 1px solid #f0f1f3;
         color: var(--muted);
         font-size: 12.5px;
-        display:flex;
-        justify-content:center;
         text-align:center;
       }
 
-      @media (max-width: 980px){
-        .filtersRow{ grid-template-columns: 1fr 1fr; }
+      /* ===== MODAL LOGIN ===== */
+      .overlay{
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.45);
+        display:none;
+        align-items:center;
+        justify-content:center;
+        z-index:9999;
+      }
+      .overlay.open{ display:flex; }
+
+      .modal{
+        background:#fff;
+        width:min(420px, 100%);
+        border-radius:16px;
+        padding:24px;
+        position:relative;
       }
 
-      @media (max-width: 720px){
-        .miniSearch{ display:none; }
-        .headline{ font-size: 36px; }
+      .close{
+        position:absolute;
+        top:10px;
+        right:10px;
+        font-size:24px;
+        background:none;
+        border:0;
+        cursor:pointer;
       }
 
-      @media (max-width: 620px){
-        .filtersRow{ grid-template-columns: 1fr; }
+      .modal h2{
+        text-align:center;
+        margin:0 0 10px;
       }
+
+      .modal p{
+        text-align:center;
+        color:var(--muted);
+        font-size:14px;
+      }
+
+      .modal button,
+      .modal input{
+        width:100%;
+        margin-top:10px;
+        padding:12px;
+        border-radius:10px;
+        border:1px solid var(--softBorder);
+        font-size:14px;
+      }
+
+      .modal .primary{
+        background:#111;
+        color:#fff;
+        border:0;
+      }
+
+      .divider{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin:14px 0;
+        font-size:13px;
+        color:var(--muted);
+      }
+      .divider::before,
+      .divider::after{
+        content:"";
+        flex:1;
+        height:1px;
+        background:#eee;
+      }
+
+      .proLink{
+        margin-top:18px;
+        font-size:13px;
+        text-align:center;
+      }
+      .proLink a{ text-decoration:underline; }
+
+      .hidden{ display:none; }
     </style>
   </head>
 
@@ -374,22 +336,14 @@
     <header class="topbar">
       <div class="topbarInner">
         <a class="brand" href="./">
-          <div class="logoMark" aria-label="Logo">
-            <span>BH</span>
-          </div>
+          <div class="logoMark"><span>BH</span></div>
         </a>
 
-        <form class="miniSearch" id="miniSearchForm" autocomplete="off" aria-label="Búsqueda rápida">
-          <input id="miniQ" placeholder="Buscar..." aria-label="Buscar rápido" />
-          <button type="submit" title="Buscar" aria-label="Buscar">
-            <svg class="miniIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="7"></circle>
-              <path d="M21 21l-4.3-4.3"></path>
-            </svg>
-          </button>
+        <form class="miniSearch">
+          <input placeholder="Buscar..." />
         </form>
 
-        <div class="rightGroup" aria-label="Acciones">
+        <div class="rightGroup">
           <a href="#" id="navFavoritos">Favoritos</a>
           <a href="#" id="navLogin">Iniciar sesión</a>
         </div>
@@ -401,99 +355,23 @@
         <div class="center">
           <h1 class="headline">Anuncios publicados únicamente por profesionales inmobiliarios</h1>
 
-          <div class="modeRow" aria-label="Tipo de búsqueda">
+          <div class="modeRow">
             <label class="pill">
-              <input type="radio" name="mode" value="buy" checked />
-              <span class="dot" aria-hidden="true"></span>
-              <span>Comprar</span>
+              <input type="radio" name="mode" checked />
+              <span class="dot"></span>Comprar
             </label>
-
             <label class="pill">
-              <input type="radio" name="mode" value="rent" />
-              <span class="dot" aria-hidden="true"></span>
-              <span>Alquilar</span>
-            </label>
-
-            <label class="pill">
-              <input type="radio" name="mode" value="room" />
-              <span class="dot" aria-hidden="true"></span>
-              <span>Habitación</span>
-            </label>
-
-            <label class="pill">
-              <input type="radio" name="mode" value="new_build" />
-              <span class="dot" aria-hidden="true"></span>
-              <span>Obra nueva</span>
+              <input type="radio" name="mode" />
+              <span class="dot"></span>Alquilar
             </label>
           </div>
 
-          <form id="form" class="searchBox" autocomplete="off">
-            <svg class="searchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <circle cx="11" cy="11" r="7"></circle>
-              <path d="M21 21l-4.3-4.3"></path>
-            </svg>
-
-            <input
-              id="q"
-              class="input"
-              placeholder="Escribe una ciudad o zona (ej. Murcia)"
-              aria-label="Buscar ciudad o zona"
-            />
-
-            <button class="btn" type="submit">Buscar</button>
-          </form>
+          <div class="searchBox">
+            <input class="input" placeholder="Escribe una ciudad o zona (ej. Murcia)" />
+            <button class="btn">Buscar</button>
+          </div>
 
           <div class="subTag">Una vivienda, un anuncio.</div>
-
-          <div class="filtersRow" aria-label="Filtros principales">
-            <!-- Precio -->
-            <div class="filter">
-              <div class="filterLabel">Precio</div>
-              <div class="twoCols">
-                <input id="priceMin" class="filterControl" inputmode="numeric" placeholder="Mín." aria-label="Precio mínimo" />
-                <input id="priceMax" class="filterControl" inputmode="numeric" placeholder="Máx." aria-label="Precio máximo" />
-              </div>
-            </div>
-
-            <!-- Superficie útil interior -->
-            <div class="filter">
-              <div class="filterLabel">Superficie útil interior</div>
-              <input id="areaMin" class="filterControl" inputmode="numeric" placeholder="Mín. (m²)" aria-label="Superficie mínima" />
-            </div>
-
-            <!-- Periodo de construcción -->
-            <div class="filter">
-              <div class="filterLabel">Periodo de construcción</div>
-              <select id="buildPeriod" class="filterControl" aria-label="Periodo de construcción">
-                <option value="">Sin preferencia</option>
-                <option value="unknown">Desconocido</option>
-                <option value="before_1906">Antes de 1906</option>
-                <option value="1906_1930">1906–1930</option>
-                <option value="1931_1944">1931–1944</option>
-                <option value="1945_1959">1945–1959</option>
-                <option value="1960_1970">1960–1970</option>
-                <option value="1971_1980">1971–1980</option>
-                <option value="1981_1990">1981–1990</option>
-                <option value="1991_2000">1991–2000</option>
-                <option value="2001_2010">2001–2010</option>
-                <option value="2011_2020">2011–2020</option>
-                <option value="after_2020">Después de 2020</option>
-              </select>
-            </div>
-
-            <!-- Publicado desde -->
-            <div class="filter">
-              <div class="filterLabel">Publicado desde</div>
-              <select id="publishedSince" class="filterControl" aria-label="Publicado desde">
-                <option value="">Sin preferencia</option>
-                <option value="today">Hoy</option>
-                <option value="3d">Últimos 3 días</option>
-                <option value="5d">Últimos 5 días</option>
-                <option value="10d">Últimos 10 días</option>
-                <option value="30d">Últimos 30 días</option>
-              </select>
-            </div>
-          </div>
         </div>
       </main>
 
@@ -502,73 +380,48 @@
       </footer>
     </div>
 
+    <!-- MODAL LOGIN -->
+    <div class="overlay" id="authOverlay">
+      <div class="modal">
+        <button class="close" id="closeAuth">×</button>
+
+        <div id="stepEmail">
+          <h2>Acceso de usuario</h2>
+          <p>Guarda favoritos y viviendas vistas.</p>
+
+          <button>Continuar con Google</button>
+          <button>Continuar con Apple</button>
+
+          <div class="divider">o</div>
+
+          <input id="emailInput" placeholder="Email" />
+          <button class="primary" id="continueEmail">Continuar</button>
+
+          <div class="proLink">
+            Profesional inmobiliario:
+            <a href="/pro/login.html">accede aquí</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
-      const form = document.getElementById("form");
-      const q = document.getElementById("q");
+      const navLogin = document.getElementById("navLogin");
+      const overlay = document.getElementById("authOverlay");
+      const closeAuth = document.getElementById("closeAuth");
 
-      const miniSearchForm = document.getElementById("miniSearchForm");
-      const miniQ = document.getElementById("miniQ");
-
-      function getSelectedMode(){
-        const el = document.querySelector('input[name="mode"]:checked');
-        return el ? el.value : "buy";
-      }
-
-      function normalizeInt(v){
-        const s = String(v || "").replace(/[^\d]/g, "");
-        if(!s) return null;
-        const n = parseInt(s, 10);
-        return Number.isFinite(n) ? n : null;
-      }
-
-      function go(city){
-        const params = new URLSearchParams();
-        params.set("city", city);
-        params.set("mode", getSelectedMode());
-
-        const priceMin = normalizeInt(document.getElementById("priceMin").value);
-        const priceMax = normalizeInt(document.getElementById("priceMax").value);
-        const areaMin = normalizeInt(document.getElementById("areaMin").value);
-
-        const buildPeriod = document.getElementById("buildPeriod").value;
-        const publishedSince = document.getElementById("publishedSince").value;
-
-        if (priceMin != null) params.set("price_min", String(priceMin));
-        if (priceMax != null) params.set("price_max", String(priceMax));
-        if (areaMin != null) params.set("area_min", String(areaMin));
-
-        if (buildPeriod) params.set("build_period", buildPeriod);
-        if (publishedSince) params.set("published_since", publishedSince);
-
-        window.location.href = "./map.html?" + params.toString();
-      }
-
-      form.addEventListener("submit", (e) => {
+      navLogin.onclick = (e) => {
         e.preventDefault();
-        const city = (q.value || "").trim();
-        if(!city) return;
-        go(city);
-      });
+        overlay.classList.add("open");
+      };
 
-      miniSearchForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const city = (miniQ.value || "").trim();
-        if(!city) return;
-        q.value = city;
-        go(city);
-      });
+      closeAuth.onclick = () => {
+        overlay.classList.remove("open");
+      };
 
-      document.getElementById("navFavoritos").addEventListener("click", (e) => {
-        e.preventDefault();
-        alert("MVP: Favoritos (requiere registro).");
-      });
-
-      document.getElementById("navLogin").addEventListener("click", (e) => {
-        e.preventDefault();
-        alert("MVP: Iniciar sesión.");
-      });
-
-      q.focus();
+      overlay.onclick = (e) => {
+        if (e.target === overlay) overlay.classList.remove("open");
+      };
     </script>
   </body>
 </html>
