@@ -528,14 +528,6 @@
         width: 150px;
       }
 
-      .sunNote{
-        margin-top: 8px;
-        font-size: 11.5px;
-        color: rgba(0,0,0,0.62);
-        line-height: 1.25;
-      }
-
-      /* Indicador dirección del sol */
       .sunDirRow{
         display:flex;
         align-items:center;
@@ -573,6 +565,44 @@
         flex: 1 1 auto;
         text-align: right;
       }
+
+      .sunNote{
+        margin-top: 8px;
+        font-size: 11.5px;
+        color: rgba(0,0,0,0.62);
+        line-height: 1.25;
+      }
+
+      /* Sol orbitando en el mapa */
+      .sunOrb {
+        position: absolute;
+        z-index: 700; /* por encima de tiles y por debajo de la card (9999) */
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: rgba(255, 196, 50, 0.98);
+        border: 1px solid rgba(0,0,0,0.18);
+        box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+        display: none;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+      }
+
+      .sunOrbInner{
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+      }
+
+      .sunOrbArrow{
+        width: 0;
+        height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-bottom: 12px solid rgba(0,0,0,0.72);
+        transform-origin: 50% 70%;
+      }
     </style>
   </head>
 
@@ -605,6 +635,13 @@
     <div class="page">
       <div class="mapShell">
         <div id="map"></div>
+
+        <!-- Sol orbitando (overlay) -->
+        <div id="sunOrb" class="sunOrb" aria-hidden="true">
+          <div class="sunOrbInner">
+            <div id="sunOrbArrow" class="sunOrbArrow"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -658,7 +695,6 @@
     ></script>
 
     <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
-    <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
 
     <script>
       const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
@@ -685,6 +721,9 @@
       const cardPriceEl = document.getElementById("cardPrice");
       const cardFactsEl = document.getElementById("cardFacts");
       const cardAgencyEl = document.getElementById("cardAgency");
+
+      const sunOrbEl = document.getElementById("sunOrb");
+      const sunOrbArrowEl = document.getElementById("sunOrbArrow");
 
       function setStatus(msg) { statusEl.textContent = msg || ""; }
 
@@ -775,7 +814,7 @@
         const type = p.property_type ? String(p.property_type) : "—";
 
         cardFactsEl.innerHTML = `
-          <div class="fact">${iconArea()}<span>${m2} útiles</span></div>
+          <div class="fact">${iconArea()}<span>${m2} m² útiles</span></div>
           <div class="fact">${iconType()}<span>${type}</span></div>
         `;
 
@@ -958,11 +997,9 @@
       async function loadPointsForCurrentView() {
         const b = getCurrentBounds();
         const z = map.getZoom();
-
         const f = getParams();
 
         setStatus(`Cargando...`);
-
         const rows = await rpcSearchMapPoints(b, f);
 
         clearMarkers();
@@ -1027,19 +1064,13 @@
       map.on("click", () => closeCard());
 
       /* =========================
-         CAPA SOL (Nivel 1) - Leaflet
+         CAPA SOL (solo indicador limpio)
          ========================= */
 
+      // Mantengo la misma lógica: visible pero deshabilitado si estás demasiado alejado.
       const ZOOM_SOL_MIN = 15;
-      const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
-      const DEFAULT_HEIGHT_M = 9;
-      const MAX_BUILDINGS = 350;
 
       let sunEnabled = false;
-      let sunShadowsLayer = L.featureGroup();
-      let sunBuildingsCache = new Map();
-      let sunRefreshTimer = null;
-      let sunLastKey = null;
 
       const sunState = {
         dateISO: null,
@@ -1069,7 +1100,7 @@
 
       function sunAzimuthBearingDeg(lat, lng, dateObj){
         // SunCalc azimuth: rad desde el SUR, positivo hacia el OESTE.
-        // Convertimos a bearing desde el NORTE (0=N, 90=E, 180=S, 270=O):
+        // Lo convertimos a bearing desde el NORTE (0=N, 90=E, 180=S, 270=O)
         const pos = SunCalc.getPosition(dateObj, lat, lng);
         const azDeg = rad2deg(pos.azimuth);
         const bearing = (180 + azDeg + 360) % 360;
@@ -1091,7 +1122,63 @@
         return new Date(y, (m-1), d, hh, mm, 0, 0);
       }
 
-      function updateSunIndicator(){
+      function setSunOrbVisible(v){
+        sunOrbEl.style.display = v ? "block" : "none";
+      }
+
+      function updateSunOrbPosition(){
+        if (!sunEnabled) { setSunOrbVisible(false); return; }
+        if (map.getZoom() < ZOOM_SOL_MIN) { setSunOrbVisible(false); return; }
+
+        const center = map.getCenter();
+        const dateObj = buildDateObjFromState();
+        const { bearingDeg, altitudeRad } = sunAzimuthBearingDeg(center.lat, center.lng, dateObj);
+
+        // Si el sol está bajo el horizonte, ocultamos el sol orbitando.
+        if (!(altitudeRad > 0)) {
+          setSunOrbVisible(false);
+          return;
+        }
+
+        const rect = map.getContainer().getBoundingClientRect();
+        const w = rect.width;
+        const h = rect.height;
+
+        // Elipse "concéntrica" dentro del rectángulo, cerca del borde.
+        // Ajusta margin para acercarlo/alejarlo del borde.
+        const margin = 22;
+        const cx = w / 2;
+        const cy = h / 2;
+        const a = Math.max(30, (w / 2) - margin);
+        const b = Math.max(30, (h / 2) - margin);
+
+        // bearingDeg: 0=N (arriba), 90=E (derecha)...
+        // Parametrizamos elipse con ángulo theta donde:
+        // x = cx + a * sin(theta)
+        // y = cy - b * cos(theta)
+        const theta = bearingDeg * Math.PI / 180;
+
+        const x = cx + a * Math.sin(theta);
+        const y = cy - b * Math.cos(theta);
+
+        // Posiciona dentro de la mapShell (overlay está en .mapShell)
+        // Como #sunOrb está dentro de .mapShell, usamos coordenadas relativas:
+        const shellRect = document.querySelector(".mapShell").getBoundingClientRect();
+        const relX = x + (rect.left - shellRect.left);
+        const relY = y + (rect.top - shellRect.top);
+
+        sunOrbEl.style.left = `${relX}px`;
+        sunOrbEl.style.top = `${relY}px`;
+
+        // Flecha del sol: apunta hacia el centro del mapa (visualmente agradable),
+        // no hacia el azimut. Si la quieres apuntando a la dirección del sol, se cambia.
+        const angleToCenter = rad2deg(Math.atan2(cx - x, (cy - y) * -1)); // aproximación simple
+        sunOrbArrowEl.style.transform = `rotate(${bearingDeg}deg)`;
+
+        setSunOrbVisible(true);
+      }
+
+      function updateSunPanelIndicator(){
         const arrowEl = document.getElementById("sunArrow");
         const textEl = document.getElementById("sunDirText");
         if (!arrowEl || !textEl) return;
@@ -1117,227 +1204,9 @@
         arrowEl.style.transform = `rotate(${bearingDeg}deg)`;
       }
 
-      function getSolarVectorMeters(lat, lng, dateObj, heightM) {
-        const pos = SunCalc.getPosition(dateObj, lat, lng);
-        const alt = pos.altitude;
-        const azFromSouth = pos.azimuth;
-
-        if (!(alt > 0)) return null;
-
-        // Nota: usamos la misma lógica que antes; aquí solo necesitamos la dirección de la sombra.
-        const bearingSun = azFromSouth + Math.PI;
-        const bearingShadow = (bearingSun + Math.PI) % (2*Math.PI);
-
-        const shadowLen = heightM / Math.tan(alt);
-
-        const dx = shadowLen * Math.sin(bearingShadow);
-        const dy = shadowLen * Math.cos(bearingShadow);
-
-        return { dx, dy, shadowLen, altitude: alt };
-      }
-
-      function bboxKey(bounds) {
-        const s = bounds.getSouthWest().lat;
-        const w = bounds.getSouthWest().lng;
-        const n = bounds.getNorthEast().lat;
-        const e = bounds.getNorthEast().lng;
-
-        const r = (v, p=3) => Number(v).toFixed(p);
-        return `${r(s)}|${r(w)}|${r(n)}|${r(e)}`;
-      }
-
-      async function fetchOSMBuildingsForBounds(bounds) {
-        const key = bboxKey(bounds);
-        if (sunBuildingsCache.has(key)) return sunBuildingsCache.get(key);
-
-        const s = bounds.getSouthWest().lat;
-        const w = bounds.getSouthWest().lng;
-        const n = bounds.getNorthEast().lat;
-        const e = bounds.getNorthEast().lng;
-
-        const query = `
-[out:json][timeout:25];
-(
-  way["building"](${s},${w},${n},${e});
-);
-out body ${MAX_BUILDINGS};
->;
-out skel qt;
-        `.trim();
-
-        const res = await fetch(OVERPASS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
-          body: `data=${encodeURIComponent(query)}`
-        });
-
-        if (!res.ok) {
-          const txt = await res.text().catch(() => "");
-          throw new Error(`Overpass error (${res.status}): ${txt.slice(0,120)}`);
-        }
-
-        const data = await res.json();
-
-        const nodes = new Map();
-        for (const el of data.elements) {
-          if (el.type === "node") nodes.set(el.id, el);
-        }
-
-        const buildings = [];
-        for (const el of data.elements) {
-          if (el.type !== "way") continue;
-          if (!el.nodes || el.nodes.length < 4) continue;
-
-          const coords = [];
-          for (const nid of el.nodes) {
-            const nd = nodes.get(nid);
-            if (!nd) { coords.length = 0; break; }
-            coords.push([nd.lon, nd.lat]);
-          }
-          if (coords.length < 4) continue;
-
-          const first = coords[0];
-          const last = coords[coords.length - 1];
-          if (first[0] !== last[0] || first[1] !== last[1]) coords.push([first[0], first[1]]);
-
-          const tags = el.tags || {};
-          const h = parseHeightFromTags(tags);
-
-          buildings.push({
-            id: el.id,
-            ringLonLat: coords,
-            heightM: h
-          });
-
-          if (buildings.length >= MAX_BUILDINGS) break;
-        }
-
-        sunBuildingsCache.set(key, buildings);
-        return buildings;
-      }
-
-      function parseHeightFromTags(tags) {
-        const hRaw = tags["height"];
-        if (hRaw) {
-          const m = String(hRaw).match(/([0-9]+(\.[0-9]+)?)/);
-          if (m) {
-            const v = parseFloat(m[1]);
-            if (Number.isFinite(v) && v > 1) return v;
-          }
-        }
-
-        const lvRaw = tags["building:levels"];
-        if (lvRaw) {
-          const lv = parseInt(String(lvRaw), 10);
-          if (Number.isFinite(lv) && lv > 0 && lv < 200) return lv * 3;
-        }
-        return DEFAULT_HEIGHT_M;
-      }
-
-      function lonLatRingToLatLngs(ringLonLat) {
-        return ringLonLat.map(([lon, lat]) => [lat, lon]);
-      }
-
-      function projectLatLngToMeters(lat, lng) {
-        return L.CRS.EPSG3857.project(L.latLng(lat, lng));
-      }
-
-      function unprojectMetersToLatLng(x, y) {
-        return L.CRS.EPSG3857.unproject(L.point(x, y));
-      }
-
-      function shadowPolygonApproxLatLngs(footLatLngs, dxMeters, dyMeters) {
-        const pts = [];
-        for (const ll of footLatLngs) {
-          const p = projectLatLngToMeters(ll[0], ll[1]);
-          pts.push(turf.point([p.x, p.y]));
-          pts.push(turf.point([p.x + dxMeters, p.y + dyMeters]));
-        }
-
-        const fc = turf.featureCollection(pts);
-        const hull = turf.convex(fc);
-        if (!hull || !hull.geometry || hull.geometry.type !== "Polygon") return null;
-
-        const ring = hull.geometry.coordinates[0];
-        const latlngs = ring.map(([x,y]) => {
-          const ll = unprojectMetersToLatLng(x, y);
-          return [ll.lat, ll.lng];
-        });
-        return latlngs;
-      }
-
-      function clearShadows() {
-        sunShadowsLayer.clearLayers();
-      }
-
-      async function renderShadowsForView() {
-        if (!sunEnabled) { updateSunIndicator(); return; }
-        if (map.getZoom() < ZOOM_SOL_MIN) { updateSunIndicator(); return; }
-
-        const bounds = map.getBounds();
-        const key = bboxKey(bounds) + "|" + (sunState.dateISO || "") + "|" + (sunState.minutes ?? "");
-        sunLastKey = key;
-
-        let buildings;
-        try {
-          buildings = await fetchOSMBuildingsForBounds(bounds);
-        } catch (e) {
-          console.error(e);
-          clearShadows();
-          updateSunIndicator();
-          return;
-        }
-
-        const keyNow = bboxKey(map.getBounds()) + "|" + (sunState.dateISO || "") + "|" + (sunState.minutes ?? "");
-        if (keyNow !== sunLastKey) return;
-
-        const center = map.getCenter();
-        const dateObj = buildDateObjFromState();
-
-        const vTest = getSolarVectorMeters(center.lat, center.lng, dateObj, 10);
-        if (!vTest) {
-          clearShadows();
-          updateSunIndicator();
-          return;
-        }
-
-        clearShadows();
-
-        const style = {
-          stroke: false,
-          fill: true,
-          fillOpacity: 0.22,
-          fillColor: "#111"
-        };
-
-        const list = (buildings.length > MAX_BUILDINGS) ? buildings.slice(0, MAX_BUILDINGS) : buildings;
-
-        for (const b of list) {
-          const foot = lonLatRingToLatLngs(b.ringLonLat);
-          const heightM = b.heightM || DEFAULT_HEIGHT_M;
-
-          const vec = getSolarVectorMeters(center.lat, center.lng, dateObj, heightM);
-          if (!vec) continue;
-
-          const cap = 220;
-          const scale = (vec.shadowLen > cap) ? (cap / vec.shadowLen) : 1;
-
-          const latlngs = shadowPolygonApproxLatLngs(foot, vec.dx * scale, vec.dy * scale);
-          if (!latlngs) continue;
-
-          const poly = L.polygon(latlngs, style);
-          sunShadowsLayer.addLayer(poly);
-        }
-
-        updateSunIndicator();
-      }
-
-      function scheduleSunRefresh() {
-        if (!sunEnabled) { updateSunIndicator(); return; }
-        if (sunRefreshTimer) clearTimeout(sunRefreshTimer);
-        sunRefreshTimer = setTimeout(() => {
-          renderShadowsForView().catch(console.error);
-        }, 250);
+      function updateSunUI(){
+        updateSunPanelIndicator();
+        updateSunOrbPosition();
       }
 
       const SunControl = L.Control.extend({
@@ -1349,7 +1218,7 @@ out skel qt;
 
           const btn = L.DomUtil.create("div", "qBtn", container);
           btn.id = "sunBtn";
-          btn.title = "Sol (sombras orientativas)";
+          btn.title = "Sol";
           btn.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="4"></circle>
@@ -1369,7 +1238,7 @@ out skel qt;
               <input type="date" id="sunDate">
             </div>
             <div class="sunTime">
-              <span id="sunTimeLabel">Hora</span>
+              <span>Hora</span>
               <input type="range" id="sunTime" min="0" max="1439" step="10" value="720">
               <span id="sunHHMM">12:00</span>
             </div>
@@ -1386,7 +1255,7 @@ out skel qt;
             </div>
 
             <div class="sunNote">
-              Sombras orientativas basadas en modelo 3D simplificado.
+              Indicador orientativo de dirección y recorrido del sol.
             </div>
           `;
 
@@ -1404,13 +1273,9 @@ out skel qt;
           function setBtnEnabled() {
             const ok = map.getZoom() >= ZOOM_SOL_MIN;
             btn.classList.toggle("disabled", !ok);
-            if (!ok) {
-              btn.title = `Acércate para ver sombras (zoom ${ZOOM_SOL_MIN}+).`;
-              if (sunEnabled) toggleSun(false);
-            } else {
-              btn.title = "Sol (sombras orientativas)";
-            }
-            updateSunIndicator();
+            btn.title = ok ? "Sol" : `Acércate para activar (zoom ${ZOOM_SOL_MIN}+)`;
+            if (!ok && sunEnabled) toggleSun(false);
+            updateSunUI();
           }
 
           function toggleSun(force) {
@@ -1423,37 +1288,26 @@ out skel qt;
             btn.classList.toggle("active", sunEnabled);
             panel.style.display = sunEnabled ? "block" : "none";
 
-            if (sunEnabled) {
-              sunShadowsLayer.addTo(map);
-              scheduleSunRefresh();
-            } else {
-              clearShadows();
-              if (map.hasLayer(sunShadowsLayer)) map.removeLayer(sunShadowsLayer);
-              updateSunIndicator();
-            }
+            updateSunUI();
           }
-
-          window.__toggleSun = toggleSun;
 
           btn.addEventListener("click", () => toggleSun());
 
           dateEl.addEventListener("change", () => {
             sunState.dateISO = dateEl.value || todayISO();
-            scheduleSunRefresh();
-            updateSunIndicator();
+            updateSunUI();
           });
 
           rangeEl.addEventListener("input", () => {
             sunState.minutes = parseInt(rangeEl.value, 10);
             hhmmEl.textContent = minutesToHHMM(sunState.minutes);
-            updateSunIndicator();
+            updateSunUI();
           });
 
           rangeEl.addEventListener("change", () => {
             sunState.minutes = parseInt(rangeEl.value, 10);
             hhmmEl.textContent = minutesToHHMM(sunState.minutes);
-            scheduleSunRefresh();
-            updateSunIndicator();
+            updateSunUI();
           });
 
           nowBtn.addEventListener("click", () => {
@@ -1462,12 +1316,14 @@ out skel qt;
             dateEl.value = sunState.dateISO;
             rangeEl.value = String(sunState.minutes);
             hhmmEl.textContent = minutesToHHMM(sunState.minutes);
-            scheduleSunRefresh();
-            updateSunIndicator();
+            updateSunUI();
           });
 
           map.on("zoomend", setBtnEnabled);
           setBtnEnabled();
+
+          // al cargar, no lo activamos
+          setSunOrbVisible(false);
 
           return container;
         }
@@ -1476,13 +1332,15 @@ out skel qt;
       map.addControl(new SunControl());
 
       map.on("moveend", () => {
-        if (sunEnabled) scheduleSunRefresh();
-        updateSunIndicator();
+        if (sunEnabled) updateSunUI();
       });
 
       map.on("zoomend", () => {
-        if (sunEnabled) scheduleSunRefresh();
-        updateSunIndicator();
+        if (sunEnabled) updateSunUI();
+      });
+
+      window.addEventListener("resize", () => {
+        if (sunEnabled) updateSunUI();
       });
 
       /* =========================
