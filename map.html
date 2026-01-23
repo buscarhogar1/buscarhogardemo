@@ -534,6 +534,45 @@
         color: rgba(0,0,0,0.62);
         line-height: 1.25;
       }
+
+      /* Indicador dirección del sol */
+      .sunDirRow{
+        display:flex;
+        align-items:center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .sunCompass{
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        border: 1px solid rgba(0,0,0,0.14);
+        background: #fff;
+        display:grid;
+        place-items:center;
+        flex: 0 0 auto;
+      }
+
+      .sunArrow{
+        width: 0;
+        height: 0;
+        border-left: 7px solid transparent;
+        border-right: 7px solid transparent;
+        border-bottom: 14px solid rgba(0,0,0,0.80);
+        transform-origin: 50% 70%;
+      }
+
+      .sunDirText{
+        font-size: 12.5px;
+        color: rgba(0,0,0,0.82);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1 1 auto;
+        text-align: right;
+      }
     </style>
   </head>
 
@@ -618,10 +657,7 @@
       crossorigin=""
     ></script>
 
-    <!-- SunCalc para posición solar -->
     <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
-
-    <!-- Turf para convex hull (sombra aproximada) -->
     <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
 
     <script>
@@ -994,21 +1030,20 @@
          CAPA SOL (Nivel 1) - Leaflet
          ========================= */
 
-      const ZOOM_SOL_MIN = 15;              // zoom mínimo para permitir activar
+      const ZOOM_SOL_MIN = 15;
       const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
-      const DEFAULT_HEIGHT_M = 9;           // 3 plantas aprox
-      const MAX_BUILDINGS = 350;            // límite para no freír el navegador
+      const DEFAULT_HEIGHT_M = 9;
+      const MAX_BUILDINGS = 350;
 
       let sunEnabled = false;
-      let sunShadowsLayer = L.featureGroup(); // no se añade hasta activar
-      let sunBuildingsCache = new Map();      // cache simple por bbox redondeado
+      let sunShadowsLayer = L.featureGroup();
+      let sunBuildingsCache = new Map();
       let sunRefreshTimer = null;
       let sunLastKey = null;
 
-      // Estado fecha/hora
       const sunState = {
-        dateISO: null,   // "YYYY-MM-DD"
-        minutes: null    // 0..1439
+        dateISO: null,
+        minutes: null
       };
 
       function todayISO() {
@@ -1030,21 +1065,71 @@
         return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
       }
 
+      function rad2deg(r){ return r * 180 / Math.PI; }
+
+      function sunAzimuthBearingDeg(lat, lng, dateObj){
+        // SunCalc azimuth: rad desde el SUR, positivo hacia el OESTE.
+        // Convertimos a bearing desde el NORTE (0=N, 90=E, 180=S, 270=O):
+        const pos = SunCalc.getPosition(dateObj, lat, lng);
+        const azDeg = rad2deg(pos.azimuth);
+        const bearing = (180 + azDeg + 360) % 360;
+        return { bearingDeg: bearing, altitudeRad: pos.altitude };
+      }
+
+      function bearingToCardinal(deg){
+        const dirs = ["N","NE","E","SE","S","SO","O","NO"];
+        const idx = Math.round(deg / 45) % 8;
+        return dirs[idx];
+      }
+
+      function buildDateObjFromState() {
+        const iso = sunState.dateISO || todayISO();
+        const mins = (sunState.minutes != null) ? sunState.minutes : nowMinutes();
+        const [y,m,d] = iso.split("-").map(x => parseInt(x,10));
+        const hh = Math.floor(mins/60);
+        const mm = mins % 60;
+        return new Date(y, (m-1), d, hh, mm, 0, 0);
+      }
+
+      function updateSunIndicator(){
+        const arrowEl = document.getElementById("sunArrow");
+        const textEl = document.getElementById("sunDirText");
+        if (!arrowEl || !textEl) return;
+
+        if (!sunEnabled || map.getZoom() < ZOOM_SOL_MIN) {
+          textEl.textContent = "—";
+          arrowEl.style.transform = "rotate(0deg)";
+          return;
+        }
+
+        const center = map.getCenter();
+        const dateObj = buildDateObjFromState();
+        const { bearingDeg, altitudeRad } = sunAzimuthBearingDeg(center.lat, center.lng, dateObj);
+
+        if (!(altitudeRad > 0)) {
+          textEl.textContent = "Noche";
+          arrowEl.style.transform = "rotate(0deg)";
+          return;
+        }
+
+        const card = bearingToCardinal(bearingDeg);
+        textEl.textContent = `Sol: ${card} (${Math.round(bearingDeg)}°)`;
+        arrowEl.style.transform = `rotate(${bearingDeg}deg)`;
+      }
+
       function getSolarVectorMeters(lat, lng, dateObj, heightM) {
         const pos = SunCalc.getPosition(dateObj, lat, lng);
-        const alt = pos.altitude; // radians
-        const azFromSouth = pos.azimuth; // radians, 0 = sur, + = oeste
+        const alt = pos.altitude;
+        const azFromSouth = pos.azimuth;
 
-        if (!(alt > 0)) return null; // sol bajo horizonte o 0
+        if (!(alt > 0)) return null;
 
-        // convertir a bearing desde norte:
-        const bearingSun = azFromSouth + Math.PI; // 0(sur)->pi(norte?); ver nota en análisis
-        // sombra en dirección opuesta al sol
+        // Nota: usamos la misma lógica que antes; aquí solo necesitamos la dirección de la sombra.
+        const bearingSun = azFromSouth + Math.PI;
         const bearingShadow = (bearingSun + Math.PI) % (2*Math.PI);
 
-        const shadowLen = heightM / Math.tan(alt); // metros
+        const shadowLen = heightM / Math.tan(alt);
 
-        // x Este, y Norte
         const dx = shadowLen * Math.sin(bearingShadow);
         const dy = shadowLen * Math.cos(bearingShadow);
 
@@ -1052,13 +1137,12 @@
       }
 
       function bboxKey(bounds) {
-        // redondeo para cache (reduce llamadas overpass en drag pequeños)
         const s = bounds.getSouthWest().lat;
         const w = bounds.getSouthWest().lng;
         const n = bounds.getNorthEast().lat;
         const e = bounds.getNorthEast().lng;
 
-        const r = (v, p=3) => Number(v).toFixed(p); // ~100m-200m aprox
+        const r = (v, p=3) => Number(v).toFixed(p);
         return `${r(s)}|${r(w)}|${r(n)}|${r(e)}`;
       }
 
@@ -1071,7 +1155,6 @@
         const n = bounds.getNorthEast().lat;
         const e = bounds.getNorthEast().lng;
 
-        // Ojo: Overpass es sensible. Mantenemos query simple y limitamos.
         const query = `
 [out:json][timeout:25];
 (
@@ -1095,13 +1178,11 @@ out skel qt;
 
         const data = await res.json();
 
-        // construir nodos
         const nodes = new Map();
         for (const el of data.elements) {
           if (el.type === "node") nodes.set(el.id, el);
         }
 
-        // construir ways (polígonos)
         const buildings = [];
         for (const el of data.elements) {
           if (el.type !== "way") continue;
@@ -1115,7 +1196,6 @@ out skel qt;
           }
           if (coords.length < 4) continue;
 
-          // cerrar ring si no está cerrado
           const first = coords[0];
           const last = coords[coords.length - 1];
           if (first[0] !== last[0] || first[1] !== last[1]) coords.push([first[0], first[1]]);
@@ -1137,7 +1217,6 @@ out skel qt;
       }
 
       function parseHeightFromTags(tags) {
-        // height en metros
         const hRaw = tags["height"];
         if (hRaw) {
           const m = String(hRaw).match(/([0-9]+(\.[0-9]+)?)/);
@@ -1146,7 +1225,7 @@ out skel qt;
             if (Number.isFinite(v) && v > 1) return v;
           }
         }
-        // building:levels
+
         const lvRaw = tags["building:levels"];
         if (lvRaw) {
           const lv = parseInt(String(lvRaw), 10);
@@ -1160,7 +1239,7 @@ out skel qt;
       }
 
       function projectLatLngToMeters(lat, lng) {
-        return L.CRS.EPSG3857.project(L.latLng(lat, lng)); // Point(x,y) en metros
+        return L.CRS.EPSG3857.project(L.latLng(lat, lng));
       }
 
       function unprojectMetersToLatLng(x, y) {
@@ -1168,8 +1247,6 @@ out skel qt;
       }
 
       function shadowPolygonApproxLatLngs(footLatLngs, dxMeters, dyMeters) {
-        // Aproximación: convex hull de puntos originales + puntos trasladados
-        // Convertimos a GeoJSON Points y usamos turf.convex
         const pts = [];
         for (const ll of footLatLngs) {
           const p = projectLatLngToMeters(ll[0], ll[1]);
@@ -1181,7 +1258,7 @@ out skel qt;
         const hull = turf.convex(fc);
         if (!hull || !hull.geometry || hull.geometry.type !== "Polygon") return null;
 
-        const ring = hull.geometry.coordinates[0]; // [ [x,y], ... ]
+        const ring = hull.geometry.coordinates[0];
         const latlngs = ring.map(([x,y]) => {
           const ll = unprojectMetersToLatLng(x, y);
           return [ll.lat, ll.lng];
@@ -1189,23 +1266,13 @@ out skel qt;
         return latlngs;
       }
 
-      function buildDateObjFromState() {
-        const iso = sunState.dateISO || todayISO();
-        const mins = (sunState.minutes != null) ? sunState.minutes : nowMinutes();
-        const [y,m,d] = iso.split("-").map(x => parseInt(x,10));
-        const hh = Math.floor(mins/60);
-        const mm = mins % 60;
-        // hora local del usuario
-        return new Date(y, (m-1), d, hh, mm, 0, 0);
-      }
-
       function clearShadows() {
         sunShadowsLayer.clearLayers();
       }
 
       async function renderShadowsForView() {
-        if (!sunEnabled) return;
-        if (map.getZoom() < ZOOM_SOL_MIN) return;
+        if (!sunEnabled) { updateSunIndicator(); return; }
+        if (map.getZoom() < ZOOM_SOL_MIN) { updateSunIndicator(); return; }
 
         const bounds = map.getBounds();
         const key = bboxKey(bounds) + "|" + (sunState.dateISO || "") + "|" + (sunState.minutes ?? "");
@@ -1215,37 +1282,34 @@ out skel qt;
         try {
           buildings = await fetchOSMBuildingsForBounds(bounds);
         } catch (e) {
-          // si falla overpass, no rompemos el mapa
           console.error(e);
-          setStatus(`Anuncios (sol): sin edificios (OSM).`);
           clearShadows();
+          updateSunIndicator();
           return;
         }
 
-        // Si durante await cambió el estado/bbox, aborta
         const keyNow = bboxKey(map.getBounds()) + "|" + (sunState.dateISO || "") + "|" + (sunState.minutes ?? "");
         if (keyNow !== sunLastKey) return;
 
         const center = map.getCenter();
         const dateObj = buildDateObjFromState();
 
-        const v = getSolarVectorMeters(center.lat, center.lng, dateObj, 10);
-        if (!v) {
+        const vTest = getSolarVectorMeters(center.lat, center.lng, dateObj, 10);
+        if (!vTest) {
           clearShadows();
+          updateSunIndicator();
           return;
         }
 
         clearShadows();
 
-        // dibujar sombras
         const style = {
           stroke: false,
           fill: true,
           fillOpacity: 0.22,
-          fillColor: "#111"  // se ve como gris por opacidad
+          fillColor: "#111"
         };
 
-        // reducir carga: si hay demasiados, recorta
         const list = (buildings.length > MAX_BUILDINGS) ? buildings.slice(0, MAX_BUILDINGS) : buildings;
 
         for (const b of list) {
@@ -1255,8 +1319,7 @@ out skel qt;
           const vec = getSolarVectorMeters(center.lat, center.lng, dateObj, heightM);
           if (!vec) continue;
 
-          // si sombra demasiado larga, recorta para evitar polígonos absurdos
-          const cap = 220; // metros
+          const cap = 220;
           const scale = (vec.shadowLen > cap) ? (cap / vec.shadowLen) : 1;
 
           const latlngs = shadowPolygonApproxLatLngs(foot, vec.dx * scale, vec.dy * scale);
@@ -1265,17 +1328,18 @@ out skel qt;
           const poly = L.polygon(latlngs, style);
           sunShadowsLayer.addLayer(poly);
         }
+
+        updateSunIndicator();
       }
 
       function scheduleSunRefresh() {
-        if (!sunEnabled) return;
+        if (!sunEnabled) { updateSunIndicator(); return; }
         if (sunRefreshTimer) clearTimeout(sunRefreshTimer);
         sunRefreshTimer = setTimeout(() => {
           renderShadowsForView().catch(console.error);
         }, 250);
       }
 
-      /* Control UI a la derecha */
       const SunControl = L.Control.extend({
         options: { position: "topright" },
         onAdd: function() {
@@ -1283,7 +1347,6 @@ out skel qt;
           L.DomEvent.disableClickPropagation(container);
           L.DomEvent.disableScrollPropagation(container);
 
-          // Botón Sol
           const btn = L.DomUtil.create("div", "qBtn", container);
           btn.id = "sunBtn";
           btn.title = "Sol (sombras orientativas)";
@@ -1297,7 +1360,6 @@ out skel qt;
             </svg>
           `;
 
-          // Panel (oculto por defecto)
           const panel = L.DomUtil.create("div", "sunPanel", container);
           panel.id = "sunPanel";
           panel.style.display = "none";
@@ -1315,18 +1377,24 @@ out skel qt;
               <span></span>
               <button type="button" id="sunNow">Ahora</button>
             </div>
+
+            <div class="sunDirRow">
+              <div class="sunCompass" title="Dirección del sol (azimut)">
+                <div id="sunArrow" class="sunArrow"></div>
+              </div>
+              <div id="sunDirText" class="sunDirText">—</div>
+            </div>
+
             <div class="sunNote">
               Sombras orientativas basadas en modelo 3D simplificado.
             </div>
           `;
 
-          // refs
           const dateEl = panel.querySelector("#sunDate");
           const rangeEl = panel.querySelector("#sunTime");
           const hhmmEl = panel.querySelector("#sunHHMM");
           const nowBtn = panel.querySelector("#sunNow");
 
-          // init state
           sunState.dateISO = todayISO();
           sunState.minutes = nowMinutes();
           dateEl.value = sunState.dateISO;
@@ -1338,11 +1406,11 @@ out skel qt;
             btn.classList.toggle("disabled", !ok);
             if (!ok) {
               btn.title = `Acércate para ver sombras (zoom ${ZOOM_SOL_MIN}+).`;
-              // Si estaba activo y el usuario aleja demasiado, lo apagamos
               if (sunEnabled) toggleSun(false);
             } else {
               btn.title = "Sol (sombras orientativas)";
             }
+            updateSunIndicator();
           }
 
           function toggleSun(force) {
@@ -1361,10 +1429,10 @@ out skel qt;
             } else {
               clearShadows();
               if (map.hasLayer(sunShadowsLayer)) map.removeLayer(sunShadowsLayer);
+              updateSunIndicator();
             }
           }
 
-          // expose toggle for external usage
           window.__toggleSun = toggleSun;
 
           btn.addEventListener("click", () => toggleSun());
@@ -1372,17 +1440,20 @@ out skel qt;
           dateEl.addEventListener("change", () => {
             sunState.dateISO = dateEl.value || todayISO();
             scheduleSunRefresh();
+            updateSunIndicator();
           });
 
           rangeEl.addEventListener("input", () => {
             sunState.minutes = parseInt(rangeEl.value, 10);
             hhmmEl.textContent = minutesToHHMM(sunState.minutes);
+            updateSunIndicator();
           });
 
           rangeEl.addEventListener("change", () => {
             sunState.minutes = parseInt(rangeEl.value, 10);
             hhmmEl.textContent = minutesToHHMM(sunState.minutes);
             scheduleSunRefresh();
+            updateSunIndicator();
           });
 
           nowBtn.addEventListener("click", () => {
@@ -1392,9 +1463,9 @@ out skel qt;
             rangeEl.value = String(sunState.minutes);
             hhmmEl.textContent = minutesToHHMM(sunState.minutes);
             scheduleSunRefresh();
+            updateSunIndicator();
           });
 
-          // zoom listener para habilitar/deshabilitar
           map.on("zoomend", setBtnEnabled);
           setBtnEnabled();
 
@@ -1402,16 +1473,16 @@ out skel qt;
         }
       });
 
-      // Instalar control
       map.addControl(new SunControl());
 
-      // Si Sol está activo y el usuario mueve el mapa, refrescar sombras
       map.on("moveend", () => {
         if (sunEnabled) scheduleSunRefresh();
+        updateSunIndicator();
       });
 
       map.on("zoomend", () => {
         if (sunEnabled) scheduleSunRefresh();
+        updateSunIndicator();
       });
 
       /* =========================
