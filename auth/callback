@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Buscar Hogar – Acceso</title>
+    <style>
+      html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
+      .wrap{height:100%;display:grid;place-items:center;padding:20px;box-sizing:border-box;text-align:center;}
+      .box{width:min(520px,100%);border:1px solid #e6e7eb;border-radius:14px;padding:18px;}
+      .muted{opacity:.75;font-size:14px;line-height:1.35;}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="box">
+        <div>Finalizando inicio de sesión…</div>
+        <div class="muted" id="msg">Un momento.</div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+      const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      const msg = document.getElementById("msg");
+
+      try {
+        // Intercambia el código del OAuth por una sesión y la guarda en el navegador
+        const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+        if (error) throw error;
+
+        msg.textContent = "Acceso completado. Volviendo…";
+
+        // Vuelve a donde estabas (si existe) o a la home
+        const returnUrl = localStorage.getItem("bh_return_url") || "../index.html";
+        localStorage.removeItem("bh_return_url");
+        window.location.href = returnUrl;
+      } catch (e) {
+        msg.textContent = "No se pudo completar el acceso. Vuelve atrás e inténtalo de nuevo.";
+        console.error(e);
+      }
+    </script>
+  </body>
+</html>
