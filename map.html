@@ -525,54 +525,48 @@
         width: 160px;
       }
 
-      /* Overlay del diagrama sobre el mapa (tipo suncalc) */
+      /* Overlay tipo SunCalc: grande, centrado, sin caja */
       .sunOverlay {
         position: absolute;
-        left: 14px;
-        bottom: 14px;
-        z-index: 650; /* por encima de tiles/markers, por debajo de la card (9999) */
-        width: 248px;
-        border-radius: 14px;
-        border: 1px solid rgba(0,0,0,0.16);
-        background: rgba(255,255,255,0.92);
-        box-shadow: 0 14px 34px rgba(0,0,0,0.18);
-        padding: 10px 10px 8px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 650;
+        width: min(72vmin, 760px);
+        height: min(72vmin, 760px);
         display: none;
-        pointer-events: none; /* no interfiere con el mapa */
-        backdrop-filter: blur(6px);
+        pointer-events: none; /* no bloquea el mapa */
       }
 
-      .sunOverlayTop{
-        display:flex;
-        align-items:center;
-        justify-content: space-between;
-        gap: 10px;
-        margin-bottom: 8px;
+      .sunOverlay svg{
+        width: 100%;
+        height: 100%;
+        display: block;
       }
 
-      .sunOverlayMeta{
-        font-size: 12.5px;
-        color: rgba(0,0,0,0.82);
+      .sunOverlayLabel{
+        position: absolute;
+        left: 50%;
+        top: -38px;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.62);
+        color: rgba(255,255,255,0.92);
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 13px;
+        line-height: 1;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        text-align: right;
-        width: 100%;
-      }
-
-      .sunPolarSvg{
-        width: 100%;
-        height: 190px;
-        display:block;
       }
 
       @media (max-width: 720px) {
         .sunOverlay{
-          left: 10px;
-          bottom: 10px;
-          width: 232px;
+          width: min(78vmin, 520px);
+          height: min(78vmin, 520px);
         }
-        .sunPolarSvg{ height: 178px; }
+        .sunOverlayLabel{
+          top: -34px;
+          font-size: 12.5px;
+        }
       }
     </style>
   </head>
@@ -607,12 +601,10 @@
       <div class="mapShell">
         <div id="map"></div>
 
-        <!-- Overlay suncalc-like sobre el mapa -->
+        <!-- Overlay grande, centrado, transparente -->
         <div id="sunOverlay" class="sunOverlay" aria-hidden="true">
-          <div class="sunOverlayTop">
-            <div id="sunOverlayMeta" class="sunOverlayMeta">—</div>
-          </div>
-          <svg id="sunPolarOverlay" class="sunPolarSvg" aria-label="Diagrama solar"></svg>
+          <div id="sunOverlayLabel" class="sunOverlayLabel">—</div>
+          <svg id="sunPolarOverlay" aria-label="Diagrama solar"></svg>
         </div>
       </div>
     </div>
@@ -676,7 +668,6 @@
       const DEFAULT_ZOOM = 13;
 
       const statusEl = document.getElementById("status");
-
       const miniSearchForm = document.getElementById("miniSearchForm");
       const miniQ = document.getElementById("miniQ");
 
@@ -695,7 +686,7 @@
       const cardAgencyEl = document.getElementById("cardAgency");
 
       const sunOverlayEl = document.getElementById("sunOverlay");
-      const sunOverlayMetaEl = document.getElementById("sunOverlayMeta");
+      const sunOverlayLabelEl = document.getElementById("sunOverlayLabel");
       const sunPolarOverlaySvg = document.getElementById("sunPolarOverlay");
 
       function setStatus(msg) { statusEl.textContent = msg || ""; }
@@ -792,7 +783,6 @@
         `;
 
         cardAgencyEl.textContent = p.agency_name || "—";
-
         openCard();
       }
 
@@ -1037,12 +1027,11 @@
       map.on("click", () => closeCard());
 
       /* =========================
-         CAPA SOL (diagrama polar superpuesto en el mapa)
+         CAPA SOL (overlay grande y transparente)
          ========================= */
 
       const ZOOM_SOL_MIN = 15;
       let sunEnabled = false;
-
       const sunState = { dateISO: null, minutes: null };
 
       function todayISO() {
@@ -1100,120 +1089,195 @@
         const t = bearingDeg * Math.PI / 180;
         const x = cx + r * Math.sin(t);
         const y = cy - r * Math.cos(t);
-        return { x, y, r };
+        return { x, y };
+      }
+
+      function arcPath(cx, cy, r, a0Deg, a1Deg){
+        const a0 = (a0Deg - 90) * Math.PI/180;
+        const a1 = (a1Deg - 90) * Math.PI/180;
+        const x0 = cx + r * Math.cos(a0);
+        const y0 = cy + r * Math.sin(a0);
+        const x1 = cx + r * Math.cos(a1);
+        const y1 = cy + r * Math.sin(a1);
+        let da = ((a1Deg - a0Deg) % 360 + 360) % 360;
+        const large = da > 180 ? 1 : 0;
+        return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${r.toFixed(2)} ${r.toFixed(2)} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
       }
 
       function drawSunPolar(svg, centerLatLng, dateISO, minutes){
-        const W = 236;
-        const H = 190;
-        const cx = W/2;
-        const cy = H/2 + 6;
-        const R = Math.min(W, H) * 0.42;
+        // Sistema fijo para que escale al tamaño del overlay
+        const V = 1000;
+        const cx = V/2;
+        const cy = V/2;
+        const R = 450;
 
-        svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-        svg.setAttribute("width", W);
-        svg.setAttribute("height", H);
+        svg.setAttribute("viewBox", `0 0 ${V} ${V}`);
+        svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
         svgClear(svg);
 
-        const ringStyle = { fill:"none", stroke:"rgba(0,0,0,0.14)", "stroke-width":"1.5" };
+        // Círculos base (transparencia para ver mapa)
+        svg.appendChild(svgEl("circle", {
+          cx, cy, r: R,
+          fill: "rgba(255,255,255,0.00)",
+          stroke: "rgba(0,0,0,0.35)",
+          "stroke-width": "3"
+        }));
+
         const r30 = ((90-30)/90)*R;
         const r60 = ((90-60)/90)*R;
 
-        svg.appendChild(svgEl("circle", { cx, cy, r:R, ...ringStyle, stroke:"rgba(0,0,0,0.22)", "stroke-width":"2" }));
-        svg.appendChild(svgEl("circle", { cx, cy, r:r30, ...ringStyle }));
-        svg.appendChild(svgEl("circle", { cx, cy, r:r60, ...ringStyle }));
+        [r30, r60].forEach(rr=>{
+          svg.appendChild(svgEl("circle", {
+            cx, cy, r: rr,
+            fill: "none",
+            stroke: "rgba(0,0,0,0.18)",
+            "stroke-width": "2"
+          }));
+        });
 
+        // Ejes cardinales
         const axes = [
-          { a:0,  label:"N", lx:cx,     ly:cy-R-8 },
-          { a:90, label:"E", lx:cx+R+8, ly:cy+4 },
-          { a:180,label:"S", lx:cx,     ly:cy+R+16 },
-          { a:270,label:"O", lx:cx-R-10,ly:cy+4 },
+          { a:0,   label:"N", dx:0,   dy:-(R+35), anchor:"middle" },
+          { a:90,  label:"E", dx:(R+30), dy:8,    anchor:"start"  },
+          { a:180, label:"S", dx:0,   dy:(R+45),  anchor:"middle" },
+          { a:270, label:"O", dx:-(R+30), dy:8,   anchor:"end"    },
         ];
+
         axes.forEach(o=>{
-          const p = polarXY(cx,cy,R,o.a,0);
+          const p = polarXY(cx, cy, R, o.a, 0);
           svg.appendChild(svgEl("line", {
-            x1:cx, y1:cy, x2:p.x, y2:p.y,
-            stroke:"rgba(0,0,0,0.16)", "stroke-width":"1.5"
+            x1: cx, y1: cy, x2: p.x, y2: p.y,
+            stroke: "rgba(0,0,0,0.20)",
+            "stroke-width": "2"
           }));
           const t = svgEl("text", {
-            x:o.lx, y:o.ly,
-            "text-anchor":"middle",
-            "font-size":"11.5",
-            fill:"rgba(0,0,0,0.70)"
+            x: cx + o.dx,
+            y: cy + o.dy,
+            "text-anchor": o.anchor,
+            "font-size": "34",
+            fill: "rgba(0,0,0,0.45)"
           });
           t.textContent = o.label;
           svg.appendChild(t);
         });
 
+        // Sunrise/sunset y trayectoria
         const dayNoon = buildDateObj(dateISO, 12*60);
         const times = SunCalc.getTimes(dayNoon, centerLatLng.lat, centerLatLng.lng);
         const sunrise = times.sunrise;
         const sunset = times.sunset;
 
+        let sunriseBearing = null;
+        let sunsetBearing = null;
+
         if (sunrise instanceof Date && !isNaN(sunrise.getTime()) && sunset instanceof Date && !isNaN(sunset.getTime())) {
           const sr = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunrise);
           const ss = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunset);
+          sunriseBearing = sr.bearingDeg;
+          sunsetBearing = ss.bearingDeg;
 
-          const sunrisePt = polarXY(cx,cy,R,sr.bearingDeg, Math.max(0, sr.altDeg));
-          const sunsetPt  = polarXY(cx,cy,R,ss.bearingDeg, Math.max(0, ss.altDeg));
+          const srPt = polarXY(cx, cy, R, sunriseBearing, 0);
+          const ssPt = polarXY(cx, cy, R, sunsetBearing, 0);
 
-          const rayStyle = { stroke:"rgba(0,0,0,0.28)", "stroke-width":"2" };
-          svg.appendChild(svgEl("line", { x1:cx, y1:cy, x2:sunrisePt.x, y2:sunrisePt.y, ...rayStyle }));
-          svg.appendChild(svgEl("line", { x1:cx, y1:cy, x2:sunsetPt.x,  y2:sunsetPt.y,  ...rayStyle }));
+          // Sector suave (tipo “banda” para entender el día)
+          const d1 = arcPath(cx, cy, R, sunriseBearing, sunsetBearing);
+          const sector = svgEl("path", {
+            d: `${d1} L ${cx} ${cy} Z`,
+            fill: "rgba(255, 196, 50, 0.14)",
+            stroke: "none"
+          });
+          svg.appendChild(sector);
 
-          const mark = (pt) => svg.appendChild(svgEl("circle", { cx:pt.x, cy:pt.y, r:"4.2", fill:"rgba(0,0,0,0.38)" }));
-          mark(sunrisePt);
-          mark(sunsetPt);
+          // Línea de horizonte entre sunrise y sunset
+          svg.appendChild(svgEl("path", {
+            d: d1,
+            fill: "none",
+            stroke: "rgba(255, 175, 0, 0.60)",
+            "stroke-width": "6",
+            "stroke-linecap": "round"
+          }));
 
+          // Rayos desde el centro
+          const srRay = polarXY(cx, cy, R, sunriseBearing, 0);
+          const ssRay = polarXY(cx, cy, R, sunsetBearing, 0);
+
+          svg.appendChild(svgEl("line", {
+            x1: cx, y1: cy, x2: srRay.x, y2: srRay.y,
+            stroke: "rgba(255, 175, 0, 0.55)",
+            "stroke-width": "6",
+            "stroke-linecap": "round"
+          }));
+
+          svg.appendChild(svgEl("line", {
+            x1: cx, y1: cy, x2: ssRay.x, y2: ssRay.y,
+            stroke: "rgba(255, 175, 0, 0.55)",
+            "stroke-width": "6",
+            "stroke-linecap": "round"
+          }));
+
+          // Trayectoria real (muestras sobre altitud)
           const pts = [];
-          const stepMin = 8;
+          const stepMin = 6;
           const start = sunrise.getTime();
           const end = sunset.getTime();
           for (let tt = start; tt <= end; tt += stepMin*60*1000) {
             const d = new Date(tt);
             const pa = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, d);
-            if (pa.altDeg >= 0) pts.push(polarXY(cx,cy,R,pa.bearingDeg, pa.altDeg));
+            if (pa.altDeg >= 0) pts.push(polarXY(cx, cy, R, pa.bearingDeg, pa.altDeg));
           }
           if (pts.length >= 2) {
             const dAttr = pts.map((p,i)=> `${i===0?"M":"L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ");
             svg.appendChild(svgEl("path", {
               d: dAttr,
-              fill:"none",
-              stroke:"rgba(0,0,0,0.38)",
-              "stroke-width":"2",
-              "stroke-linecap":"round",
-              "stroke-linejoin":"round"
+              fill: "none",
+              stroke: "rgba(255, 175, 0, 0.85)",
+              "stroke-width": "8",
+              "stroke-linecap": "round",
+              "stroke-linejoin": "round"
             }));
           }
+
+          // Puntos sunrise/sunset
+          [srPt, ssPt].forEach(pt=>{
+            svg.appendChild(svgEl("circle", {
+              cx: pt.x, cy: pt.y, r: 12,
+              fill: "rgba(0,0,0,0.28)"
+            }));
+          });
         }
 
+        // Sol actual
         const curDate = buildDateObj(dateISO, minutes);
         const cur = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, curDate);
 
+        const meta = { isDay: cur.altDeg > 0, bearingDeg: cur.bearingDeg, altDeg: cur.altDeg };
+
         if (cur.altDeg > 0) {
-          const p = polarXY(cx,cy,R,cur.bearingDeg, cur.altDeg);
+          const p = polarXY(cx, cy, R, cur.bearingDeg, cur.altDeg);
 
           svg.appendChild(svgEl("line", {
-            x1:cx, y1:cy, x2:p.x, y2:p.y,
-            stroke:"rgba(0,0,0,0.20)",
-            "stroke-width":"2"
+            x1: cx, y1: cy, x2: p.x, y2: p.y,
+            stroke: "rgba(255, 175, 0, 0.65)",
+            "stroke-width": "8",
+            "stroke-linecap": "round"
           }));
 
           svg.appendChild(svgEl("circle", {
-            cx:p.x, cy:p.y, r:"6.2",
-            fill:"rgba(255,196,50,0.98)",
-            stroke:"rgba(0,0,0,0.20)",
-            "stroke-width":"1.5"
+            cx: p.x, cy: p.y, r: 18,
+            fill: "rgba(255, 196, 50, 0.95)",
+            stroke: "rgba(255, 150, 0, 0.65)",
+            "stroke-width": "6"
           }));
         } else {
+          // Noche: punto tenue en el centro
           svg.appendChild(svgEl("circle", {
-            cx:cx, cy:cy, r:"6.2",
-            fill:"rgba(0,0,0,0.18)"
+            cx: cx, cy: cy, r: 14,
+            fill: "rgba(0,0,0,0.18)"
           }));
         }
 
-        return { isDay: cur.altDeg > 0, bearingDeg: cur.bearingDeg, altDeg: cur.altDeg };
+        return meta;
       }
 
       function updateSunOverlay(){
@@ -1229,9 +1293,9 @@
 
         if (meta.isDay) {
           const card = bearingToCardinal(meta.bearingDeg);
-          sunOverlayMetaEl.textContent = `${minutesToHHMM(mins)} · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
+          sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
         } else {
-          sunOverlayMetaEl.textContent = `${minutesToHHMM(mins)} · noche`;
+          sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · noche`;
         }
       }
 
@@ -1302,7 +1366,6 @@
 
             btn.classList.toggle("active", sunEnabled);
             panel.style.display = sunEnabled ? "block" : "none";
-
             updateSunOverlay();
           }
 
