@@ -154,6 +154,7 @@
         margin: 0 auto;
         height: 100%;
         box-sizing: border-box;
+        position: relative;
       }
 
       #map{
@@ -438,6 +439,101 @@
       .leaflet-bar a, .leaflet-bar a:hover {
         border-bottom: 1px solid rgba(0,0,0,0.08);
       }
+
+      /* Controles rápidos a la derecha (capa Sol) */
+      .quickCol {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .qBtn {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.14);
+        background: rgba(255,255,255,0.96);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+        user-select: none;
+      }
+      .qBtn:hover { background: #fff; }
+      .qBtn svg { width: 20px; height: 20px; color: rgba(0,0,0,0.80); }
+
+      .qBtn.active {
+        border-color: rgba(26,115,232,0.55);
+        box-shadow: 0 12px 28px rgba(26,115,232,0.16);
+      }
+
+      .qBtn.disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .sunPanel {
+        width: 240px;
+        border-radius: 14px;
+        border: 1px solid rgba(0,0,0,0.14);
+        background: rgba(255,255,255,0.96);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.16);
+        padding: 10px 12px;
+      }
+
+      .sunRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 12.5px;
+        color: rgba(0,0,0,0.82);
+        margin-bottom: 8px;
+      }
+
+      .sunRow input[type="date"]{
+        font-size: 12.5px;
+        padding: 6px 8px;
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.14);
+        background: #fff;
+        outline: none;
+        width: 140px;
+      }
+
+      .sunRow button{
+        border: 0;
+        background: #1a73e8;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 12.5px;
+      }
+
+      .sunRow button:active{ transform: translateY(1px); }
+
+      .sunTime {
+        display:flex;
+        align-items:center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 12.5px;
+        color: rgba(0,0,0,0.82);
+        margin-top: 4px;
+      }
+
+      .sunTime input[type="range"]{
+        width: 150px;
+      }
+
+      .sunNote{
+        margin-top: 8px;
+        font-size: 11.5px;
+        color: rgba(0,0,0,0.62);
+        line-height: 1.25;
+      }
     </style>
   </head>
 
@@ -521,6 +617,12 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
+
+    <!-- SunCalc para posición solar -->
+    <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
+
+    <!-- Turf para convex hull (sombra aproximada) -->
+    <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
 
     <script>
       const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
@@ -680,8 +782,8 @@
           priceMin: toInt(u.searchParams.get("price_min")),
           priceMax: toInt(u.searchParams.get("price_max")),
 
-          listedSinceDays: toInt(u.searchParams.get("since_days")),  // 1,5,10,30,60
-          availability: toText(u.searchParams.get("availability")),  // available/negotiable/closed
+          listedSinceDays: toInt(u.searchParams.get("since_days")),
+          availability: toText(u.searchParams.get("availability")),
 
           usefulMin: toInt(u.searchParams.get("useful_min")),
           usefulMax: toInt(u.searchParams.get("useful_max")),
@@ -692,17 +794,17 @@
           bedroomsMin: toInt(u.searchParams.get("bedrooms_min")),
           bathroomsMin: toInt(u.searchParams.get("bathrooms_min")),
 
-          outdoorType: toText(u.searchParams.get("outdoor_type")),         // balcony/terrace/garden/patio
-          orientations: toTextArray(u.searchParams.get("orientations")),   // N,E,S,W,...
+          outdoorType: toText(u.searchParams.get("outdoor_type")),
+          orientations: toTextArray(u.searchParams.get("orientations")),
 
-          energyChoice: toText(u.searchParams.get("energy")),              // pending o A..G
+          energyChoice: toText(u.searchParams.get("energy")),
 
-          buildPeriods: toTextArray(u.searchParams.get("build_periods")),  // pre_1950,1950_1999,2000_plus
+          buildPeriods: toTextArray(u.searchParams.get("build_periods")),
 
-          parkingTypes: toTextArray(u.searchParams.get("parking")),        // included,optional,none
-          storageTypes: toTextArray(u.searchParams.get("storage")),        // included,optional,none
+          parkingTypes: toTextArray(u.searchParams.get("parking")),
+          storageTypes: toTextArray(u.searchParams.get("storage")),
 
-          accessibility: toTextArray(u.searchParams.get("accessibility"))  // elevator,reduced_mobility
+          accessibility: toTextArray(u.searchParams.get("accessibility"))
         };
       }
 
@@ -887,6 +989,434 @@
       map.on("moveend", scheduleReload);
       map.on("zoomend", scheduleReload);
       map.on("click", () => closeCard());
+
+      /* =========================
+         CAPA SOL (Nivel 1) - Leaflet
+         ========================= */
+
+      const ZOOM_SOL_MIN = 15;              // zoom mínimo para permitir activar
+      const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
+      const DEFAULT_HEIGHT_M = 9;           // 3 plantas aprox
+      const MAX_BUILDINGS = 350;            // límite para no freír el navegador
+
+      let sunEnabled = false;
+      let sunShadowsLayer = L.featureGroup(); // no se añade hasta activar
+      let sunBuildingsCache = new Map();      // cache simple por bbox redondeado
+      let sunRefreshTimer = null;
+      let sunLastKey = null;
+
+      // Estado fecha/hora
+      const sunState = {
+        dateISO: null,   // "YYYY-MM-DD"
+        minutes: null    // 0..1439
+      };
+
+      function todayISO() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth()+1).padStart(2,"0");
+        const day = String(d.getDate()).padStart(2,"0");
+        return `${y}-${m}-${day}`;
+      }
+
+      function nowMinutes() {
+        const d = new Date();
+        return d.getHours()*60 + d.getMinutes();
+      }
+
+      function minutesToHHMM(mins) {
+        const h = Math.floor(mins/60);
+        const m = mins % 60;
+        return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+      }
+
+      function getSolarVectorMeters(lat, lng, dateObj, heightM) {
+        const pos = SunCalc.getPosition(dateObj, lat, lng);
+        const alt = pos.altitude; // radians
+        const azFromSouth = pos.azimuth; // radians, 0 = sur, + = oeste
+
+        if (!(alt > 0)) return null; // sol bajo horizonte o 0
+
+        // convertir a bearing desde norte:
+        const bearingSun = azFromSouth + Math.PI; // 0(sur)->pi(norte?); ver nota en análisis
+        // sombra en dirección opuesta al sol
+        const bearingShadow = (bearingSun + Math.PI) % (2*Math.PI);
+
+        const shadowLen = heightM / Math.tan(alt); // metros
+
+        // x Este, y Norte
+        const dx = shadowLen * Math.sin(bearingShadow);
+        const dy = shadowLen * Math.cos(bearingShadow);
+
+        return { dx, dy, shadowLen, altitude: alt };
+      }
+
+      function bboxKey(bounds) {
+        // redondeo para cache (reduce llamadas overpass en drag pequeños)
+        const s = bounds.getSouthWest().lat;
+        const w = bounds.getSouthWest().lng;
+        const n = bounds.getNorthEast().lat;
+        const e = bounds.getNorthEast().lng;
+
+        const r = (v, p=3) => Number(v).toFixed(p); // ~100m-200m aprox
+        return `${r(s)}|${r(w)}|${r(n)}|${r(e)}`;
+      }
+
+      async function fetchOSMBuildingsForBounds(bounds) {
+        const key = bboxKey(bounds);
+        if (sunBuildingsCache.has(key)) return sunBuildingsCache.get(key);
+
+        const s = bounds.getSouthWest().lat;
+        const w = bounds.getSouthWest().lng;
+        const n = bounds.getNorthEast().lat;
+        const e = bounds.getNorthEast().lng;
+
+        // Ojo: Overpass es sensible. Mantenemos query simple y limitamos.
+        const query = `
+[out:json][timeout:25];
+(
+  way["building"](${s},${w},${n},${e});
+);
+out body ${MAX_BUILDINGS};
+>;
+out skel qt;
+        `.trim();
+
+        const res = await fetch(OVERPASS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
+          body: `data=${encodeURIComponent(query)}`
+        });
+
+        if (!res.ok) {
+          const txt = await res.text().catch(() => "");
+          throw new Error(`Overpass error (${res.status}): ${txt.slice(0,120)}`);
+        }
+
+        const data = await res.json();
+
+        // construir nodos
+        const nodes = new Map();
+        for (const el of data.elements) {
+          if (el.type === "node") nodes.set(el.id, el);
+        }
+
+        // construir ways (polígonos)
+        const buildings = [];
+        for (const el of data.elements) {
+          if (el.type !== "way") continue;
+          if (!el.nodes || el.nodes.length < 4) continue;
+
+          const coords = [];
+          for (const nid of el.nodes) {
+            const nd = nodes.get(nid);
+            if (!nd) { coords.length = 0; break; }
+            coords.push([nd.lon, nd.lat]);
+          }
+          if (coords.length < 4) continue;
+
+          // cerrar ring si no está cerrado
+          const first = coords[0];
+          const last = coords[coords.length - 1];
+          if (first[0] !== last[0] || first[1] !== last[1]) coords.push([first[0], first[1]]);
+
+          const tags = el.tags || {};
+          const h = parseHeightFromTags(tags);
+
+          buildings.push({
+            id: el.id,
+            ringLonLat: coords,
+            heightM: h
+          });
+
+          if (buildings.length >= MAX_BUILDINGS) break;
+        }
+
+        sunBuildingsCache.set(key, buildings);
+        return buildings;
+      }
+
+      function parseHeightFromTags(tags) {
+        // height en metros
+        const hRaw = tags["height"];
+        if (hRaw) {
+          const m = String(hRaw).match(/([0-9]+(\.[0-9]+)?)/);
+          if (m) {
+            const v = parseFloat(m[1]);
+            if (Number.isFinite(v) && v > 1) return v;
+          }
+        }
+        // building:levels
+        const lvRaw = tags["building:levels"];
+        if (lvRaw) {
+          const lv = parseInt(String(lvRaw), 10);
+          if (Number.isFinite(lv) && lv > 0 && lv < 200) return lv * 3;
+        }
+        return DEFAULT_HEIGHT_M;
+      }
+
+      function lonLatRingToLatLngs(ringLonLat) {
+        return ringLonLat.map(([lon, lat]) => [lat, lon]);
+      }
+
+      function projectLatLngToMeters(lat, lng) {
+        return L.CRS.EPSG3857.project(L.latLng(lat, lng)); // Point(x,y) en metros
+      }
+
+      function unprojectMetersToLatLng(x, y) {
+        return L.CRS.EPSG3857.unproject(L.point(x, y));
+      }
+
+      function shadowPolygonApproxLatLngs(footLatLngs, dxMeters, dyMeters) {
+        // Aproximación: convex hull de puntos originales + puntos trasladados
+        // Convertimos a GeoJSON Points y usamos turf.convex
+        const pts = [];
+        for (const ll of footLatLngs) {
+          const p = projectLatLngToMeters(ll[0], ll[1]);
+          pts.push(turf.point([p.x, p.y]));
+          pts.push(turf.point([p.x + dxMeters, p.y + dyMeters]));
+        }
+
+        const fc = turf.featureCollection(pts);
+        const hull = turf.convex(fc);
+        if (!hull || !hull.geometry || hull.geometry.type !== "Polygon") return null;
+
+        const ring = hull.geometry.coordinates[0]; // [ [x,y], ... ]
+        const latlngs = ring.map(([x,y]) => {
+          const ll = unprojectMetersToLatLng(x, y);
+          return [ll.lat, ll.lng];
+        });
+        return latlngs;
+      }
+
+      function buildDateObjFromState() {
+        const iso = sunState.dateISO || todayISO();
+        const mins = (sunState.minutes != null) ? sunState.minutes : nowMinutes();
+        const [y,m,d] = iso.split("-").map(x => parseInt(x,10));
+        const hh = Math.floor(mins/60);
+        const mm = mins % 60;
+        // hora local del usuario
+        return new Date(y, (m-1), d, hh, mm, 0, 0);
+      }
+
+      function clearShadows() {
+        sunShadowsLayer.clearLayers();
+      }
+
+      async function renderShadowsForView() {
+        if (!sunEnabled) return;
+        if (map.getZoom() < ZOOM_SOL_MIN) return;
+
+        const bounds = map.getBounds();
+        const key = bboxKey(bounds) + "|" + (sunState.dateISO || "") + "|" + (sunState.minutes ?? "");
+        sunLastKey = key;
+
+        let buildings;
+        try {
+          buildings = await fetchOSMBuildingsForBounds(bounds);
+        } catch (e) {
+          // si falla overpass, no rompemos el mapa
+          console.error(e);
+          setStatus(`Anuncios (sol): sin edificios (OSM).`);
+          clearShadows();
+          return;
+        }
+
+        // Si durante await cambió el estado/bbox, aborta
+        const keyNow = bboxKey(map.getBounds()) + "|" + (sunState.dateISO || "") + "|" + (sunState.minutes ?? "");
+        if (keyNow !== sunLastKey) return;
+
+        const center = map.getCenter();
+        const dateObj = buildDateObjFromState();
+
+        const v = getSolarVectorMeters(center.lat, center.lng, dateObj, 10);
+        if (!v) {
+          clearShadows();
+          return;
+        }
+
+        clearShadows();
+
+        // dibujar sombras
+        const style = {
+          stroke: false,
+          fill: true,
+          fillOpacity: 0.22,
+          fillColor: "#111"  // se ve como gris por opacidad
+        };
+
+        // reducir carga: si hay demasiados, recorta
+        const list = (buildings.length > MAX_BUILDINGS) ? buildings.slice(0, MAX_BUILDINGS) : buildings;
+
+        for (const b of list) {
+          const foot = lonLatRingToLatLngs(b.ringLonLat);
+          const heightM = b.heightM || DEFAULT_HEIGHT_M;
+
+          const vec = getSolarVectorMeters(center.lat, center.lng, dateObj, heightM);
+          if (!vec) continue;
+
+          // si sombra demasiado larga, recorta para evitar polígonos absurdos
+          const cap = 220; // metros
+          const scale = (vec.shadowLen > cap) ? (cap / vec.shadowLen) : 1;
+
+          const latlngs = shadowPolygonApproxLatLngs(foot, vec.dx * scale, vec.dy * scale);
+          if (!latlngs) continue;
+
+          const poly = L.polygon(latlngs, style);
+          sunShadowsLayer.addLayer(poly);
+        }
+      }
+
+      function scheduleSunRefresh() {
+        if (!sunEnabled) return;
+        if (sunRefreshTimer) clearTimeout(sunRefreshTimer);
+        sunRefreshTimer = setTimeout(() => {
+          renderShadowsForView().catch(console.error);
+        }, 250);
+      }
+
+      /* Control UI a la derecha */
+      const SunControl = L.Control.extend({
+        options: { position: "topright" },
+        onAdd: function() {
+          const container = L.DomUtil.create("div", "quickCol");
+          L.DomEvent.disableClickPropagation(container);
+          L.DomEvent.disableScrollPropagation(container);
+
+          // Botón Sol
+          const btn = L.DomUtil.create("div", "qBtn", container);
+          btn.id = "sunBtn";
+          btn.title = "Sol (sombras orientativas)";
+          btn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2"></path><path d="M12 20v2"></path>
+              <path d="M4.93 4.93l1.41 1.41"></path><path d="M17.66 17.66l1.41 1.41"></path>
+              <path d="M2 12h2"></path><path d="M20 12h2"></path>
+              <path d="M4.93 19.07l1.41-1.41"></path><path d="M17.66 6.34l1.41-1.41"></path>
+            </svg>
+          `;
+
+          // Panel (oculto por defecto)
+          const panel = L.DomUtil.create("div", "sunPanel", container);
+          panel.id = "sunPanel";
+          panel.style.display = "none";
+          panel.innerHTML = `
+            <div class="sunRow">
+              <span>Fecha</span>
+              <input type="date" id="sunDate">
+            </div>
+            <div class="sunTime">
+              <span id="sunTimeLabel">Hora</span>
+              <input type="range" id="sunTime" min="0" max="1439" step="10" value="720">
+              <span id="sunHHMM">12:00</span>
+            </div>
+            <div class="sunRow" style="margin-top:10px;">
+              <span></span>
+              <button type="button" id="sunNow">Ahora</button>
+            </div>
+            <div class="sunNote">
+              Sombras orientativas basadas en modelo 3D simplificado.
+            </div>
+          `;
+
+          // refs
+          const dateEl = panel.querySelector("#sunDate");
+          const rangeEl = panel.querySelector("#sunTime");
+          const hhmmEl = panel.querySelector("#sunHHMM");
+          const nowBtn = panel.querySelector("#sunNow");
+
+          // init state
+          sunState.dateISO = todayISO();
+          sunState.minutes = nowMinutes();
+          dateEl.value = sunState.dateISO;
+          rangeEl.value = String(sunState.minutes);
+          hhmmEl.textContent = minutesToHHMM(sunState.minutes);
+
+          function setBtnEnabled() {
+            const ok = map.getZoom() >= ZOOM_SOL_MIN;
+            btn.classList.toggle("disabled", !ok);
+            if (!ok) {
+              btn.title = `Acércate para ver sombras (zoom ${ZOOM_SOL_MIN}+).`;
+              // Si estaba activo y el usuario aleja demasiado, lo apagamos
+              if (sunEnabled) toggleSun(false);
+            } else {
+              btn.title = "Sol (sombras orientativas)";
+            }
+          }
+
+          function toggleSun(force) {
+            const ok = map.getZoom() >= ZOOM_SOL_MIN;
+            if (!ok) return;
+
+            const next = (typeof force === "boolean") ? force : !sunEnabled;
+            sunEnabled = next;
+
+            btn.classList.toggle("active", sunEnabled);
+            panel.style.display = sunEnabled ? "block" : "none";
+
+            if (sunEnabled) {
+              sunShadowsLayer.addTo(map);
+              scheduleSunRefresh();
+            } else {
+              clearShadows();
+              if (map.hasLayer(sunShadowsLayer)) map.removeLayer(sunShadowsLayer);
+            }
+          }
+
+          // expose toggle for external usage
+          window.__toggleSun = toggleSun;
+
+          btn.addEventListener("click", () => toggleSun());
+
+          dateEl.addEventListener("change", () => {
+            sunState.dateISO = dateEl.value || todayISO();
+            scheduleSunRefresh();
+          });
+
+          rangeEl.addEventListener("input", () => {
+            sunState.minutes = parseInt(rangeEl.value, 10);
+            hhmmEl.textContent = minutesToHHMM(sunState.minutes);
+          });
+
+          rangeEl.addEventListener("change", () => {
+            sunState.minutes = parseInt(rangeEl.value, 10);
+            hhmmEl.textContent = minutesToHHMM(sunState.minutes);
+            scheduleSunRefresh();
+          });
+
+          nowBtn.addEventListener("click", () => {
+            sunState.dateISO = todayISO();
+            sunState.minutes = nowMinutes();
+            dateEl.value = sunState.dateISO;
+            rangeEl.value = String(sunState.minutes);
+            hhmmEl.textContent = minutesToHHMM(sunState.minutes);
+            scheduleSunRefresh();
+          });
+
+          // zoom listener para habilitar/deshabilitar
+          map.on("zoomend", setBtnEnabled);
+          setBtnEnabled();
+
+          return container;
+        }
+      });
+
+      // Instalar control
+      map.addControl(new SunControl());
+
+      // Si Sol está activo y el usuario mueve el mapa, refrescar sombras
+      map.on("moveend", () => {
+        if (sunEnabled) scheduleSunRefresh();
+      });
+
+      map.on("zoomend", () => {
+        if (sunEnabled) scheduleSunRefresh();
+      });
+
+      /* =========================
+         FIN CAPA SOL
+         ========================= */
 
       (async () => {
         try {
