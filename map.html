@@ -573,10 +573,19 @@
         line-height: 1.25;
       }
 
-      /* Sol orbitando en el mapa */
+      /* SVG trayectoria (siempre visible cuando Sol está activo) */
+      .sunPathSvg{
+        position:absolute;
+        inset:0;
+        z-index: 650; /* debajo del sunOrb (700) */
+        pointer-events:none;
+        display:none;
+      }
+
+      /* Sol orbitando (overlay) */
       .sunOrb {
         position: absolute;
-        z-index: 700; /* por encima de tiles y por debajo de la card (9999) */
+        z-index: 700;
         width: 34px;
         height: 34px;
         border-radius: 999px;
@@ -635,6 +644,9 @@
     <div class="page">
       <div class="mapShell">
         <div id="map"></div>
+
+        <!-- Trayectoria y líneas (SVG) -->
+        <svg id="sunPathSvg" class="sunPathSvg" aria-hidden="true"></svg>
 
         <!-- Sol orbitando (overlay) -->
         <div id="sunOrb" class="sunOrb" aria-hidden="true">
@@ -724,6 +736,7 @@
 
       const sunOrbEl = document.getElementById("sunOrb");
       const sunOrbArrowEl = document.getElementById("sunOrbArrow");
+      const sunPathSvgEl = document.getElementById("sunPathSvg");
 
       function setStatus(msg) { statusEl.textContent = msg || ""; }
 
@@ -1064,12 +1077,10 @@
       map.on("click", () => closeCard());
 
       /* =========================
-         CAPA SOL (solo indicador limpio)
+         CAPA SOL (indicador + trayectoria + líneas amanecer/atardecer)
          ========================= */
 
-      // Mantengo la misma lógica: visible pero deshabilitado si estás demasiado alejado.
       const ZOOM_SOL_MIN = 15;
-
       let sunEnabled = false;
 
       const sunState = {
@@ -1099,11 +1110,9 @@
       function rad2deg(r){ return r * 180 / Math.PI; }
 
       function sunAzimuthBearingDeg(lat, lng, dateObj){
-        // SunCalc azimuth: rad desde el SUR, positivo hacia el OESTE.
-        // Lo convertimos a bearing desde el NORTE (0=N, 90=E, 180=S, 270=O)
         const pos = SunCalc.getPosition(dateObj, lat, lng);
         const azDeg = rad2deg(pos.azimuth);
-        const bearing = (180 + azDeg + 360) % 360;
+        const bearing = (180 + azDeg + 360) % 360; // 0=N
         return { bearingDeg: bearing, altitudeRad: pos.altitude };
       }
 
@@ -1126,6 +1135,33 @@
         sunOrbEl.style.display = v ? "block" : "none";
       }
 
+      function setSunPathVisible(v){
+        sunPathSvgEl.style.display = v ? "block" : "none";
+      }
+
+      function getMapRectWH(){
+        const rect = map.getContainer().getBoundingClientRect();
+        return { w: rect.width, h: rect.height };
+      }
+
+      function getEllipseGeometry(){
+        const { w, h } = getMapRectWH();
+        const margin = 22;
+        const cx = w / 2;
+        const cy = h / 2;
+        const a = Math.max(30, (w / 2) - margin);
+        const b = Math.max(30, (h / 2) - margin);
+        return { cx, cy, a, b, w, h, margin };
+      }
+
+      function pointOnEllipseForBearing(bearingDeg){
+        const { cx, cy, a, b } = getEllipseGeometry();
+        const theta = bearingDeg * Math.PI / 180; // 0=N -> arriba
+        const x = cx + a * Math.sin(theta);
+        const y = cy - b * Math.cos(theta);
+        return { x, y };
+      }
+
       function updateSunOrbPosition(){
         if (!sunEnabled) { setSunOrbVisible(false); return; }
         if (map.getZoom() < ZOOM_SOL_MIN) { setSunOrbVisible(false); return; }
@@ -1134,45 +1170,17 @@
         const dateObj = buildDateObjFromState();
         const { bearingDeg, altitudeRad } = sunAzimuthBearingDeg(center.lat, center.lng, dateObj);
 
-        // Si el sol está bajo el horizonte, ocultamos el sol orbitando.
-        if (!(altitudeRad > 0)) {
-          setSunOrbVisible(false);
-          return;
-        }
+        if (!(altitudeRad > 0)) { setSunOrbVisible(false); return; }
+
+        const pt = pointOnEllipseForBearing(bearingDeg);
 
         const rect = map.getContainer().getBoundingClientRect();
-        const w = rect.width;
-        const h = rect.height;
-
-        // Elipse "concéntrica" dentro del rectángulo, cerca del borde.
-        // Ajusta margin para acercarlo/alejarlo del borde.
-        const margin = 22;
-        const cx = w / 2;
-        const cy = h / 2;
-        const a = Math.max(30, (w / 2) - margin);
-        const b = Math.max(30, (h / 2) - margin);
-
-        // bearingDeg: 0=N (arriba), 90=E (derecha)...
-        // Parametrizamos elipse con ángulo theta donde:
-        // x = cx + a * sin(theta)
-        // y = cy - b * cos(theta)
-        const theta = bearingDeg * Math.PI / 180;
-
-        const x = cx + a * Math.sin(theta);
-        const y = cy - b * Math.cos(theta);
-
-        // Posiciona dentro de la mapShell (overlay está en .mapShell)
-        // Como #sunOrb está dentro de .mapShell, usamos coordenadas relativas:
         const shellRect = document.querySelector(".mapShell").getBoundingClientRect();
-        const relX = x + (rect.left - shellRect.left);
-        const relY = y + (rect.top - shellRect.top);
+        const relX = pt.x + (rect.left - shellRect.left);
+        const relY = pt.y + (rect.top - shellRect.top);
 
         sunOrbEl.style.left = `${relX}px`;
         sunOrbEl.style.top = `${relY}px`;
-
-        // Flecha del sol: apunta hacia el centro del mapa (visualmente agradable),
-        // no hacia el azimut. Si la quieres apuntando a la dirección del sol, se cambia.
-        const angleToCenter = rad2deg(Math.atan2(cx - x, (cy - y) * -1)); // aproximación simple
         sunOrbArrowEl.style.transform = `rotate(${bearingDeg}deg)`;
 
         setSunOrbVisible(true);
@@ -1204,8 +1212,90 @@
         arrowEl.style.transform = `rotate(${bearingDeg}deg)`;
       }
 
+      function clearSvg(el){
+        while (el.firstChild) el.removeChild(el.firstChild);
+      }
+
+      function svgEl(name, attrs){
+        const el = document.createElementNS("http://www.w3.org/2000/svg", name);
+        if (attrs) {
+          for (const [k,v] of Object.entries(attrs)) el.setAttribute(k, String(v));
+        }
+        return el;
+      }
+
+      function updateSunTrajectoryAndLines(){
+        if (!sunEnabled) { setSunPathVisible(false); return; }
+        if (map.getZoom() < ZOOM_SOL_MIN) { setSunPathVisible(false); return; }
+
+        const { w, h, cx, cy, a, b } = getEllipseGeometry();
+
+        sunPathSvgEl.setAttribute("width", w);
+        sunPathSvgEl.setAttribute("height", h);
+        sunPathSvgEl.setAttribute("viewBox", `0 0 ${w} ${h}`);
+
+        clearSvg(sunPathSvgEl);
+
+        // Trajectoria: elipse completa (siempre visible)
+        const ellipse = svgEl("ellipse", {
+          cx, cy, rx: a, ry: b,
+          fill: "none",
+          stroke: "rgba(0,0,0,0.22)",
+          "stroke-width": "2",
+          "stroke-dasharray": "6 7"
+        });
+        sunPathSvgEl.appendChild(ellipse);
+
+        // Centro (opcional, muy sutil)
+        const centerDot = svgEl("circle", {
+          cx, cy, r: "3.5",
+          fill: "rgba(0,0,0,0.25)"
+        });
+        sunPathSvgEl.appendChild(centerDot);
+
+        // Amanecer / atardecer (líneas desde el centro hasta el punto de la elipse)
+        const center = map.getCenter();
+        const iso = sunState.dateISO || todayISO();
+        const [yy,mm,dd] = iso.split("-").map(x => parseInt(x,10));
+        const dayAtNoon = new Date(yy, mm-1, dd, 12, 0, 0, 0);
+
+        const times = SunCalc.getTimes(dayAtNoon, center.lat, center.lng);
+
+        const sunrise = times.sunrise;
+        const sunset = times.sunset;
+
+        // Si por cualquier cosa no existe (latitudes extremas), no dibujamos líneas.
+        if (sunrise instanceof Date && !isNaN(sunrise.getTime()) && sunset instanceof Date && !isNaN(sunset.getTime())) {
+          const sr = sunAzimuthBearingDeg(center.lat, center.lng, sunrise);
+          const ss = sunAzimuthBearingDeg(center.lat, center.lng, sunset);
+
+          const pSr = pointOnEllipseForBearing(sr.bearingDeg);
+          const pSs = pointOnEllipseForBearing(ss.bearingDeg);
+
+          const lineStyle = {
+            stroke: "rgba(0,0,0,0.32)",
+            "stroke-width": "2"
+          };
+
+          const l1 = svgEl("line", { x1: cx, y1: cy, x2: pSr.x, y2: pSr.y, ...lineStyle });
+          const l2 = svgEl("line", { x1: cx, y1: cy, x2: pSs.x, y2: pSs.y, ...lineStyle });
+
+          sunPathSvgEl.appendChild(l1);
+          sunPathSvgEl.appendChild(l2);
+
+          const markStyle = { fill: "rgba(0,0,0,0.38)" };
+          const m1 = svgEl("circle", { cx: pSr.x, cy: pSr.y, r: "4.5", ...markStyle });
+          const m2 = svgEl("circle", { cx: pSs.x, cy: pSs.y, r: "4.5", ...markStyle });
+          sunPathSvgEl.appendChild(m1);
+          sunPathSvgEl.appendChild(m2);
+        }
+
+        setSunPathVisible(true);
+      }
+
       function updateSunUI(){
         updateSunPanelIndicator();
+        updateSunTrajectoryAndLines();
         updateSunOrbPosition();
       }
 
@@ -1255,7 +1345,7 @@
             </div>
 
             <div class="sunNote">
-              Indicador orientativo de dirección y recorrido del sol.
+              Trayectoria (línea) y direcciones de amanecer/atardecer siempre visibles.
             </div>
           `;
 
@@ -1289,6 +1379,10 @@
             panel.style.display = sunEnabled ? "block" : "none";
 
             updateSunUI();
+            if (!sunEnabled) {
+              setSunOrbVisible(false);
+              setSunPathVisible(false);
+            }
           }
 
           btn.addEventListener("click", () => toggleSun());
@@ -1322,8 +1416,8 @@
           map.on("zoomend", setBtnEnabled);
           setBtnEnabled();
 
-          // al cargar, no lo activamos
           setSunOrbVisible(false);
+          setSunPathVisible(false);
 
           return container;
         }
@@ -1331,17 +1425,9 @@
 
       map.addControl(new SunControl());
 
-      map.on("moveend", () => {
-        if (sunEnabled) updateSunUI();
-      });
-
-      map.on("zoomend", () => {
-        if (sunEnabled) updateSunUI();
-      });
-
-      window.addEventListener("resize", () => {
-        if (sunEnabled) updateSunUI();
-      });
+      map.on("moveend", () => { if (sunEnabled) updateSunUI(); });
+      map.on("zoomend", () => { if (sunEnabled) updateSunUI(); });
+      window.addEventListener("resize", () => { if (sunEnabled) updateSunUI(); });
 
       /* =========================
          FIN CAPA SOL
