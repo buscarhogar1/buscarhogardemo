@@ -7,15 +7,17 @@
     <style>
       html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}
       .wrap{height:100%;display:grid;place-items:center;padding:20px;box-sizing:border-box;text-align:center;}
-      .box{width:min(520px,100%);border:1px solid #e6e7eb;border-radius:14px;padding:18px;}
-      .muted{opacity:.75;font-size:14px;line-height:1.35;}
+      .box{width:min(720px,100%);border:1px solid #e6e7eb;border-radius:14px;padding:18px;}
+      .muted{opacity:.75;font-size:14px;line-height:1.35;word-break:break-word;}
+      .small{opacity:.8;font-size:12.5px;line-height:1.35;margin-top:10px;word-break:break-word;}
     </style>
   </head>
   <body>
     <div class="wrap">
       <div class="box">
-        <div>Finalizando inicio de sesión…</div>
+        <div id="title">Finalizando inicio de sesión…</div>
         <div class="muted" id="msg">Un momento.</div>
+        <div class="small" id="details"></div>
       </div>
     </div>
 
@@ -26,22 +28,36 @@
       const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
       const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      const msg = document.getElementById("msg");
+      const titleEl = document.getElementById("title");
+      const msgEl = document.getElementById("msg");
+      const detailsEl = document.getElementById("details");
 
-      try {
-        // Intercambia el código del OAuth por una sesión y la guarda en el navegador
-        const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
-        if (error) throw error;
+      const url = new URL(window.location.href);
+      const hasCode = url.searchParams.has("code");
+      const hasError = url.searchParams.has("error") || url.searchParams.has("error_description");
 
-        msg.textContent = "Acceso completado. Volviendo…";
+      // Si entras aquí a mano, esto es lo esperado:
+      if (!hasCode && !hasError) {
+        titleEl.textContent = "Callback OK";
+        msgEl.textContent = "Esta página existe. Para funcionar, tienes que llegar aquí volviendo desde Google (con ?code=...).";
+        detailsEl.textContent = "URL actual: " + window.location.href;
+      } else {
+        try {
+          detailsEl.textContent = "URL actual: " + window.location.href;
 
-        // Vuelve a donde estabas (si existe) o a la home
-        const returnUrl = localStorage.getItem("bh_return_url") || "../index.html";
-        localStorage.removeItem("bh_return_url");
-        window.location.href = returnUrl;
-      } catch (e) {
-        msg.textContent = "No se pudo completar el acceso. Vuelve atrás e inténtalo de nuevo.";
-        console.error(e);
+          const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+          if (error) throw error;
+
+          msgEl.textContent = "Acceso completado. Volviendo…";
+
+          const returnUrl = localStorage.getItem("bh_return_url") || "../index.html";
+          localStorage.removeItem("bh_return_url");
+          window.location.href = returnUrl;
+        } catch (e) {
+          msgEl.textContent = "No se pudo completar el acceso. Vuelve atrás e inténtalo de nuevo.";
+          detailsEl.textContent = "Error: " + (e?.message || String(e));
+          console.error(e);
+        }
       }
     </script>
   </body>
