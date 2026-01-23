@@ -472,60 +472,7 @@
         box-shadow: none;
       }
 
-      .sunPanel {
-        width: 260px;
-        border-radius: 14px;
-        border: 1px solid rgba(0,0,0,0.14);
-        background: rgba(255,255,255,0.96);
-        box-shadow: 0 12px 28px rgba(0,0,0,0.16);
-        padding: 10px 12px;
-      }
-
-      .sunRow {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        font-size: 12.5px;
-        color: rgba(0,0,0,0.82);
-        margin-bottom: 8px;
-      }
-
-      .sunRow input[type="date"]{
-        font-size: 12.5px;
-        padding: 6px 8px;
-        border-radius: 10px;
-        border: 1px solid rgba(0,0,0,0.14);
-        background: #fff;
-        outline: none;
-        width: 150px;
-      }
-
-      .sunRow button{
-        border: 0;
-        background: #1a73e8;
-        color: #fff;
-        padding: 6px 10px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-size: 12.5px;
-      }
-
-      .sunTime {
-        display:flex;
-        align-items:center;
-        justify-content: space-between;
-        gap: 10px;
-        font-size: 12.5px;
-        color: rgba(0,0,0,0.82);
-        margin-top: 4px;
-      }
-
-      .sunTime input[type="range"]{
-        width: 160px;
-      }
-
-      /* Overlay tipo SunCalc: grande, centrado, sin caja */
+      /* Overlay tipo SunCalc: grande, centrado, transparente */
       .sunOverlay {
         position: absolute;
         left: 50%;
@@ -535,7 +482,7 @@
         width: min(72vmin, 760px);
         height: min(72vmin, 760px);
         display: none;
-        pointer-events: none; /* no bloquea el mapa */
+        pointer-events: none;
       }
 
       .sunOverlay svg{
@@ -566,6 +513,161 @@
         .sunOverlayLabel{
           top: -34px;
           font-size: 12.5px;
+        }
+      }
+
+      /* Barra inferior tipo SunCalc (minimalista) */
+      .sunTimebar {
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        bottom: 14px;
+        z-index: 700;
+        display: none;
+        pointer-events: auto;
+      }
+
+      .sunTimebarInner{
+        position: relative;
+        padding: 10px 12px 12px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.78);
+        border: 1px solid rgba(0,0,0,0.10);
+        backdrop-filter: blur(6px);
+      }
+
+      .sunHoursRow{
+        display: grid;
+        grid-template-columns: repeat(24, 1fr);
+        gap: 0;
+        font-size: 11px;
+        color: rgba(0,0,0,0.58);
+        margin-bottom: 8px;
+        user-select: none;
+      }
+
+      .sunHoursRow span{
+        text-align: center;
+        transform: translateY(-1px);
+      }
+
+      .sunTrack {
+        position: relative;
+        height: 18px;
+        border-radius: 999px;
+        background:
+          linear-gradient(to right,
+            rgba(26,115,232,0.0) 0%,
+            rgba(26,115,232,0.0) var(--sr, 0%),
+            rgba(26,115,232,0.12) var(--sr, 0%),
+            rgba(26,115,232,0.12) var(--ss, 0%),
+            rgba(26,115,232,0.0) var(--ss, 0%),
+            rgba(26,115,232,0.0) 100%
+          );
+        border: 1px solid rgba(0,0,0,0.10);
+        overflow: hidden;
+      }
+
+      .sunTrack:before{
+        content:"";
+        position:absolute;
+        inset: 0;
+        background: linear-gradient(to right, rgba(0,0,0,0.06), rgba(0,0,0,0.03));
+        opacity: 0.35;
+        pointer-events:none;
+      }
+
+      .sunRange {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        appearance: none;
+        background: transparent;
+        outline: none;
+      }
+
+      .sunRange::-webkit-slider-thumb{
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background: rgba(26,115,232,0.95);
+        border: 3px solid rgba(255,255,255,0.95);
+        box-shadow: 0 8px 18px rgba(0,0,0,0.16);
+        cursor: pointer;
+      }
+      .sunRange::-moz-range-thumb{
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background: rgba(26,115,232,0.95);
+        border: 3px solid rgba(255,255,255,0.95);
+        box-shadow: 0 8px 18px rgba(0,0,0,0.16);
+        cursor: pointer;
+      }
+
+      .sunTimeNowLabel{
+        margin-top: 8px;
+        font-size: 12px;
+        color: rgba(0,0,0,0.70);
+        user-select:none;
+      }
+
+      /* Dock de fecha + ahora (abajo derecha, encima de la barra) */
+      .sunDateDock{
+        position: absolute;
+        right: 14px;
+        bottom: 92px;
+        z-index: 720;
+        display: none;
+        pointer-events: auto;
+      }
+
+      .sunDateDockInner{
+        display:flex;
+        align-items:center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.78);
+        border: 1px solid rgba(0,0,0,0.10);
+        backdrop-filter: blur(6px);
+      }
+
+      .sunDateDock input[type="date"]{
+        font-size: 12.5px;
+        padding: 7px 10px;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.12);
+        background: rgba(255,255,255,0.92);
+        outline: none;
+      }
+
+      .sunDateDock button{
+        border: 0;
+        background: #1a73e8;
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 12.5px;
+        font-weight: 650;
+      }
+
+      @media (max-width: 720px) {
+        .sunTimebar{
+          left: 10px;
+          right: 10px;
+          bottom: 10px;
+        }
+        .sunDateDock{
+          right: 10px;
+          bottom: 92px;
+        }
+        .sunHoursRow{
+          font-size: 10px;
         }
       }
     </style>
@@ -605,6 +707,25 @@
         <div id="sunOverlay" class="sunOverlay" aria-hidden="true">
           <div id="sunOverlayLabel" class="sunOverlayLabel">—</div>
           <svg id="sunPolarOverlay" aria-label="Diagrama solar"></svg>
+        </div>
+
+        <!-- Dock fecha + ahora (abajo derecha) -->
+        <div id="sunDateDock" class="sunDateDock" aria-hidden="true">
+          <div class="sunDateDockInner">
+            <input type="date" id="sunDate" />
+            <button type="button" id="sunNowBtn">Ahora</button>
+          </div>
+        </div>
+
+        <!-- Barra inferior de horas -->
+        <div id="sunTimebar" class="sunTimebar" aria-hidden="true">
+          <div class="sunTimebarInner">
+            <div class="sunHoursRow" id="sunHoursRow"></div>
+            <div class="sunTrack" id="sunTrack">
+              <input id="sunRange" class="sunRange" type="range" min="0" max="1439" step="10" />
+            </div>
+            <div class="sunTimeNowLabel" id="sunTimeText">—</div>
+          </div>
         </div>
       </div>
     </div>
@@ -688,6 +809,15 @@
       const sunOverlayEl = document.getElementById("sunOverlay");
       const sunOverlayLabelEl = document.getElementById("sunOverlayLabel");
       const sunPolarOverlaySvg = document.getElementById("sunPolarOverlay");
+
+      const sunTimebarEl = document.getElementById("sunTimebar");
+      const sunDateDockEl = document.getElementById("sunDateDock");
+      const sunHoursRowEl = document.getElementById("sunHoursRow");
+      const sunTrackEl = document.getElementById("sunTrack");
+      const sunRangeEl = document.getElementById("sunRange");
+      const sunTimeTextEl = document.getElementById("sunTimeText");
+      const sunDateEl = document.getElementById("sunDate");
+      const sunNowBtn = document.getElementById("sunNowBtn");
 
       function setStatus(msg) { statusEl.textContent = msg || ""; }
 
@@ -1027,12 +1157,12 @@
       map.on("click", () => closeCard());
 
       /* =========================
-         CAPA SOL (overlay grande y transparente)
+         CAPA SOL (SunCalc-like)
          ========================= */
 
       const ZOOM_SOL_MIN = 15;
       let sunEnabled = false;
-      const sunState = { dateISO: null, minutes: null };
+      const sunState = { dateISO: null, minutes: null, sunriseMin: null, sunsetMin: null };
 
       function todayISO() {
         const d = new Date();
@@ -1105,7 +1235,6 @@
       }
 
       function drawSunPolar(svg, centerLatLng, dateISO, minutes){
-        // Sistema fijo para que escale al tamaño del overlay
         const V = 1000;
         const cx = V/2;
         const cy = V/2;
@@ -1116,7 +1245,6 @@
 
         svgClear(svg);
 
-        // Círculos base (transparencia para ver mapa)
         svg.appendChild(svgEl("circle", {
           cx, cy, r: R,
           fill: "rgba(255,255,255,0.00)",
@@ -1136,7 +1264,6 @@
           }));
         });
 
-        // Ejes cardinales
         const axes = [
           { a:0,   label:"N", dx:0,   dy:-(R+35), anchor:"middle" },
           { a:90,  label:"E", dx:(R+30), dy:8,    anchor:"start"  },
@@ -1162,61 +1289,52 @@
           svg.appendChild(t);
         });
 
-        // Sunrise/sunset y trayectoria
         const dayNoon = buildDateObj(dateISO, 12*60);
         const times = SunCalc.getTimes(dayNoon, centerLatLng.lat, centerLatLng.lng);
         const sunrise = times.sunrise;
         const sunset = times.sunset;
 
-        let sunriseBearing = null;
-        let sunsetBearing = null;
-
         if (sunrise instanceof Date && !isNaN(sunrise.getTime()) && sunset instanceof Date && !isNaN(sunset.getTime())) {
           const sr = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunrise);
           const ss = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunset);
-          sunriseBearing = sr.bearingDeg;
-          sunsetBearing = ss.bearingDeg;
 
-          const srPt = polarXY(cx, cy, R, sunriseBearing, 0);
-          const ssPt = polarXY(cx, cy, R, sunsetBearing, 0);
+          const sunriseBearing = sr.bearingDeg;
+          const sunsetBearing = ss.bearingDeg;
 
-          // Sector suave (tipo “banda” para entender el día)
           const d1 = arcPath(cx, cy, R, sunriseBearing, sunsetBearing);
+
           const sector = svgEl("path", {
             d: `${d1} L ${cx} ${cy} Z`,
-            fill: "rgba(255, 196, 50, 0.14)",
+            fill: "rgba(26,115,232,0.08)",
             stroke: "none"
           });
           svg.appendChild(sector);
 
-          // Línea de horizonte entre sunrise y sunset
           svg.appendChild(svgEl("path", {
             d: d1,
             fill: "none",
-            stroke: "rgba(255, 175, 0, 0.60)",
+            stroke: "rgba(26,115,232,0.38)",
             "stroke-width": "6",
             "stroke-linecap": "round"
           }));
 
-          // Rayos desde el centro
-          const srRay = polarXY(cx, cy, R, sunriseBearing, 0);
-          const ssRay = polarXY(cx, cy, R, sunsetBearing, 0);
+          const srPt = polarXY(cx, cy, R, sunriseBearing, 0);
+          const ssPt = polarXY(cx, cy, R, sunsetBearing, 0);
 
           svg.appendChild(svgEl("line", {
-            x1: cx, y1: cy, x2: srRay.x, y2: srRay.y,
-            stroke: "rgba(255, 175, 0, 0.55)",
+            x1: cx, y1: cy, x2: srPt.x, y2: srPt.y,
+            stroke: "rgba(26,115,232,0.30)",
             "stroke-width": "6",
             "stroke-linecap": "round"
           }));
 
           svg.appendChild(svgEl("line", {
-            x1: cx, y1: cy, x2: ssRay.x, y2: ssRay.y,
-            stroke: "rgba(255, 175, 0, 0.55)",
+            x1: cx, y1: cy, x2: ssPt.x, y2: ssPt.y,
+            stroke: "rgba(26,115,232,0.30)",
             "stroke-width": "6",
             "stroke-linecap": "round"
           }));
 
-          // Trayectoria real (muestras sobre altitud)
           const pts = [];
           const stepMin = 6;
           const start = sunrise.getTime();
@@ -1231,23 +1349,21 @@
             svg.appendChild(svgEl("path", {
               d: dAttr,
               fill: "none",
-              stroke: "rgba(255, 175, 0, 0.85)",
+              stroke: "rgba(26,115,232,0.70)",
               "stroke-width": "8",
               "stroke-linecap": "round",
               "stroke-linejoin": "round"
             }));
           }
 
-          // Puntos sunrise/sunset
           [srPt, ssPt].forEach(pt=>{
             svg.appendChild(svgEl("circle", {
               cx: pt.x, cy: pt.y, r: 12,
-              fill: "rgba(0,0,0,0.28)"
+              fill: "rgba(0,0,0,0.22)"
             }));
           });
         }
 
-        // Sol actual
         const curDate = buildDateObj(dateISO, minutes);
         const cur = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, curDate);
 
@@ -1258,19 +1374,18 @@
 
           svg.appendChild(svgEl("line", {
             x1: cx, y1: cy, x2: p.x, y2: p.y,
-            stroke: "rgba(255, 175, 0, 0.65)",
+            stroke: "rgba(26,115,232,0.38)",
             "stroke-width": "8",
             "stroke-linecap": "round"
           }));
 
           svg.appendChild(svgEl("circle", {
             cx: p.x, cy: p.y, r: 18,
-            fill: "rgba(255, 196, 50, 0.95)",
-            stroke: "rgba(255, 150, 0, 0.65)",
+            fill: "rgba(26,115,232,0.95)",
+            stroke: "rgba(255,255,255,0.85)",
             "stroke-width": "6"
           }));
         } else {
-          // Noche: punto tenue en el centro
           svg.appendChild(svgEl("circle", {
             cx: cx, cy: cy, r: 14,
             fill: "rgba(0,0,0,0.18)"
@@ -1280,24 +1395,107 @@
         return meta;
       }
 
+      function minutesOfDate(d){
+        if (!(d instanceof Date) || isNaN(d.getTime())) return null;
+        return d.getHours() * 60 + d.getMinutes();
+      }
+
+      function updateDaylightBand(){
+        const c = map.getCenter();
+        const iso = sunState.dateISO || todayISO();
+        const noon = buildDateObj(iso, 12*60);
+        const times = SunCalc.getTimes(noon, c.lat, c.lng);
+
+        const sr = minutesOfDate(times.sunrise);
+        const ss = minutesOfDate(times.sunset);
+
+        sunState.sunriseMin = sr;
+        sunState.sunsetMin = ss;
+
+        const srPct = (sr == null) ? 0 : Math.max(0, Math.min(100, (sr / 1439) * 100));
+        const ssPct = (ss == null) ? 0 : Math.max(0, Math.min(100, (ss / 1439) * 100));
+
+        sunTrackEl.style.setProperty("--sr", `${srPct.toFixed(3)}%`);
+        sunTrackEl.style.setProperty("--ss", `${ssPct.toFixed(3)}%`);
+      }
+
       function updateSunOverlay(){
         const ok = sunEnabled && map.getZoom() >= ZOOM_SOL_MIN;
+
         sunOverlayEl.style.display = ok ? "block" : "none";
+        sunTimebarEl.style.display = ok ? "block" : "none";
+        sunDateDockEl.style.display = ok ? "block" : "none";
+
         if (!ok) return;
 
         const c = map.getCenter();
         const iso = sunState.dateISO || todayISO();
         const mins = (sunState.minutes != null) ? sunState.minutes : nowMinutes();
 
+        updateDaylightBand();
+
         const meta = drawSunPolar(sunPolarOverlaySvg, c, iso, mins);
 
         if (meta.isDay) {
           const card = bearingToCardinal(meta.bearingDeg);
           sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
+          sunTimeTextEl.textContent = `${minutesToHHMM(mins)} · día`;
         } else {
           sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · noche`;
+          sunTimeTextEl.textContent = `${minutesToHHMM(mins)} · noche`;
         }
       }
+
+      function setSunEnabled(next){
+        sunEnabled = next;
+        updateSunOverlay();
+      }
+
+      function initHoursRow(){
+        const frag = document.createDocumentFragment();
+        for (let h = 0; h < 24; h++) {
+          const s = document.createElement("span");
+          s.textContent = String(h).padStart(2,"0");
+          frag.appendChild(s);
+        }
+        sunHoursRowEl.innerHTML = "";
+        sunHoursRowEl.appendChild(frag);
+      }
+
+      function preventMapDragOn(el){
+        el.addEventListener("mousedown", (e) => e.stopPropagation());
+        el.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
+        el.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
+        el.addEventListener("click", (e) => e.stopPropagation());
+      }
+
+      initHoursRow();
+      preventMapDragOn(sunTimebarEl);
+      preventMapDragOn(sunDateDockEl);
+
+      sunState.dateISO = todayISO();
+      sunState.minutes = nowMinutes();
+
+      sunDateEl.value = sunState.dateISO;
+      sunRangeEl.value = String(sunState.minutes);
+
+      sunRangeEl.addEventListener("input", () => {
+        sunState.minutes = parseInt(sunRangeEl.value, 10);
+        updateSunOverlay();
+      });
+
+      sunDateEl.addEventListener("change", () => {
+        sunState.dateISO = sunDateEl.value || todayISO();
+        updateSunOverlay();
+      });
+
+      sunNowBtn.addEventListener("click", () => {
+        sunState.dateISO = todayISO();
+        sunState.minutes = nowMinutes();
+        sunDateEl.value = sunState.dateISO;
+        sunRangeEl.value = String(sunState.minutes);
+        updateSunOverlay();
+      });
 
       const SunControl = L.Control.extend({
         options: { position: "topright" },
@@ -1319,76 +1517,25 @@
             </svg>
           `;
 
-          const panel = L.DomUtil.create("div", "sunPanel", container);
-          panel.id = "sunPanel";
-          panel.style.display = "none";
-          panel.innerHTML = `
-            <div class="sunRow">
-              <span>Fecha</span>
-              <input type="date" id="sunDate">
-            </div>
-            <div class="sunTime">
-              <span>Hora</span>
-              <input type="range" id="sunTime" min="0" max="1439" step="10" value="720">
-              <span id="sunHHMM">12:00</span>
-            </div>
-            <div class="sunRow" style="margin-top:10px;">
-              <span></span>
-              <button type="button" id="sunNow">Ahora</button>
-            </div>
-          `;
-
-          const dateEl = panel.querySelector("#sunDate");
-          const rangeEl = panel.querySelector("#sunTime");
-          const hhmmEl = panel.querySelector("#sunHHMM");
-          const nowBtn = panel.querySelector("#sunNow");
-
-          sunState.dateISO = todayISO();
-          sunState.minutes = nowMinutes();
-          dateEl.value = sunState.dateISO;
-          rangeEl.value = String(sunState.minutes);
-          hhmmEl.textContent = minutesToHHMM(sunState.minutes);
-
           function setBtnEnabled() {
             const ok = map.getZoom() >= ZOOM_SOL_MIN;
             btn.classList.toggle("disabled", !ok);
             btn.title = ok ? "Sol" : `Acércate para activar (zoom ${ZOOM_SOL_MIN}+)`;
-            if (!ok && sunEnabled) toggleSun(false);
-            updateSunOverlay();
+            if (!ok && sunEnabled) {
+              btn.classList.remove("active");
+              setSunEnabled(false);
+            } else {
+              updateSunOverlay();
+            }
           }
 
-          function toggleSun(force) {
+          btn.addEventListener("click", () => {
             const ok = map.getZoom() >= ZOOM_SOL_MIN;
             if (!ok) return;
 
-            const next = (typeof force === "boolean") ? force : !sunEnabled;
-            sunEnabled = next;
-
-            btn.classList.toggle("active", sunEnabled);
-            panel.style.display = sunEnabled ? "block" : "none";
-            updateSunOverlay();
-          }
-
-          btn.addEventListener("click", () => toggleSun());
-
-          dateEl.addEventListener("change", () => {
-            sunState.dateISO = dateEl.value || todayISO();
-            if (sunEnabled) updateSunOverlay();
-          });
-
-          rangeEl.addEventListener("input", () => {
-            sunState.minutes = parseInt(rangeEl.value, 10);
-            hhmmEl.textContent = minutesToHHMM(sunState.minutes);
-            if (sunEnabled) updateSunOverlay();
-          });
-
-          nowBtn.addEventListener("click", () => {
-            sunState.dateISO = todayISO();
-            sunState.minutes = nowMinutes();
-            dateEl.value = sunState.dateISO;
-            rangeEl.value = String(sunState.minutes);
-            hhmmEl.textContent = minutesToHHMM(sunState.minutes);
-            if (sunEnabled) updateSunOverlay();
+            const next = !sunEnabled;
+            btn.classList.toggle("active", next);
+            setSunEnabled(next);
           });
 
           map.on("zoomend", setBtnEnabled);
