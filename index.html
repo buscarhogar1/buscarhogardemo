@@ -421,17 +421,6 @@
         width:18px;height:18px; display:block;
       }
 
-      /* Botón Apple */
-      .aBtn{
-        background:#000;
-        color:#fff;
-        border:1px solid #000;
-        font-weight:600;
-      }
-      .aIcon{
-        width:18px;height:18px; display:block;
-      }
-
       @media (max-width: 520px){
         .modal{ width:100%; border-radius:14px; padding:18px; max-height:92vh; }
       }
@@ -603,7 +592,7 @@
         const origin = window.location.origin;
         let path = window.location.pathname;
         if (!path.endsWith("/")) {
-          path = path.replace(/[^\/]*$/, ""); // quita archivo si lo hubiera
+          path = path.replace(/[^\/]*$/, "");
         }
         return origin + path;
       }
@@ -674,7 +663,6 @@
       const backStartFromRegBtn = document.getElementById("backStartFromRegBtn");
 
       const googleBtn = document.getElementById("googleBtn");
-      const appleBtn = document.getElementById("appleBtn");
 
       let pendingEmail = "";
 
@@ -692,7 +680,7 @@
       }
 
       function setBusy(isBusy){
-        [googleBtn, appleBtn, emailContinueBtn, pwLoginBtn, regCreateBtn].forEach(b => b.disabled = isBusy);
+        [googleBtn, emailContinueBtn, pwLoginBtn, regCreateBtn].forEach(b => b.disabled = isBusy);
       }
 
       function goStart(){
@@ -751,7 +739,7 @@
         alert("MVP: Favoritos (requiere registro).");
       });
 
-      // ===== OAuth (Google / Apple) =====
+      // ===== OAuth (Google) =====
       async function oauth(provider){
         try{
           setBusy(true);
@@ -760,29 +748,22 @@
 
           const { data, error } = await supabase.auth.signInWithOAuth({
             provider,
-            options: {
-              redirectTo: CALLBACK_URL
-            }
+            options: { redirectTo: CALLBACK_URL }
           });
 
           if (error) throw error;
-          // En OAuth, normalmente el navegador redirige y no llegas aquí.
-          // data.url existiría si no redirige automáticamente.
           if (data?.url) window.location.href = data.url;
         } catch(e){
-          setMsg(authMsgStart, "No se pudo iniciar sesión. Revisa que el proveedor esté activado en Supabase y que exista auth/callback.html.");
+          setMsg(authMsgStart, "No se pudo iniciar sesión. Revisa que Google esté activado en Supabase y que exista auth/callback.html.");
           console.error(e);
           setBusy(false);
         }
       }
 
       googleBtn.addEventListener("click", ()=> oauth("google"));
-      appleBtn.addEventListener("click", ()=> oauth("apple"));
 
       // ===== Email: bifurcación con Edge Function (si existe) =====
       async function checkEmailExists(email){
-        // Esta función requiere que crees la Edge Function (la dejo más abajo).
-        // Si no existe aún, hacemos fallback.
         try{
           const { data, error } = await supabase.functions.invoke("check-email", {
             body: { email }
@@ -805,7 +786,6 @@
 
         const r = await checkEmailExists(email);
 
-        // Si la función existe, bifurcamos automático.
         if (r.ok){
           setBusy(false);
           if (r.exists) goPassword(email);
@@ -813,8 +793,6 @@
           return;
         }
 
-        // Fallback si aún no has creado la función:
-        // mandamos a contraseña y damos opción clara a registrarse.
         setBusy(false);
         goPassword(email);
         setMsg(authMsgPw, "Si no tienes cuenta, pulsa “No tengo cuenta, registrarme”. Para detección automática, hay que crear la Edge Function check-email.");
@@ -840,15 +818,10 @@
           setBusy(true);
           setMsg(authMsgPw, "");
 
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
-
+          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
 
           setMsg(authMsgPw, "Sesión iniciada.");
-          // Aquí podrías cerrar modal y reflejar usuario en UI más adelante
           setTimeout(() => closeAuthModal(), 400);
         } catch(e){
           setMsg(authMsgPw, "No se pudo iniciar sesión. Revisa email y contraseña.");
@@ -882,7 +855,6 @@
           });
 
           if (error){
-            // Si el usuario ya existe, te mandamos a contraseña
             const msg = String(error.message || "");
             if (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("registered")){
               setBusy(false);
@@ -893,9 +865,6 @@
             throw error;
           }
 
-          // Según configuración de Supabase, puede:
-          // - pedir confirmación (no habrá sesión hasta confirmar)
-          // - o crear sesión inmediatamente
           const needsConfirm = !data?.session;
 
           if (needsConfirm){
@@ -913,13 +882,9 @@
         }
       });
 
-      // Mejor UX: Enter en inputs
       emailInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") emailContinueBtn.click(); });
       pwInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") pwLoginBtn.click(); });
       regPassword.addEventListener("keydown",(e)=>{ if(e.key==="Enter") regCreateBtn.click(); });
-
-      // ===== Opcional: si el usuario ya está logueado, podrías reflejarlo luego =====
-      // const { data: sessionData } = await supabase.auth.getSession();
     </script>
   </body>
 </html>
