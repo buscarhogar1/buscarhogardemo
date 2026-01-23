@@ -440,7 +440,6 @@
         border-bottom: 1px solid rgba(0,0,0,0.08);
       }
 
-      /* Controles rápidos a la derecha (capa Sol) */
       .quickCol {
         display: flex;
         flex-direction: column;
@@ -474,7 +473,7 @@
       }
 
       .sunPanel {
-        width: 240px;
+        width: 260px;
         border-radius: 14px;
         border: 1px solid rgba(0,0,0,0.14);
         background: rgba(255,255,255,0.96);
@@ -499,7 +498,7 @@
         border: 1px solid rgba(0,0,0,0.14);
         background: #fff;
         outline: none;
-        width: 140px;
+        width: 150px;
       }
 
       .sunRow button{
@@ -512,8 +511,6 @@
         font-size: 12.5px;
       }
 
-      .sunRow button:active{ transform: translateY(1px); }
-
       .sunTime {
         display:flex;
         align-items:center;
@@ -525,45 +522,41 @@
       }
 
       .sunTime input[type="range"]{
-        width: 150px;
+        width: 160px;
       }
 
-      .sunDirRow{
+      .sunPolarWrap{
+        margin-top: 10px;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.12);
+        background: rgba(255,255,255,0.88);
+        padding: 8px;
+      }
+
+      .sunPolarTop{
         display:flex;
         align-items:center;
         justify-content: space-between;
+        font-size: 12.5px;
+        color: rgba(0,0,0,0.82);
+        margin-bottom: 8px;
         gap: 10px;
-        margin-top: 10px;
       }
 
-      .sunCompass{
-        width: 38px;
-        height: 38px;
-        border-radius: 999px;
-        border: 1px solid rgba(0,0,0,0.14);
-        background: #fff;
-        display:grid;
-        place-items:center;
-        flex: 0 0 auto;
-      }
-
-      .sunArrow{
-        width: 0;
-        height: 0;
-        border-left: 7px solid transparent;
-        border-right: 7px solid transparent;
-        border-bottom: 14px solid rgba(0,0,0,0.80);
-        transform-origin: 50% 70%;
-      }
-
-      .sunDirText{
+      .sunPolarMeta{
         font-size: 12.5px;
         color: rgba(0,0,0,0.82);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        flex: 1 1 auto;
         text-align: right;
+        flex: 1 1 auto;
+      }
+
+      .sunPolarSvg{
+        width: 100%;
+        height: 180px;
+        display:block;
       }
 
       .sunNote{
@@ -571,46 +564,6 @@
         font-size: 11.5px;
         color: rgba(0,0,0,0.62);
         line-height: 1.25;
-      }
-
-      /* SVG trayectoria (siempre visible cuando Sol está activo) */
-      .sunPathSvg{
-        position:absolute;
-        inset:0;
-        z-index: 650; /* debajo del sunOrb (700) */
-        pointer-events:none;
-        display:none;
-      }
-
-      /* Sol orbitando (overlay) */
-      .sunOrb {
-        position: absolute;
-        z-index: 700;
-        width: 34px;
-        height: 34px;
-        border-radius: 999px;
-        background: rgba(255, 196, 50, 0.98);
-        border: 1px solid rgba(0,0,0,0.18);
-        box-shadow: 0 10px 22px rgba(0,0,0,0.18);
-        display: none;
-        pointer-events: none;
-        transform: translate(-50%, -50%);
-      }
-
-      .sunOrbInner{
-        position: absolute;
-        inset: 0;
-        display: grid;
-        place-items: center;
-      }
-
-      .sunOrbArrow{
-        width: 0;
-        height: 0;
-        border-left: 6px solid transparent;
-        border-right: 6px solid transparent;
-        border-bottom: 12px solid rgba(0,0,0,0.72);
-        transform-origin: 50% 70%;
       }
     </style>
   </head>
@@ -644,16 +597,6 @@
     <div class="page">
       <div class="mapShell">
         <div id="map"></div>
-
-        <!-- Trayectoria y líneas (SVG) -->
-        <svg id="sunPathSvg" class="sunPathSvg" aria-hidden="true"></svg>
-
-        <!-- Sol orbitando (overlay) -->
-        <div id="sunOrb" class="sunOrb" aria-hidden="true">
-          <div class="sunOrbInner">
-            <div id="sunOrbArrow" class="sunOrbArrow"></div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -733,10 +676,6 @@
       const cardPriceEl = document.getElementById("cardPrice");
       const cardFactsEl = document.getElementById("cardFacts");
       const cardAgencyEl = document.getElementById("cardAgency");
-
-      const sunOrbEl = document.getElementById("sunOrb");
-      const sunOrbArrowEl = document.getElementById("sunOrbArrow");
-      const sunPathSvgEl = document.getElementById("sunPathSvg");
 
       function setStatus(msg) { statusEl.textContent = msg || ""; }
 
@@ -1077,16 +1016,14 @@
       map.on("click", () => closeCard());
 
       /* =========================
-         CAPA SOL (indicador + trayectoria + líneas amanecer/atardecer)
+         CAPA SOL (diagrama polar tipo suncalc)
          ========================= */
 
+      // Mantengo tu requisito de que no sea seleccionable si estás demasiado alejado.
       const ZOOM_SOL_MIN = 15;
       let sunEnabled = false;
 
-      const sunState = {
-        dateISO: null,
-        minutes: null
-      };
+      const sunState = { dateISO: null, minutes: null };
 
       function todayISO() {
         const d = new Date();
@@ -1109,11 +1046,14 @@
 
       function rad2deg(r){ return r * 180 / Math.PI; }
 
-      function sunAzimuthBearingDeg(lat, lng, dateObj){
+      function sunBearingAndAltDeg(lat, lng, dateObj){
+        // SunCalc azimuth: rad desde SUR, positivo hacia OESTE.
+        // Lo convertimos a bearing desde NORTE (0=N, 90=E, 180=S, 270=O).
         const pos = SunCalc.getPosition(dateObj, lat, lng);
         const azDeg = rad2deg(pos.azimuth);
-        const bearing = (180 + azDeg + 360) % 360; // 0=N
-        return { bearingDeg: bearing, altitudeRad: pos.altitude };
+        const bearingDeg = (180 + azDeg + 360) % 360;
+        const altDeg = rad2deg(pos.altitude);
+        return { bearingDeg, altDeg };
       }
 
       function bearingToCardinal(deg){
@@ -1122,181 +1062,163 @@
         return dirs[idx];
       }
 
-      function buildDateObjFromState() {
-        const iso = sunState.dateISO || todayISO();
-        const mins = (sunState.minutes != null) ? sunState.minutes : nowMinutes();
+      function buildDateObj(iso, minutes) {
         const [y,m,d] = iso.split("-").map(x => parseInt(x,10));
-        const hh = Math.floor(mins/60);
-        const mm = mins % 60;
+        const hh = Math.floor(minutes/60);
+        const mm = minutes % 60;
         return new Date(y, (m-1), d, hh, mm, 0, 0);
       }
 
-      function setSunOrbVisible(v){
-        sunOrbEl.style.display = v ? "block" : "none";
-      }
-
-      function setSunPathVisible(v){
-        sunPathSvgEl.style.display = v ? "block" : "none";
-      }
-
-      function getMapRectWH(){
-        const rect = map.getContainer().getBoundingClientRect();
-        return { w: rect.width, h: rect.height };
-      }
-
-      function getEllipseGeometry(){
-        const { w, h } = getMapRectWH();
-        const margin = 22;
-        const cx = w / 2;
-        const cy = h / 2;
-        const a = Math.max(30, (w / 2) - margin);
-        const b = Math.max(30, (h / 2) - margin);
-        return { cx, cy, a, b, w, h, margin };
-      }
-
-      function pointOnEllipseForBearing(bearingDeg){
-        const { cx, cy, a, b } = getEllipseGeometry();
-        const theta = bearingDeg * Math.PI / 180; // 0=N -> arriba
-        const x = cx + a * Math.sin(theta);
-        const y = cy - b * Math.cos(theta);
-        return { x, y };
-      }
-
-      function updateSunOrbPosition(){
-        if (!sunEnabled) { setSunOrbVisible(false); return; }
-        if (map.getZoom() < ZOOM_SOL_MIN) { setSunOrbVisible(false); return; }
-
-        const center = map.getCenter();
-        const dateObj = buildDateObjFromState();
-        const { bearingDeg, altitudeRad } = sunAzimuthBearingDeg(center.lat, center.lng, dateObj);
-
-        if (!(altitudeRad > 0)) { setSunOrbVisible(false); return; }
-
-        const pt = pointOnEllipseForBearing(bearingDeg);
-
-        const rect = map.getContainer().getBoundingClientRect();
-        const shellRect = document.querySelector(".mapShell").getBoundingClientRect();
-        const relX = pt.x + (rect.left - shellRect.left);
-        const relY = pt.y + (rect.top - shellRect.top);
-
-        sunOrbEl.style.left = `${relX}px`;
-        sunOrbEl.style.top = `${relY}px`;
-        sunOrbArrowEl.style.transform = `rotate(${bearingDeg}deg)`;
-
-        setSunOrbVisible(true);
-      }
-
-      function updateSunPanelIndicator(){
-        const arrowEl = document.getElementById("sunArrow");
-        const textEl = document.getElementById("sunDirText");
-        if (!arrowEl || !textEl) return;
-
-        if (!sunEnabled || map.getZoom() < ZOOM_SOL_MIN) {
-          textEl.textContent = "—";
-          arrowEl.style.transform = "rotate(0deg)";
-          return;
-        }
-
-        const center = map.getCenter();
-        const dateObj = buildDateObjFromState();
-        const { bearingDeg, altitudeRad } = sunAzimuthBearingDeg(center.lat, center.lng, dateObj);
-
-        if (!(altitudeRad > 0)) {
-          textEl.textContent = "Noche";
-          arrowEl.style.transform = "rotate(0deg)";
-          return;
-        }
-
-        const card = bearingToCardinal(bearingDeg);
-        textEl.textContent = `Sol: ${card} (${Math.round(bearingDeg)}°)`;
-        arrowEl.style.transform = `rotate(${bearingDeg}deg)`;
-      }
-
-      function clearSvg(el){
-        while (el.firstChild) el.removeChild(el.firstChild);
-      }
-
+      function svgClear(el){ while (el.firstChild) el.removeChild(el.firstChild); }
       function svgEl(name, attrs){
         const el = document.createElementNS("http://www.w3.org/2000/svg", name);
-        if (attrs) {
-          for (const [k,v] of Object.entries(attrs)) el.setAttribute(k, String(v));
-        }
+        if (attrs) for (const [k,v] of Object.entries(attrs)) el.setAttribute(k, String(v));
         return el;
       }
 
-      function updateSunTrajectoryAndLines(){
-        if (!sunEnabled) { setSunPathVisible(false); return; }
-        if (map.getZoom() < ZOOM_SOL_MIN) { setSunPathVisible(false); return; }
+      function polarXY(cx, cy, R, bearingDeg, altDeg){
+        // Horizonte = círculo exterior (alt=0 => r=R)
+        // Zenit = centro (alt=90 => r=0)
+        const altClamped = Math.max(-10, Math.min(90, altDeg));
+        const r = ((90 - altClamped) / 90) * R;
+        const t = bearingDeg * Math.PI / 180;
+        const x = cx + r * Math.sin(t);
+        const y = cy - r * Math.cos(t);
+        return { x, y, r };
+      }
 
-        const { w, h, cx, cy, a, b } = getEllipseGeometry();
+      function drawSunPolar(svg, centerLatLng, dateISO, minutes){
+        const W = 236;
+        const H = 180;
+        const cx = W/2;
+        const cy = H/2 + 6;
+        const R = Math.min(W, H) * 0.42;
 
-        sunPathSvgEl.setAttribute("width", w);
-        sunPathSvgEl.setAttribute("height", h);
-        sunPathSvgEl.setAttribute("viewBox", `0 0 ${w} ${h}`);
+        svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+        svg.setAttribute("width", W);
+        svg.setAttribute("height", H);
 
-        clearSvg(sunPathSvgEl);
+        svgClear(svg);
 
-        // Trajectoria: elipse completa (siempre visible)
-        const ellipse = svgEl("ellipse", {
-          cx, cy, rx: a, ry: b,
-          fill: "none",
-          stroke: "rgba(0,0,0,0.22)",
-          "stroke-width": "2",
-          "stroke-dasharray": "6 7"
+        // Fondo
+        svg.appendChild(svgEl("rect", { x:0, y:0, width:W, height:H, fill:"none" }));
+
+        // Anillos de altura (30 y 60)
+        const ringStyle = { fill:"none", stroke:"rgba(0,0,0,0.14)", "stroke-width":"1.5" };
+        const r30 = ((90-30)/90)*R;
+        const r60 = ((90-60)/90)*R;
+        svg.appendChild(svgEl("circle", { cx, cy, r:R, ...ringStyle, stroke:"rgba(0,0,0,0.22)", "stroke-width":"2" })); // horizonte
+        svg.appendChild(svgEl("circle", { cx, cy, r:r30, ...ringStyle }));
+        svg.appendChild(svgEl("circle", { cx, cy, r:r60, ...ringStyle }));
+
+        // Líneas cardinales
+        const axes = [
+          { a:0,  label:"N", lx:cx,     ly:cy-R-8 },
+          { a:90, label:"E", lx:cx+R+8, ly:cy+4 },
+          { a:180,label:"S", lx:cx,     ly:cy+R+16 },
+          { a:270,label:"O", lx:cx-R-10,ly:cy+4 },
+        ];
+        axes.forEach(o=>{
+          const p = polarXY(cx,cy,R,o.a,0);
+          svg.appendChild(svgEl("line", {
+            x1:cx, y1:cy, x2:p.x, y2:p.y,
+            stroke:"rgba(0,0,0,0.16)", "stroke-width":"1.5"
+          }));
+          svg.appendChild(svgEl("text", {
+            x:o.lx, y:o.ly,
+            "text-anchor":"middle",
+            "font-size":"11.5",
+            fill:"rgba(0,0,0,0.70)"
+          })).textContent = o.label;
         });
-        sunPathSvgEl.appendChild(ellipse);
 
-        // Centro (opcional, muy sutil)
-        const centerDot = svgEl("circle", {
-          cx, cy, r: "3.5",
-          fill: "rgba(0,0,0,0.25)"
-        });
-        sunPathSvgEl.appendChild(centerDot);
-
-        // Amanecer / atardecer (líneas desde el centro hasta el punto de la elipse)
-        const center = map.getCenter();
-        const iso = sunState.dateISO || todayISO();
-        const [yy,mm,dd] = iso.split("-").map(x => parseInt(x,10));
-        const dayAtNoon = new Date(yy, mm-1, dd, 12, 0, 0, 0);
-
-        const times = SunCalc.getTimes(dayAtNoon, center.lat, center.lng);
-
+        // Sunrise / Sunset
+        const dayNoon = buildDateObj(dateISO, 12*60);
+        const times = SunCalc.getTimes(dayNoon, centerLatLng.lat, centerLatLng.lng);
         const sunrise = times.sunrise;
         const sunset = times.sunset;
 
-        // Si por cualquier cosa no existe (latitudes extremas), no dibujamos líneas.
+        let sunrisePt = null;
+        let sunsetPt = null;
+
         if (sunrise instanceof Date && !isNaN(sunrise.getTime()) && sunset instanceof Date && !isNaN(sunset.getTime())) {
-          const sr = sunAzimuthBearingDeg(center.lat, center.lng, sunrise);
-          const ss = sunAzimuthBearingDeg(center.lat, center.lng, sunset);
+          const sr = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunrise);
+          const ss = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunset);
 
-          const pSr = pointOnEllipseForBearing(sr.bearingDeg);
-          const pSs = pointOnEllipseForBearing(ss.bearingDeg);
+          sunrisePt = polarXY(cx,cy,R,sr.bearingDeg, Math.max(0, sr.altDeg));
+          sunsetPt  = polarXY(cx,cy,R,ss.bearingDeg, Math.max(0, ss.altDeg));
 
-          const lineStyle = {
-            stroke: "rgba(0,0,0,0.32)",
-            "stroke-width": "2"
-          };
+          // Rayos desde el centro
+          const rayStyle = { stroke:"rgba(0,0,0,0.28)", "stroke-width":"2" };
+          svg.appendChild(svgEl("line", { x1:cx, y1:cy, x2:sunrisePt.x, y2:sunrisePt.y, ...rayStyle }));
+          svg.appendChild(svgEl("line", { x1:cx, y1:cy, x2:sunsetPt.x,  y2:sunsetPt.y,  ...rayStyle }));
 
-          const l1 = svgEl("line", { x1: cx, y1: cy, x2: pSr.x, y2: pSr.y, ...lineStyle });
-          const l2 = svgEl("line", { x1: cx, y1: cy, x2: pSs.x, y2: pSs.y, ...lineStyle });
+          // Marcadores
+          const mark = (pt) => svg.appendChild(svgEl("circle", { cx:pt.x, cy:pt.y, r:"4.2", fill:"rgba(0,0,0,0.38)" }));
+          mark(sunrisePt);
+          mark(sunsetPt);
 
-          sunPathSvgEl.appendChild(l1);
-          sunPathSvgEl.appendChild(l2);
+          // Trayectoria del día (muestreo)
+          const pts = [];
+          const stepMin = 8;
+          const start = sunrise.getTime();
+          const end = sunset.getTime();
+          for (let t = start; t <= end; t += stepMin*60*1000) {
+            const d = new Date(t);
+            const pa = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, d);
+            const pt = polarXY(cx,cy,R,pa.bearingDeg, pa.altDeg);
+            if (pa.altDeg >= 0) pts.push(pt);
+          }
 
-          const markStyle = { fill: "rgba(0,0,0,0.38)" };
-          const m1 = svgEl("circle", { cx: pSr.x, cy: pSr.y, r: "4.5", ...markStyle });
-          const m2 = svgEl("circle", { cx: pSs.x, cy: pSs.y, r: "4.5", ...markStyle });
-          sunPathSvgEl.appendChild(m1);
-          sunPathSvgEl.appendChild(m2);
+          if (pts.length >= 2) {
+            const dAttr = pts.map((p,i)=> `${i===0?"M":"L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ");
+            svg.appendChild(svgEl("path", {
+              d: dAttr,
+              fill:"none",
+              stroke:"rgba(0,0,0,0.38)",
+              "stroke-width":"2",
+              "stroke-linecap":"round",
+              "stroke-linejoin":"round"
+            }));
+          }
         }
 
-        setSunPathVisible(true);
-      }
+        // Sol en la hora seleccionada
+        const curDate = buildDateObj(dateISO, minutes);
+        const cur = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, curDate);
 
-      function updateSunUI(){
-        updateSunPanelIndicator();
-        updateSunTrajectoryAndLines();
-        updateSunOrbPosition();
+        const meta = {
+          isDay: cur.altDeg > 0,
+          bearingDeg: cur.bearingDeg,
+          altDeg: cur.altDeg
+        };
+
+        if (cur.altDeg > 0) {
+          const p = polarXY(cx,cy,R,cur.bearingDeg, cur.altDeg);
+
+          // Línea hacia el sol (azimut actual)
+          svg.appendChild(svgEl("line", {
+            x1:cx, y1:cy, x2:p.x, y2:p.y,
+            stroke:"rgba(0,0,0,0.20)",
+            "stroke-width":"2"
+          }));
+
+          // Punto sol
+          svg.appendChild(svgEl("circle", {
+            cx:p.x, cy:p.y, r:"6.2",
+            fill:"rgba(255,196,50,0.98)",
+            stroke:"rgba(0,0,0,0.20)",
+            "stroke-width":"1.5"
+          }));
+        } else {
+          // Noche: pequeño indicador
+          svg.appendChild(svgEl("circle", {
+            cx:cx, cy:cy, r:"6.2",
+            fill:"rgba(0,0,0,0.18)"
+          }));
+        }
+
+        return meta;
       }
 
       const SunControl = L.Control.extend({
@@ -1337,15 +1259,16 @@
               <button type="button" id="sunNow">Ahora</button>
             </div>
 
-            <div class="sunDirRow">
-              <div class="sunCompass" title="Dirección del sol (azimut)">
-                <div id="sunArrow" class="sunArrow"></div>
+            <div class="sunPolarWrap">
+              <div class="sunPolarTop">
+                <span>Diagrama</span>
+                <span id="sunMeta" class="sunPolarMeta">—</span>
               </div>
-              <div id="sunDirText" class="sunDirText">—</div>
+              <svg id="sunPolar" class="sunPolarSvg" aria-label="Diagrama solar"></svg>
             </div>
 
             <div class="sunNote">
-              Trayectoria (línea) y direcciones de amanecer/atardecer siempre visibles.
+              Trayectoria diaria, amanecer/atardecer y posición del sol para la hora seleccionada.
             </div>
           `;
 
@@ -1353,6 +1276,8 @@
           const rangeEl = panel.querySelector("#sunTime");
           const hhmmEl = panel.querySelector("#sunHHMM");
           const nowBtn = panel.querySelector("#sunNow");
+          const polarSvg = panel.querySelector("#sunPolar");
+          const metaEl = panel.querySelector("#sunMeta");
 
           sunState.dateISO = todayISO();
           sunState.minutes = nowMinutes();
@@ -1365,7 +1290,22 @@
             btn.classList.toggle("disabled", !ok);
             btn.title = ok ? "Sol" : `Acércate para activar (zoom ${ZOOM_SOL_MIN}+)`;
             if (!ok && sunEnabled) toggleSun(false);
-            updateSunUI();
+            if (sunEnabled) updateSunPolar();
+          }
+
+          function updateSunPolar(){
+            if (!sunEnabled) return;
+            if (map.getZoom() < ZOOM_SOL_MIN) return;
+
+            const c = map.getCenter();
+            const meta = drawSunPolar(polarSvg, c, sunState.dateISO, sunState.minutes);
+
+            if (meta.isDay) {
+              const card = bearingToCardinal(meta.bearingDeg);
+              metaEl.textContent = `${minutesToHHMM(sunState.minutes)} · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
+            } else {
+              metaEl.textContent = `${minutesToHHMM(sunState.minutes)} · noche`;
+            }
           }
 
           function toggleSun(force) {
@@ -1378,30 +1318,20 @@
             btn.classList.toggle("active", sunEnabled);
             panel.style.display = sunEnabled ? "block" : "none";
 
-            updateSunUI();
-            if (!sunEnabled) {
-              setSunOrbVisible(false);
-              setSunPathVisible(false);
-            }
+            if (sunEnabled) updateSunPolar();
           }
 
           btn.addEventListener("click", () => toggleSun());
 
           dateEl.addEventListener("change", () => {
             sunState.dateISO = dateEl.value || todayISO();
-            updateSunUI();
+            if (sunEnabled) updateSunPolar();
           });
 
           rangeEl.addEventListener("input", () => {
             sunState.minutes = parseInt(rangeEl.value, 10);
             hhmmEl.textContent = minutesToHHMM(sunState.minutes);
-            updateSunUI();
-          });
-
-          rangeEl.addEventListener("change", () => {
-            sunState.minutes = parseInt(rangeEl.value, 10);
-            hhmmEl.textContent = minutesToHHMM(sunState.minutes);
-            updateSunUI();
+            if (sunEnabled) updateSunPolar();
           });
 
           nowBtn.addEventListener("click", () => {
@@ -1410,24 +1340,19 @@
             dateEl.value = sunState.dateISO;
             rangeEl.value = String(sunState.minutes);
             hhmmEl.textContent = minutesToHHMM(sunState.minutes);
-            updateSunUI();
+            if (sunEnabled) updateSunPolar();
           });
 
           map.on("zoomend", setBtnEnabled);
-          setBtnEnabled();
+          map.on("moveend", () => { if (sunEnabled) updateSunPolar(); });
 
-          setSunOrbVisible(false);
-          setSunPathVisible(false);
+          setBtnEnabled();
 
           return container;
         }
       });
 
       map.addControl(new SunControl());
-
-      map.on("moveend", () => { if (sunEnabled) updateSunUI(); });
-      map.on("zoomend", () => { if (sunEnabled) updateSunUI(); });
-      window.addEventListener("resize", () => { if (sunEnabled) updateSunUI(); });
 
       /* =========================
          FIN CAPA SOL
@@ -1451,3 +1376,4 @@
     </script>
   </body>
 </html>
+
