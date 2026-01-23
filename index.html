@@ -66,13 +66,16 @@
         border: 1px solid rgba(255,255,255,0.25);
         display:grid;
         place-items:center;
+        overflow:hidden;
       }
 
       .logoMark span{
         font-size: 12px;
         font-weight: 900;
+        letter-spacing: -0.2px;
       }
 
+      /* Mini search junto al logo */
       .miniSearch{
         display:flex;
         align-items:center;
@@ -109,11 +112,18 @@
         place-items:center;
       }
 
+      .miniIcon{
+        width: 22px;
+        height: 22px;
+        display:block;
+      }
+
       .rightGroup{
         margin-left: auto;
         display:flex;
         align-items:center;
         gap: 10px;
+        flex: 0 0 auto;
       }
 
       .rightGroup a{
@@ -123,6 +133,7 @@
         font-weight:650;
         padding: 8px 10px;
         border-radius: 999px;
+        white-space: nowrap;
       }
 
       .rightGroup a:hover{
@@ -140,7 +151,7 @@
         display:flex;
         align-items:center;
         justify-content:center;
-        padding: 22px 16px;
+        padding: 22px 16px 22px;
       }
 
       .center{
@@ -150,11 +161,13 @@
       }
 
       .headline{
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, Segoe UI, Roboto, sans-serif;
         font-weight: 800;
         letter-spacing: -0.6px;
         font-size: 44px;
         line-height: 1.05;
         text-align:center;
+        color: #111;
         margin: 0 0 14px 0;
       }
 
@@ -163,22 +176,30 @@
         display:flex;
         justify-content:center;
         gap:12px;
-        margin-bottom: 12px;
         flex-wrap:wrap;
+        margin-bottom: 12px;
       }
 
       .pill{
+        position: relative;
         display:inline-flex;
         align-items:center;
         gap:10px;
         border: 1px solid var(--border);
+        background:#fff;
         padding: 10px 14px;
         border-radius: 999px;
         cursor:pointer;
+        user-select:none;
         font-size: 16px;
+        color:#111;
       }
 
-      .pill input{ display:none; }
+      .pill input{
+        position:absolute;
+        opacity:0;
+        pointer-events:none;
+      }
 
       .dot{
         width: 18px;
@@ -187,6 +208,7 @@
         border: 1px solid #6b7280;
         display:grid;
         place-items:center;
+        flex: 0 0 auto;
       }
 
       .dot::after{
@@ -194,6 +216,7 @@
         width: 10px;
         height: 10px;
         border-radius: 999px;
+        background: transparent;
       }
 
       .pill input:checked + .dot{
@@ -212,14 +235,24 @@
         display:flex;
         align-items:center;
         gap: 10px;
+        background:#fff;
+      }
+
+      .searchIcon{
+        width: 22px;
+        height: 22px;
+        color: var(--muted);
+        flex: 0 0 auto;
+        margin-left: 10px;
       }
 
       .input{
         border:0;
         outline:0;
         font-size: 18px;
-        flex: 1;
+        flex: 1 1 auto;
         padding: 12px 6px;
+        background: transparent;
       }
 
       .btn{
@@ -231,13 +264,17 @@
         cursor: pointer;
         font-size: 16px;
         font-weight: 650;
+        margin-right: 10px;
       }
 
+      .btn:active{ transform: translateY(1px); }
+
       .subTag{
+        width: min(720px, 100%);
         font-size: 14px;
         color: var(--muted);
-        margin-top: 10px;
         text-align:center;
+        margin-top: 10px;
       }
 
       .footer{
@@ -245,90 +282,182 @@
         border-top: 1px solid #f0f1f3;
         color: var(--muted);
         font-size: 12.5px;
+        display:flex;
+        justify-content:center;
         text-align:center;
       }
 
-      /* ===== MODAL LOGIN ===== */
-      .overlay{
-        position:fixed;
-        inset:0;
+      @media (max-width: 720px){
+        .miniSearch{ display:none; }
+        .headline{ font-size: 36px; }
+      }
+
+      /* ===== Auth modal (tipo pisos) ===== */
+      .bh-overlay{
+        position:fixed; inset:0;
+        display:none; align-items:center; justify-content:center;
         background:rgba(0,0,0,.45);
-        display:none;
-        align-items:center;
-        justify-content:center;
+        padding:24px;
         z-index:9999;
       }
-      .overlay.open{ display:flex; }
+      .bh-overlay.open{ display:flex; }
 
-      .modal{
+      .bh-modal{
+        width:min(760px, 100%);
         background:#fff;
-        width:min(420px, 100%);
         border-radius:16px;
-        padding:24px;
+        padding:28px 28px 24px;
         position:relative;
+        max-height:86vh;
+        overflow:auto;
+        box-shadow: var(--shadow);
+      }
+      .bh-close{
+        position:absolute; top:14px; right:14px;
+        width:40px; height:40px;
+        border:none; background:transparent;
+        font-size:26px; cursor:pointer;
       }
 
-      .close{
-        position:absolute;
-        top:10px;
-        right:10px;
-        font-size:24px;
-        background:none;
-        border:0;
-        cursor:pointer;
-      }
+      .bh-brand{ text-align:center; opacity:.8; margin-bottom:14px; }
+      .bh-title{ text-align:center; margin:0 0 10px; font-size:22px; }
+      .bh-subtitle{ text-align:center; margin:0 0 18px; opacity:.8; }
 
-      .modal h2{
-        text-align:center;
-        margin:0 0 10px;
-      }
+      .bh-actions{ width:min(360px, 100%); margin:0 auto; }
 
-      .modal p{
-        text-align:center;
-        color:var(--muted);
-        font-size:14px;
-      }
-
-      .modal button,
-      .modal input{
+      .bh-btn{
         width:100%;
-        margin-top:10px;
-        padding:12px;
+        padding:12px 14px;
         border-radius:10px;
-        border:1px solid var(--softBorder);
+        cursor:pointer;
+        border:1px solid #d0d0d0;
+        background:#fff;
+        margin-top:10px;
         font-size:14px;
-      }
-
-      .modal .primary{
-        background:#111;
-        color:#fff;
-        border:0;
-      }
-
-      .divider{
         display:flex;
         align-items:center;
+        justify-content:center;
         gap:10px;
-        margin:14px 0;
-        font-size:13px;
-        color:var(--muted);
       }
-      .divider::before,
-      .divider::after{
-        content:"";
-        flex:1;
-        height:1px;
-        background:#eee;
+      .bh-primary{
+        border:none;
+        background:#1f2937;
+        color:#fff;
       }
 
-      .proLink{
-        margin-top:18px;
+      .bh-divider{
+        display:flex; align-items:center; gap:12px;
+        margin:18px 0 6px;
+        opacity:.75;
         font-size:13px;
+      }
+      .bh-divider:before, .bh-divider:after{
+        content:""; height:1px; background:#e5e5e5; flex:1;
+      }
+
+      .bh-input{
+        width:100%;
+        padding:12px 12px;
+        border:1px solid #d0d0d0;
+        border-radius:10px;
+        outline:none;
+        margin-top:10px;
+        font-size:14px;
+        box-sizing:border-box;
+      }
+
+      .bh-pill{
+        width:100%;
+        margin:0 auto 10px;
+        text-align:center;
+        font-size:13px;
+        opacity:.75;
+      }
+
+      .bh-row{ position:relative; }
+      .bh-eye{
+        position:absolute;
+        right:10px;
+        top:50%;
+        transform:translateY(-2px);
+        border:none;
+        background:transparent;
+        cursor:pointer;
+        padding:6px;
+      }
+
+      .bh-link{
+        display:block;
+        text-align:center;
+        margin-top:14px;
+        text-decoration:underline;
+        font-size:13px;
+        color:inherit;
+        opacity:.9;
+      }
+
+      .bh-linkbtn{
+        border:none;
+        background:transparent;
+        text-decoration:underline;
+        cursor:pointer;
+        padding:0;
+        font-size:13px;
+        color:inherit;
+      }
+
+      .bh-check{
+        display:flex;
+        gap:10px;
+        align-items:flex-start;
+        margin-top:14px;
+        font-size:13px;
+        opacity:.9;
+      }
+      .bh-check input{ width:auto; margin:2px 0 0; }
+
+      .bh-legal{
+        margin:14px 0 0;
+        font-size:12px;
+        opacity:.7;
+        line-height:1.35;
         text-align:center;
       }
-      .proLink a{ text-decoration:underline; }
 
-      .hidden{ display:none; }
+      .bh-msg{
+        margin:14px 0 0;
+        text-align:center;
+        font-size:13px;
+        opacity:.9;
+      }
+
+      .bh-hidden{ display:none; }
+
+      .bh-probox{
+        width:min(520px, 100%);
+        margin:22px auto 0;
+        text-align:center;
+        font-size:13px;
+        opacity:.9;
+      }
+      .bh-proline{ height:1px; background:#eee; margin-bottom:14px; }
+      .bh-protext a{ text-decoration:underline; }
+
+      /* Botón estilo Apple (negro) */
+      .bh-apple{
+        background:#000;
+        color:#fff;
+        border-color:#000;
+      }
+
+      /* Iconos simples (no oficiales, solo placeholder visual) */
+      .bh-ico{
+        width:18px; height:18px; display:inline-block;
+      }
+
+      @media (max-width: 520px){
+        .bh-modal{ width:100%; border-radius:14px; padding:18px; max-height:92vh; }
+      }
     </style>
   </head>
 
@@ -336,14 +465,22 @@
     <header class="topbar">
       <div class="topbarInner">
         <a class="brand" href="./">
-          <div class="logoMark"><span>BH</span></div>
+          <div class="logoMark" aria-label="Logo">
+            <span>BH</span>
+          </div>
         </a>
 
-        <form class="miniSearch">
-          <input placeholder="Buscar..." />
+        <form class="miniSearch" id="miniSearchForm" autocomplete="off" aria-label="Búsqueda rápida">
+          <input id="miniQ" placeholder="Buscar..." aria-label="Buscar rápido" />
+          <button type="submit" title="Buscar" aria-label="Buscar">
+            <svg class="miniIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.3-4.3"></path>
+            </svg>
+          </button>
         </form>
 
-        <div class="rightGroup">
+        <div class="rightGroup" aria-label="Acciones">
           <a href="#" id="navFavoritos">Favoritos</a>
           <a href="#" id="navLogin">Iniciar sesión</a>
         </div>
@@ -355,21 +492,47 @@
         <div class="center">
           <h1 class="headline">Anuncios publicados únicamente por profesionales inmobiliarios</h1>
 
-          <div class="modeRow">
+          <div class="modeRow" aria-label="Tipo de búsqueda">
             <label class="pill">
-              <input type="radio" name="mode" checked />
-              <span class="dot"></span>Comprar
+              <input type="radio" name="mode" value="buy" checked />
+              <span class="dot" aria-hidden="true"></span>
+              <span>Comprar</span>
             </label>
+
             <label class="pill">
-              <input type="radio" name="mode" />
-              <span class="dot"></span>Alquilar
+              <input type="radio" name="mode" value="rent" />
+              <span class="dot" aria-hidden="true"></span>
+              <span>Alquilar</span>
+            </label>
+
+            <label class="pill">
+              <input type="radio" name="mode" value="room" />
+              <span class="dot" aria-hidden="true"></span>
+              <span>Habitación</span>
+            </label>
+
+            <label class="pill">
+              <input type="radio" name="mode" value="new_build" />
+              <span class="dot" aria-hidden="true"></span>
+              <span>Obra nueva</span>
             </label>
           </div>
 
-          <div class="searchBox">
-            <input class="input" placeholder="Escribe una ciudad o zona (ej. Murcia)" />
-            <button class="btn">Buscar</button>
-          </div>
+          <form id="form" class="searchBox" autocomplete="off">
+            <svg class="searchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.3-4.3"></path>
+            </svg>
+
+            <input
+              id="q"
+              class="input"
+              placeholder="Escribe una ciudad o zona (ej. Murcia)"
+              aria-label="Buscar ciudad o zona"
+            />
+
+            <button class="btn" type="submit">Buscar</button>
+          </form>
 
           <div class="subTag">Una vivienda, un anuncio.</div>
         </div>
@@ -380,49 +543,270 @@
       </footer>
     </div>
 
-    <!-- MODAL LOGIN -->
-    <div class="overlay" id="authOverlay">
-      <div class="modal">
-        <button class="close" id="closeAuth">×</button>
+    <!-- AUTH MODAL -->
+    <div id="authOverlay" class="bh-overlay" aria-hidden="true">
+      <div class="bh-modal" role="dialog" aria-modal="true" aria-labelledby="bhAuthTitle">
+        <button class="bh-close" id="closeAuth" aria-label="Cerrar">×</button>
 
-        <div id="stepEmail">
-          <h2>Acceso de usuario</h2>
-          <p>Guarda favoritos y viviendas vistas.</p>
+        <!-- STEP 1: entrada -->
+        <section id="stepEmail">
+          <div class="bh-brand">Buscar Hogar</div>
+          <h2 id="bhAuthTitle" class="bh-title">Inicia sesión o regístrate</h2>
+          <p class="bh-subtitle">Acceso solo para usuarios.</p>
 
-          <button>Continuar con Google</button>
-          <button>Continuar con Apple</button>
+          <div class="bh-actions">
+            <button type="button" class="bh-btn" id="googleBtn" aria-label="Continuar con Google">
+              <span class="bh-ico" aria-hidden="true">G</span>
+              <span>Continuar con Google</span>
+            </button>
 
-          <div class="divider">o</div>
+            <button type="button" class="bh-btn bh-apple" id="appleBtn" aria-label="Continuar con Apple">
+              <span class="bh-ico" aria-hidden="true"></span>
+              <span>Continuar con Apple</span>
+            </button>
 
-          <input id="emailInput" placeholder="Email" />
-          <button class="primary" id="continueEmail">Continuar</button>
+            <div class="bh-divider"><span>o</span></div>
 
-          <div class="proLink">
-            Profesional inmobiliario:
-            <a href="/pro/login.html">accede aquí</a>
+            <input id="emailInput" class="bh-input" type="email" autocomplete="email" placeholder="Email" />
+
+            <button type="button" class="bh-btn bh-primary" id="emailContinueBtn">Continuar con email</button>
+
+            <div id="authMsg1" class="bh-msg bh-hidden" role="status" aria-live="polite"></div>
+
+            <div class="bh-probox">
+              <div class="bh-proline"></div>
+              <div class="bh-protext">
+                Profesional inmobiliario:
+                <a href="/buscarhogardemo/pro/login.html">accede aquí</a>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <!-- STEP 2: contraseña -->
+        <section id="stepPassword" class="bh-hidden" aria-labelledby="bhPwTitle">
+          <div class="bh-brand">Buscar Hogar</div>
+          <h2 id="bhPwTitle" class="bh-title">Introduce tu contraseña</h2>
+
+          <div class="bh-actions">
+            <div class="bh-pill" id="pwEmailLabel"></div>
+
+            <div class="bh-row">
+              <input id="passwordInput" class="bh-input" type="password" autocomplete="current-password" placeholder="Contraseña" />
+              <button type="button" class="bh-eye" id="togglePw" aria-label="Mostrar u ocultar contraseña">👁</button>
+            </div>
+
+            <button type="button" class="bh-btn bh-primary" id="loginBtn">Entrar</button>
+
+            <a class="bh-link" href="#" id="forgotPw">¿Has olvidado tu contraseña?</a>
+            <a class="bh-link" href="#" id="goRegisterLink">No tengo cuenta, registrarme</a>
+
+            <div id="authMsg2" class="bh-msg bh-hidden" role="status" aria-live="polite"></div>
+
+            <div style="text-align:center; margin-top:16px;">
+              <button type="button" class="bh-linkbtn" id="backToEmail1">Usar otro email</button>
+            </div>
+
+            <div class="bh-probox">
+              <div class="bh-proline"></div>
+              <div class="bh-protext">
+                Profesional inmobiliario:
+                <a href="/buscarhogardemo/pro/login.html">accede aquí</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- STEP 3: registro -->
+        <section id="stepRegister" class="bh-hidden" aria-labelledby="bhRegTitle">
+          <div class="bh-brand">Buscar Hogar</div>
+          <h2 id="bhRegTitle" class="bh-title">Crea tu cuenta</h2>
+
+          <div class="bh-actions">
+            <div class="bh-pill" id="regEmailLabel"></div>
+
+            <input id="nameInput" class="bh-input" type="text" autocomplete="name" placeholder="Nombre" />
+
+            <div class="bh-row">
+              <input id="regPasswordInput" class="bh-input" type="password" autocomplete="new-password" placeholder="Contraseña (mín. 8)" minlength="8" />
+              <button type="button" class="bh-eye" id="toggleRegPw" aria-label="Mostrar u ocultar contraseña">👁</button>
+            </div>
+
+            <label class="bh-check">
+              <input id="marketingOptIn" type="checkbox" />
+              <span>Recibir comunicaciones (opcional).</span>
+            </label>
+
+            <button type="button" class="bh-btn bh-primary" id="registerBtn">Registrarme</button>
+
+            <p class="bh-legal">
+              Tras registrarte, te enviaremos un email para confirmar tu dirección.
+            </p>
+
+            <div id="authMsg3" class="bh-msg bh-hidden" role="status" aria-live="polite"></div>
+
+            <div style="text-align:center; margin-top:16px;">
+              <button type="button" class="bh-linkbtn" id="backToEmail2">Usar otro email</button>
+              <span style="opacity:.6;"> · </span>
+              <button type="button" class="bh-linkbtn" id="backToPassword">Ya tengo cuenta</button>
+            </div>
+
+            <div class="bh-probox">
+              <div class="bh-proline"></div>
+              <div class="bh-protext">
+                Profesional inmobiliario:
+                <a href="/buscarhogardemo/pro/login.html">accede aquí</a>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
 
-    <script>
-      const navLogin = document.getElementById("navLogin");
+    <script type="module">
+      import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+      // 1) RELLENA ESTO CON TUS DATOS DE SUPABASE
+      const SUPABASE_URL = "https://TU-PROYECTO.supabase.co";
+      const SUPABASE_ANON_KEY = "TU_ANON_PUBLIC_KEY";
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // 2) URL pública para volver tras OAuth
+      const OAUTH_REDIRECT_TO = "https://buscarhogar1.github.io/buscarhogardemo/auth/callback.html";
+
+      // ===== buscador =====
+      const form = document.getElementById("form");
+      const q = document.getElementById("q");
+
+      const miniSearchForm = document.getElementById("miniSearchForm");
+      const miniQ = document.getElementById("miniQ");
+
+      function getSelectedMode(){
+        const el = document.querySelector('input[name="mode"]:checked');
+        return el ? el.value : "buy";
+      }
+
+      function go(city){
+        const params = new URLSearchParams();
+        params.set("city", city);
+        params.set("mode", getSelectedMode());
+        window.location.href = "./map.html?" + params.toString();
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const city = (q.value || "").trim();
+        if(!city) return;
+        go(city);
+      });
+
+      miniSearchForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const city = (miniQ.value || "").trim();
+        if(!city) return;
+        q.value = city;
+        go(city);
+      });
+
+      // ===== modal open/close =====
       const overlay = document.getElementById("authOverlay");
+      const navLogin = document.getElementById("navLogin");
       const closeAuth = document.getElementById("closeAuth");
 
-      navLogin.onclick = (e) => {
-        e.preventDefault();
+      function openAuth(){
         overlay.classList.add("open");
-      };
-
-      closeAuth.onclick = () => {
+        overlay.setAttribute("aria-hidden","false");
+        document.body.style.overflow = "hidden";
+        showStep("email");
+        setTimeout(() => document.getElementById("emailInput").focus(), 0);
+      }
+      function closeAuthModal(){
         overlay.classList.remove("open");
-      };
+        overlay.setAttribute("aria-hidden","true");
+        document.body.style.overflow = "";
+        navLogin.focus();
+      }
 
-      overlay.onclick = (e) => {
-        if (e.target === overlay) overlay.classList.remove("open");
-      };
-    </script>
-  </body>
-</html>
+      navLogin.addEventListener("click",(e)=>{ e.preventDefault(); openAuth(); });
+      closeAuth.addEventListener("click", closeAuthModal);
+      overlay.addEventListener("click",(e)=>{ if(e.target === overlay) closeAuthModal(); });
+      document.addEventListener("keydown",(e)=>{ if(overlay.classList.contains("open") && e.key === "Escape") closeAuthModal(); });
+
+      // ===== steps =====
+      const stepEmail = document.getElementById("stepEmail");
+      const stepPassword = document.getElementById("stepPassword");
+      const stepRegister = document.getElementById("stepRegister");
+
+      const emailInput = document.getElementById("emailInput");
+      const passwordInput = document.getElementById("passwordInput");
+      const regPasswordInput = document.getElementById("regPasswordInput");
+      const nameInput = document.getElementById("nameInput");
+
+      const pwEmailLabel = document.getElementById("pwEmailLabel");
+      const regEmailLabel = document.getElementById("regEmailLabel");
+
+      const msg1 = document.getElementById("authMsg1");
+      const msg2 = document.getElementById("authMsg2");
+      const msg3 = document.getElementById("authMsg3");
+
+      let currentEmail = "";
+
+      function setMsg(el, text){
+        if(!text){
+          el.textContent = "";
+          el.classList.add("bh-hidden");
+          return;
+        }
+        el.textContent = text;
+        el.classList.remove("bh-hidden");
+      }
+
+      function showStep(which){
+        stepEmail.classList.add("bh-hidden");
+        stepPassword.classList.add("bh-hidden");
+        stepRegister.classList.add("bh-hidden");
+        setMsg(msg1, "");
+        setMsg(msg2, "");
+        setMsg(msg3, "");
+
+        if(which === "email") stepEmail.classList.remove("bh-hidden");
+        if(which === "password") stepPassword.classList.remove("bh-hidden");
+        if(which === "register") stepRegister.classList.remove("bh-hidden");
+      }
+
+      // ===== OAuth =====
+      document.getElementById("googleBtn").addEventListener("click", async () => {
+        localStorage.setItem("bh_return_url", window.location.href);
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: OAUTH_REDIRECT_TO }
+        });
+        if(error) setMsg(msg1, "No se ha podido iniciar con Google.");
+      });
+
+      document.getElementById("appleBtn").addEventListener("click", async () => {
+        localStorage.setItem("bh_return_url", window.location.href);
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "apple",
+          options: { redirectTo: OAUTH_REDIRECT_TO }
+        });
+        if(error) setMsg(msg1, "No se ha podido iniciar con Apple.");
+      });
+
+      // ===== Email flow =====
+      // Nota: para imitar pisos al 100% (decidir si existe antes de contraseña),
+      // necesitas una Edge Function. Aquí hacemos: email -> contraseña, y si falla, registro.
+      document.getElementById("emailContinueBtn").addEventListener("click", async () => {
+        const email = (emailInput.value || "").trim();
+        if(!email) return;
+
+        currentEmail = email;
+        pwEmailLabel.textContent = email;
+        passwordInput.value = "";
+        showStep("password");
+        setTimeout(() => passwordInput.focus(), 0);
+      });
+
+      document.getElementById("loginBtn").addEventListener("click", async () => {
+        const pw
 
