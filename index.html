@@ -1,331 +1,926 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Buscar Hogar</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Buscar Hogar</title>
 
-  <style>
-    :root{
-      --bg:#ffffff;
-      --text:#111;
-      --muted:#6b7280;
-      --terra:#a3472f;
-      --btn:#1a73e8;
-      --btnText:#fff;
-      --border:#111;
-      --softBorder:#e6e7eb;
-      --shadow: 0 10px 30px rgba(0,0,0,0.10);
-    }
+    <style>
+      :root{
+        --bg:#ffffff;
+        --text:#111;
+        --muted:#6b7280;
 
-    html,body{
-      height:100%;
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    }
+        --terra:#a3472f;
 
-    /* ===== Topbar ===== */
-    .topbar{
-      height:56px;
-      background:var(--terra);
-      color:#fff;
-      display:flex;
-      align-items:center;
-      padding:0 16px;
-    }
+        --btn:#1a73e8;
+        --btnText:#fff;
 
-    .topbarInner{
-      width: min(1120px, 100%);
-      margin: 0 auto;
-      display:flex;
-      align-items:center;
-      gap: 12px;
-    }
+        --border:#111;
+        --softBorder:#e6e7eb;
+        --shadow: 0 10px 30px rgba(0,0,0,0.10);
+      }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      text-decoration:none;
-      color:#fff;
-      font-weight:800;
-      letter-spacing:-0.2px;
-    }
+      html,body{
+        height:100%;
+        margin:0;
+        background:var(--bg);
+        color:var(--text);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      }
 
-    .logoMark{
-      width: 34px;
-      height: 28px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(255,255,255,0.25);
-      display:grid;
-      place-items:center;
-    }
+      /* ===== Topbar ===== */
+      .topbar{
+        height:56px;
+        background:var(--terra);
+        color:#fff;
+        display:flex;
+        align-items:center;
+        padding:0 16px;
+        box-sizing: border-box;
+      }
 
-    .miniSearch{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      border: 1px solid rgba(255,255,255,0.30);
-      background: rgba(255,255,255,0.10);
-      border-radius: 999px;
-      padding: 6px 10px;
-      min-width: 280px;
-      margin-left: 34px;
-    }
+      .topbarInner{
+        width: min(1120px, 100%);
+        margin: 0 auto;
+        display:flex;
+        align-items:center;
+        gap: 12px;
+      }
 
-    .miniSearch input{
-      border:0;
-      outline:0;
-      background: transparent;
-      color: #fff;
-      font-size: 13.5px;
-      width: 100%;
-    }
+      .brand{
+        display:flex;
+        align-items:center;
+        gap: 10px;
+        text-decoration:none;
+        color:#fff;
+        font-weight:800;
+        letter-spacing:-0.2px;
+        flex: 0 0 auto;
+      }
 
-    .miniSearch button{
-      border:0;
-      background: transparent;
-      color: #fff;
-      cursor: pointer;
-    }
+      .logoMark{
+        width: 34px;
+        height: 28px;
+        border-radius: 6px;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.25);
+        display:grid;
+        place-items:center;
+        overflow:hidden;
+      }
 
-    .rightGroup{
-      margin-left: auto;
-      display:flex;
-      gap: 10px;
-    }
+      .logoMark span{
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: -0.2px;
+      }
 
-    .rightGroup a{
-      color:#fff;
-      text-decoration:none;
-      font-size:14px;
-      font-weight:650;
-      padding:8px 10px;
-      border-radius:999px;
-    }
+      /* Mini search junto al logo */
+      .miniSearch{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        border: 1px solid rgba(255,255,255,0.30);
+        background: rgba(255,255,255,0.10);
+        border-radius: 999px;
+        padding: 6px 10px;
+        min-width: 280px;
+        max-width: 460px;
+        margin-left: 34px;
+        flex: 1 1 auto;
+        box-sizing: border-box;
+      }
 
-    .rightGroup a:hover{
-      background: rgba(255,255,255,0.14);
-    }
+      .miniSearch input{
+        border:0;
+        outline:0;
+        background: transparent;
+        color: #fff;
+        font-size: 13.5px;
+        width: 100%;
+      }
 
-    /* ===== Layout ===== */
-    .main{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: 22px 16px;
-    }
+      .miniSearch input::placeholder{
+        color: rgba(255,255,255,0.80);
+      }
 
-    .center{
-      width:min(980px, 100%);
-      display:grid;
-      justify-items:center;
-    }
+      .miniSearch button{
+        border:0;
+        background: transparent;
+        color: #fff;
+        cursor: pointer;
+        padding: 0 2px;
+        display:grid;
+        place-items:center;
+      }
 
-    .headline{
-      font-weight: 800;
-      letter-spacing: -0.6px;
-      font-size: 44px;
-      line-height: 1.05;
-      text-align:center;
-      margin-bottom:14px;
-    }
+      .miniIcon{
+        width: 22px;
+        height: 22px;
+        display:block;
+      }
 
-    .modeRow{
-      display:flex;
-      gap:12px;
-      margin-bottom:12px;
-    }
+      .rightGroup{
+        margin-left: auto;
+        display:flex;
+        align-items:center;
+        gap: 10px;
+        flex: 0 0 auto;
+      }
 
-    .pill{
-      border:1px solid var(--border);
-      border-radius:999px;
-      padding:10px 14px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      cursor:pointer;
-    }
+      .rightGroup a{
+        color: #fff;
+        text-decoration:none;
+        font-size:14px;
+        font-weight:650;
+        padding: 8px 10px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
 
-    .pill input{ display:none; }
+      .rightGroup a:hover{
+        background: rgba(255,255,255,0.14);
+      }
 
-    .searchBox{
-      width: min(720px, 100%);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 10px;
-      display:flex;
-      align-items:center;
-      gap: 10px;
-    }
+      /* ===== Layout ===== */
+      .wrap{
+        min-height: calc(100% - 56px);
+        display:grid;
+        grid-template-rows: 1fr auto;
+      }
 
-    .searchIcon{
-      width:22px;
-      height:22px;
-      margin-left:10px;
-    }
+      .main{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding: 22px 16px 22px;
+        box-sizing: border-box;
+      }
 
-    .input{
-      border:0;
-      outline:0;
-      font-size:18px;
-      flex:1;
-    }
+      .center{
+        width:min(980px, 100%);
+        display:grid;
+        justify-items:center;
+        text-align:center;
+      }
 
-    .btn{
-      background: var(--btn);
-      color: var(--btnText);
-      border:0;
-      padding:12px 18px;
-      border-radius:999px;
-      font-weight:650;
-      cursor:pointer;
-      margin-right:10px;
-    }
+      .headline{
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, Segoe UI, Roboto, sans-serif;
+        font-weight: 800;
+        letter-spacing: -0.6px;
+        font-size: 44px;
+        line-height: 1.05;
+        color: #111;
+        margin: 0 0 14px 0;
+      }
 
-    .subTag{
-      margin-top:10px;
-      font-size:14px;
-      color:var(--muted);
-      text-align:center;
-    }
+      .modeRow{
+        width: min(720px, 100%);
+        display:flex;
+        justify-content:center;
+        gap:12px;
+        flex-wrap:wrap;
+        margin-bottom: 12px;
+      }
 
-    /* ===== Modal login ===== */
-    .overlay{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.45);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:1000;
-    }
+      .pill{
+        position: relative;
+        display:inline-flex;
+        align-items:center;
+        gap:10px;
+        border: 1px solid var(--border);
+        background:#fff;
+        padding: 10px 14px;
+        border-radius: 999px;
+        cursor:pointer;
+        user-select:none;
+        font-size: 16px;
+        color:#111;
+      }
 
-    .modal{
-      background:#fff;
-      width:min(420px, 92%);
-      border-radius:14px;
-      padding:24px;
-      box-shadow:var(--shadow);
-    }
+      .pill input{
+        position:absolute;
+        opacity:0;
+        pointer-events:none;
+      }
 
-    .modal h2{
-      margin-top:0;
-      text-align:center;
-    }
+      .dot{
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        border: 1px solid #6b7280;
+        display:grid;
+        place-items:center;
+        flex: 0 0 auto;
+      }
 
-    .oauthBtn{
-      width:100%;
-      padding:12px;
-      border-radius:10px;
-      border:1px solid var(--softBorder);
-      background:#fff;
-      cursor:pointer;
-      font-weight:600;
-      margin-bottom:10px;
-    }
+      .dot::after{
+        content:"";
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: transparent;
+      }
 
-    .emailInput{
-      width:100%;
-      padding:12px;
-      border-radius:10px;
-      border:1px solid var(--softBorder);
-      margin-bottom:10px;
-    }
+      .pill input:checked + .dot{
+        border-color: var(--btn);
+      }
 
-    .loginBtn{
-      width:100%;
-      padding:12px;
-      border-radius:10px;
-      background:var(--btn);
-      color:#fff;
-      border:0;
-      font-weight:700;
-      cursor:pointer;
-    }
+      .pill input:checked + .dot::after{
+        background: var(--btn);
+      }
 
-    .modalLinks{
-      margin-top:14px;
-      text-align:center;
-      font-size:13px;
-    }
-  </style>
-</head>
+      .searchBox{
+        width: min(720px, 100%);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 10px;
+        display:flex;
+        align-items:center;
+        gap: 10px;
+        background:#fff;
+        box-sizing: border-box;
+      }
 
-<body>
+      .searchIcon{
+        width: 22px;
+        height: 22px;
+        color: var(--muted);
+        flex: 0 0 auto;
+        margin-left: 10px;
+      }
 
-<header class="topbar">
-  <div class="topbarInner">
-    <a class="brand" href="./">
-      <div class="logoMark"><span>BH</span></div>
-    </a>
+      .input{
+        border:0;
+        outline:0;
+        font-size: 18px;
+        flex: 1 1 auto;
+        padding: 12px 6px;
+        background: transparent;
+      }
 
-    <form class="miniSearch">
-      <input placeholder="Buscar..." />
-      🔍
-    </form>
+      .btn{
+        border:0;
+        background: var(--btn);
+        color: var(--btnText);
+        padding: 12px 18px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 650;
+        margin-right: 10px;
+      }
 
-    <div class="rightGroup">
-      <a href="#">Favoritos</a>
-      <a href="#" id="openLogin">Iniciar sesión</a>
+      .btn:active{ transform: translateY(1px); }
+
+      .subTag{
+        width: min(720px, 100%);
+        font-size: 14px;
+        color: var(--muted);
+        text-align:center;
+        margin-top: 10px;
+      }
+
+      .footer{
+        padding: 14px 16px;
+        border-top: 1px solid #f0f1f3;
+        color: var(--muted);
+        font-size: 12.5px;
+        display:flex;
+        justify-content:center;
+        text-align:center;
+      }
+
+      @media (max-width: 720px){
+        .miniSearch{ display:none; }
+        .headline{ font-size: 36px; }
+      }
+
+      /* ===== Auth modal ===== */
+      .overlay{
+        position:fixed; inset:0;
+        display:none; align-items:center; justify-content:center;
+        background:rgba(0,0,0,.45);
+        padding:24px;
+        z-index:9999;
+        box-sizing: border-box;
+      }
+      .overlay.open{ display:flex; }
+
+      .modal{
+        width:min(760px, 100%);
+        background:#fff;
+        border-radius:16px;
+        padding:28px 28px 24px;
+        position:relative;
+        max-height:86vh;
+        overflow:auto;
+        box-shadow: var(--shadow);
+      }
+      .close{
+        position:absolute; top:14px; right:14px;
+        width:40px; height:40px;
+        border:none; background:transparent;
+        font-size:26px; cursor:pointer;
+      }
+
+      .bh-brand{ text-align:center; opacity:.8; margin-bottom:14px; }
+      .bh-title{ text-align:center; margin:0 0 10px; font-size:22px; }
+      .bh-subtitle{ text-align:center; margin:0 0 18px; opacity:.8; }
+
+      .bh-actions{ width:min(380px, 100%); margin:0 auto; }
+
+      .bh-btn{
+        width:100%;
+        padding:12px 14px;
+        border-radius:10px;
+        cursor:pointer;
+        border:1px solid #d0d0d0;
+        background:#fff;
+        margin-top:10px;
+        font-size:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        box-sizing:border-box;
+      }
+
+      .bh-btn:disabled{
+        opacity:.6;
+        cursor:not-allowed;
+      }
+
+      .bh-primary{
+        border:none;
+        background:#1f2937;
+        color:#fff;
+      }
+
+      .bh-divider{
+        display:flex; align-items:center; gap:12px;
+        margin:18px 0 6px;
+        opacity:.75;
+        font-size:13px;
+      }
+      .bh-divider:before, .bh-divider:after{
+        content:""; height:1px; background:#e5e5e5; flex:1;
+      }
+
+      .bh-input{
+        width:100%;
+        padding:12px 12px;
+        border:1px solid #d0d0d0;
+        border-radius:10px;
+        outline:none;
+        margin-top:10px;
+        font-size:14px;
+        box-sizing:border-box;
+      }
+
+      .bh-msg{
+        margin:14px 0 0;
+        text-align:center;
+        font-size:13px;
+        opacity:.95;
+        line-height:1.25;
+      }
+
+      .bh-hidden{ display:none; }
+
+      .bh-probox{
+        width:min(520px, 100%);
+        margin:22px auto 0;
+        text-align:center;
+        font-size:13px;
+        opacity:.9;
+      }
+      .bh-proline{ height:1px; background:#eee; margin-bottom:14px; }
+      .bh-protext a{ text-decoration:underline; color:inherit; }
+
+      .bh-linkbtn{
+        border:none;
+        background:transparent;
+        text-decoration:underline;
+        cursor:pointer;
+        padding:0;
+        font-size:13px;
+        color:inherit;
+        opacity:.95;
+      }
+
+      /* Botón Google estilo “sign in with Google” (aprox) */
+      .gBtn{
+        background:#fff;
+        border:1px solid #dadce0;
+        color:#3c4043;
+        font-weight:600;
+      }
+      .gIcon{
+        width:18px;height:18px; display:block;
+      }
+
+      /* Botón Apple */
+      .aBtn{
+        background:#000;
+        color:#fff;
+        border:1px solid #000;
+        font-weight:600;
+      }
+      .aIcon{
+        width:18px;height:18px; display:block;
+      }
+
+      @media (max-width: 520px){
+        .modal{ width:100%; border-radius:14px; padding:18px; max-height:92vh; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="topbar">
+      <div class="topbarInner">
+        <a class="brand" href="./">
+          <div class="logoMark" aria-label="Logo">
+            <span>BH</span>
+          </div>
+        </a>
+
+        <form class="miniSearch" id="miniSearchForm" autocomplete="off" aria-label="Búsqueda rápida">
+          <input id="miniQ" placeholder="Buscar..." aria-label="Buscar rápido" />
+          <button type="submit" title="Buscar" aria-label="Buscar">
+            <svg class="miniIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.3-4.3"></path>
+            </svg>
+          </button>
+        </form>
+
+        <div class="rightGroup" aria-label="Acciones">
+          <a href="#" id="navFavoritos">Favoritos</a>
+          <a href="#" id="navLogin">Iniciar sesión</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <main class="main">
+        <div class="center">
+          <h1 class="headline">Anuncios publicados únicamente por profesionales inmobiliarios</h1>
+
+          <div class="modeRow" aria-label="Tipo de búsqueda">
+            <label class="pill">
+              <input type="radio" name="mode" value="buy" checked />
+              <span class="dot" aria-hidden="true"></span>
+              <span>Comprar</span>
+            </label>
+
+            <label class="pill">
+              <input type="radio" name="mode" value="rent" />
+              <span class="dot" aria-hidden="true"></span>
+              <span>Alquilar</span>
+            </label>
+
+            <label class="pill">
+              <input type="radio" name="mode" value="room" />
+              <span class="dot" aria-hidden="true"></span>
+              <span>Habitación</span>
+            </label>
+
+            <label class="pill">
+              <input type="radio" name="mode" value="new_build" />
+              <span class="dot" aria-hidden="true"></span>
+              <span>Obra nueva</span>
+            </label>
+          </div>
+
+          <form id="form" class="searchBox" autocomplete="off">
+            <svg class="searchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.3-4.3"></path>
+            </svg>
+
+            <input
+              id="q"
+              class="input"
+              placeholder="Escribe una ciudad o zona (ej. Murcia)"
+              aria-label="Buscar ciudad o zona"
+            />
+
+            <button class="btn" type="submit">Buscar</button>
+          </form>
+
+          <div class="subTag">Una vivienda, un anuncio.</div>
+        </div>
+      </main>
+
+      <footer class="footer">
+        Inventario limpio, sin duplicados, sin anuncios zombis.
+      </footer>
     </div>
-  </div>
-</header>
 
-<main class="main">
-  <div class="center">
-    <h1 class="headline">Anuncios publicados únicamente por profesionales inmobiliarios</h1>
+    <!-- MODAL LOGIN -->
+    <div id="authOverlay" class="overlay" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bhAuthTitle">
+        <button class="close" id="closeAuth" aria-label="Cerrar">×</button>
 
-    <div class="modeRow">
-      <label class="pill"><input type="radio" checked>Comprar</label>
-      <label class="pill"><input type="radio">Alquilar</label>
-      <label class="pill"><input type="radio">Habitación</label>
-      <label class="pill"><input type="radio">Obra nueva</label>
+        <div class="bh-brand">Buscar Hogar</div>
+        <h2 id="bhAuthTitle" class="bh-title">Inicia sesión o regístrate</h2>
+        <p class="bh-subtitle">Acceso solo para usuarios.</p>
+
+        <div class="bh-actions">
+          <!-- Pantalla 1: opciones -->
+          <div id="authStepStart">
+            <button type="button" class="bh-btn gBtn" id="googleBtn">
+              <svg class="gIcon" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.1 0 5.8 1.1 8 2.9l5.9-5.9C34.3 3.5 29.5 1.5 24 1.5 14.6 1.5 6.5 6.9 2.6 14.7l6.9 5.4C11.4 13.9 17.2 9.5 24 9.5z"/>
+                <path fill="#34A853" d="M46.1 24.5c0-1.6-.1-2.8-.4-4.1H24v7.8h12.5c-.3 2-1.8 5.1-5.1 7.1l7.8 6C43.9 36.9 46.1 31.2 46.1 24.5z"/>
+                <path fill="#4A90E2" d="M9.5 28.1c-0.5-1.5-0.8-3.1-0.8-4.8s.3-3.3.8-4.8l-6.9-5.4C1.6 16.2 1 19.1 1 22.1c0 3 0.6 5.9 1.6 8.5l6.9-5.4z"/>
+                <path fill="#FBBC05" d="M24 46.5c5.5 0 10.3-1.8 13.8-4.9l-7.8-6c-2.1 1.4-4.9 2.4-8 2.4-6.8 0-12.6-4.4-14.7-10.6l-6.9 5.4C6.5 41.1 14.6 46.5 24 46.5z"/>
+              </svg>
+              Continuar con Google
+            </button>
+
+            <div class="bh-divider"><span>o</span></div>
+
+            <input id="emailInput" class="bh-input" type="email" autocomplete="email" placeholder="Email" />
+            <button type="button" class="bh-btn bh-primary" id="emailContinueBtn">Continuar con email</button>
+
+            <div class="bh-msg bh-hidden" id="authMsgStart" role="status" aria-live="polite"></div>
+          </div>
+
+          <!-- Pantalla 2: contraseña -->
+          <div id="authStepPassword" class="bh-hidden">
+            <div class="bh-msg" id="pwHeader"></div>
+            <input id="pwInput" class="bh-input" type="password" autocomplete="current-password" placeholder="Contraseña" />
+            <button type="button" class="bh-btn bh-primary" id="pwLoginBtn">Entrar</button>
+
+            <div class="bh-msg bh-hidden" id="authMsgPw" role="status" aria-live="polite"></div>
+
+            <div class="bh-msg" style="margin-top:12px;">
+              <button type="button" class="bh-linkbtn" id="goRegisterBtn">No tengo cuenta, registrarme</button>
+              <span> · </span>
+              <button type="button" class="bh-linkbtn" id="backStartFromPwBtn">Volver</button>
+            </div>
+          </div>
+
+          <!-- Pantalla 3: registro -->
+          <div id="authStepRegister" class="bh-hidden">
+            <div class="bh-msg" id="regHeader"></div>
+            <input id="regName" class="bh-input" type="text" autocomplete="name" placeholder="Nombre" />
+            <input id="regPassword" class="bh-input" type="password" autocomplete="new-password" placeholder="Contraseña (mín. 8)" />
+            <button type="button" class="bh-btn bh-primary" id="regCreateBtn">Crear cuenta</button>
+
+            <div class="bh-msg bh-hidden" id="authMsgReg" role="status" aria-live="polite"></div>
+
+            <div class="bh-msg" style="margin-top:12px;">
+              <button type="button" class="bh-linkbtn" id="backStartFromRegBtn">Volver</button>
+            </div>
+          </div>
+
+          <div class="bh-probox">
+            <div class="bh-proline"></div>
+            <div class="bh-protext">
+              Profesional inmobiliario:
+              <a href="./pro/login.html">accede aquí</a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="searchBox">
-      <svg class="searchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="7"></circle>
-        <path d="M21 21l-4.3-4.3"></path>
-      </svg>
-      <input class="input" placeholder="Escribe una ciudad o zona (ej. Murcia)">
-      <button class="btn">Buscar</button>
-    </div>
+    <script type="module">
+      import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    <div class="subTag">Una vivienda, un anuncio.</div>
-  </div>
-</main>
+      // ===== Supabase =====
+      const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-<!-- Modal login -->
-<div class="overlay" id="loginModal">
-  <div class="modal">
-    <h2>Inicia sesión o regístrate</h2>
+      // Base URL para GitHub Pages (https://.../buscarhogardemo/)
+      function getBaseUrl() {
+        const origin = window.location.origin;
+        let path = window.location.pathname;
+        if (!path.endsWith("/")) {
+          path = path.replace(/[^\/]*$/, ""); // quita archivo si lo hubiera
+        }
+        return origin + path;
+      }
+      const BASE_URL = getBaseUrl();
+      const CALLBACK_URL = BASE_URL + "auth/callback.html";
 
-    <button class="oauthBtn">Continuar con Google</button>
+      // ===== Buscador index -> map.html =====
+      const form = document.getElementById("form");
+      const q = document.getElementById("q");
 
-    <input class="emailInput" type="email" placeholder="Correo electrónico">
-    <button class="loginBtn">Continuar</button>
+      const miniSearchForm = document.getElementById("miniSearchForm");
+      const miniQ = document.getElementById("miniQ");
 
-    <div class="modalLinks">
-      Profesional inmobiliario: <a href="#">accede aquí</a>
-    </div>
-  </div>
-</div>
+      function getSelectedMode(){
+        const el = document.querySelector('input[name="mode"]:checked');
+        return el ? el.value : "buy";
+      }
 
-<script>
-  const modal = document.getElementById("loginModal");
-  document.getElementById("openLogin").onclick = e => {
-    e.preventDefault();
-    modal.style.display = "flex";
-  };
-  modal.onclick = e => {
-    if(e.target === modal) modal.style.display = "none";
-  };
-</script>
+      function go(city){
+        const params = new URLSearchParams();
+        params.set("city", city);
+        params.set("mode", getSelectedMode());
+        window.location.href = "./map.html?" + params.toString();
+      }
 
-</body>
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const city = (q.value || "").trim();
+        if(!city) return;
+        go(city);
+      });
+
+      miniSearchForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const city = (miniQ.value || "").trim();
+        if(!city) return;
+        q.value = city;
+        go(city);
+      });
+
+      // ===== Modal login =====
+      const overlay = document.getElementById("authOverlay");
+      const navLogin = document.getElementById("navLogin");
+      const closeAuth = document.getElementById("closeAuth");
+
+      const stepStart = document.getElementById("authStepStart");
+      const stepPw = document.getElementById("authStepPassword");
+      const stepReg = document.getElementById("authStepRegister");
+
+      const emailInput = document.getElementById("emailInput");
+      const emailContinueBtn = document.getElementById("emailContinueBtn");
+
+      const authMsgStart = document.getElementById("authMsgStart");
+      const authMsgPw = document.getElementById("authMsgPw");
+      const authMsgReg = document.getElementById("authMsgReg");
+
+      const pwHeader = document.getElementById("pwHeader");
+      const pwInput = document.getElementById("pwInput");
+      const pwLoginBtn = document.getElementById("pwLoginBtn");
+
+      const regHeader = document.getElementById("regHeader");
+      const regName = document.getElementById("regName");
+      const regPassword = document.getElementById("regPassword");
+      const regCreateBtn = document.getElementById("regCreateBtn");
+
+      const goRegisterBtn = document.getElementById("goRegisterBtn");
+      const backStartFromPwBtn = document.getElementById("backStartFromPwBtn");
+      const backStartFromRegBtn = document.getElementById("backStartFromRegBtn");
+
+      const googleBtn = document.getElementById("googleBtn");
+      const appleBtn = document.getElementById("appleBtn");
+
+      let pendingEmail = "";
+
+      function show(el){ el.classList.remove("bh-hidden"); }
+      function hide(el){ el.classList.add("bh-hidden"); }
+
+      function setMsg(el, text){
+        if(!text){
+          el.textContent = "";
+          el.classList.add("bh-hidden");
+          return;
+        }
+        el.textContent = text;
+        el.classList.remove("bh-hidden");
+      }
+
+      function setBusy(isBusy){
+        [googleBtn, appleBtn, emailContinueBtn, pwLoginBtn, regCreateBtn].forEach(b => b.disabled = isBusy);
+      }
+
+      function goStart(){
+        show(stepStart); hide(stepPw); hide(stepReg);
+        setMsg(authMsgStart, "");
+        setMsg(authMsgPw, "");
+        setMsg(authMsgReg, "");
+        pendingEmail = "";
+        pwInput.value = "";
+        regName.value = "";
+        regPassword.value = "";
+        emailInput.focus();
+      }
+
+      function goPassword(email){
+        hide(stepStart); show(stepPw); hide(stepReg);
+        setMsg(authMsgStart, "");
+        setMsg(authMsgPw, "");
+        setMsg(authMsgReg, "");
+        pendingEmail = email;
+        pwHeader.textContent = `Email: ${email}`;
+        pwInput.value = "";
+        pwInput.focus();
+      }
+
+      function goRegister(email){
+        hide(stepStart); hide(stepPw); show(stepReg);
+        setMsg(authMsgStart, "");
+        setMsg(authMsgPw, "");
+        setMsg(authMsgReg, "");
+        pendingEmail = email;
+        regHeader.textContent = `Crear cuenta con: ${email}`;
+        regName.focus();
+      }
+
+      function openAuth(){
+        overlay.classList.add("open");
+        overlay.setAttribute("aria-hidden","false");
+        document.body.style.overflow = "hidden";
+        goStart();
+      }
+      function closeAuthModal(){
+        overlay.classList.remove("open");
+        overlay.setAttribute("aria-hidden","true");
+        document.body.style.overflow = "";
+        navLogin.focus();
+      }
+
+      navLogin.addEventListener("click",(e)=>{ e.preventDefault(); openAuth(); });
+      closeAuth.addEventListener("click", closeAuthModal);
+      overlay.addEventListener("click",(e)=>{ if(e.target === overlay) closeAuthModal(); });
+      document.addEventListener("keydown",(e)=>{ if(overlay.classList.contains("open") && e.key === "Escape") closeAuthModal(); });
+
+      document.getElementById("navFavoritos").addEventListener("click", (e) => {
+        e.preventDefault();
+        alert("MVP: Favoritos (requiere registro).");
+      });
+
+      // ===== OAuth (Google / Apple) =====
+      async function oauth(provider){
+        try{
+          setBusy(true);
+          setMsg(authMsgStart, "");
+          localStorage.setItem("bh_return_url", window.location.href);
+
+          const { data, error } = await supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+              redirectTo: CALLBACK_URL
+            }
+          });
+
+          if (error) throw error;
+          // En OAuth, normalmente el navegador redirige y no llegas aquí.
+          // data.url existiría si no redirige automáticamente.
+          if (data?.url) window.location.href = data.url;
+        } catch(e){
+          setMsg(authMsgStart, "No se pudo iniciar sesión. Revisa que el proveedor esté activado en Supabase y que exista auth/callback.html.");
+          console.error(e);
+          setBusy(false);
+        }
+      }
+
+      googleBtn.addEventListener("click", ()=> oauth("google"));
+      appleBtn.addEventListener("click", ()=> oauth("apple"));
+
+      // ===== Email: bifurcación con Edge Function (si existe) =====
+      async function checkEmailExists(email){
+        // Esta función requiere que crees la Edge Function (la dejo más abajo).
+        // Si no existe aún, hacemos fallback.
+        try{
+          const { data, error } = await supabase.functions.invoke("check-email", {
+            body: { email }
+          });
+
+          if (error) throw error;
+          if (!data || typeof data.exists !== "boolean") throw new Error("Bad response");
+          return { ok:true, exists: data.exists };
+        } catch(e){
+          return { ok:false, exists:false };
+        }
+      }
+
+      emailContinueBtn.addEventListener("click", async () => {
+        const email = (emailInput.value || "").trim().toLowerCase();
+        if (!email) { setMsg(authMsgStart, "Escribe un email."); return; }
+
+        setBusy(true);
+        setMsg(authMsgStart, "");
+
+        const r = await checkEmailExists(email);
+
+        // Si la función existe, bifurcamos automático.
+        if (r.ok){
+          setBusy(false);
+          if (r.exists) goPassword(email);
+          else goRegister(email);
+          return;
+        }
+
+        // Fallback si aún no has creado la función:
+        // mandamos a contraseña y damos opción clara a registrarse.
+        setBusy(false);
+        goPassword(email);
+        setMsg(authMsgPw, "Si no tienes cuenta, pulsa “No tengo cuenta, registrarme”. Para detección automática, hay que crear la Edge Function check-email.");
+      });
+
+      goRegisterBtn.addEventListener("click", () => {
+        const email = pendingEmail || (emailInput.value || "").trim().toLowerCase();
+        if (!email) { goStart(); return; }
+        goRegister(email);
+      });
+
+      backStartFromPwBtn.addEventListener("click", goStart);
+      backStartFromRegBtn.addEventListener("click", goStart);
+
+      // Login con contraseña
+      pwLoginBtn.addEventListener("click", async () => {
+        const email = pendingEmail;
+        const password = pwInput.value || "";
+        if (!email) { goStart(); return; }
+        if (!password) { setMsg(authMsgPw, "Escribe tu contraseña."); return; }
+
+        try{
+          setBusy(true);
+          setMsg(authMsgPw, "");
+
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (error) throw error;
+
+          setMsg(authMsgPw, "Sesión iniciada.");
+          // Aquí podrías cerrar modal y reflejar usuario en UI más adelante
+          setTimeout(() => closeAuthModal(), 400);
+        } catch(e){
+          setMsg(authMsgPw, "No se pudo iniciar sesión. Revisa email y contraseña.");
+          console.error(e);
+        } finally {
+          setBusy(false);
+        }
+      });
+
+      // Crear cuenta (registro) con confirmación por email
+      regCreateBtn.addEventListener("click", async () => {
+        const email = pendingEmail;
+        const name = (regName.value || "").trim();
+        const password = regPassword.value || "";
+
+        if (!email) { goStart(); return; }
+        if (!name) { setMsg(authMsgReg, "Escribe tu nombre."); return; }
+        if (password.length < 8) { setMsg(authMsgReg, "La contraseña debe tener al menos 8 caracteres."); return; }
+
+        try{
+          setBusy(true);
+          setMsg(authMsgReg, "");
+
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: CALLBACK_URL,
+              data: { full_name: name }
+            }
+          });
+
+          if (error){
+            // Si el usuario ya existe, te mandamos a contraseña
+            const msg = String(error.message || "");
+            if (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("registered")){
+              setBusy(false);
+              goPassword(email);
+              setMsg(authMsgPw, "Ese email ya está registrado. Entra con tu contraseña.");
+              return;
+            }
+            throw error;
+          }
+
+          // Según configuración de Supabase, puede:
+          // - pedir confirmación (no habrá sesión hasta confirmar)
+          // - o crear sesión inmediatamente
+          const needsConfirm = !data?.session;
+
+          if (needsConfirm){
+            setMsg(authMsgReg, "Cuenta creada. Te hemos enviado un correo para confirmar el email. Después podrás iniciar sesión.");
+          } else {
+            setMsg(authMsgReg, "Cuenta creada y sesión iniciada.");
+            setTimeout(() => closeAuthModal(), 500);
+          }
+
+        } catch(e){
+          setMsg(authMsgReg, "No se pudo crear la cuenta. Revisa el email o prueba otra contraseña.");
+          console.error(e);
+        } finally {
+          setBusy(false);
+        }
+      });
+
+      // Mejor UX: Enter en inputs
+      emailInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") emailContinueBtn.click(); });
+      pwInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") pwLoginBtn.click(); });
+      regPassword.addEventListener("keydown",(e)=>{ if(e.key==="Enter") regCreateBtn.click(); });
+
+      // ===== Opcional: si el usuario ya está logueado, podrías reflejarlo luego =====
+      // const { data: sessionData } = await supabase.auth.getSession();
+    </script>
+  </body>
 </html>
 
