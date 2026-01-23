@@ -22,6 +22,11 @@
         --btnText:#fff;
         --border:#111;
         --softBorder:#e6e7eb;
+
+        /* Alturas para posicionar UI inferior sin solapes */
+        --sunbar-inner-h: 52px; /* franja más baja */
+        --sunbar-outer-pad: 14px; /* coincide con .sunTimebar bottom y padding del mapa */
+        --sunbar-gap: 12px; /* separación entre barra y dock fecha */
       }
 
       html, body {
@@ -516,7 +521,7 @@
         }
       }
 
-      /* Barra inferior tipo SunCalc (minimalista) */
+      /* Barra inferior (más baja) */
       .sunTimebar {
         position: absolute;
         left: 14px;
@@ -529,21 +534,26 @@
 
       .sunTimebarInner{
         position: relative;
-        padding: 10px 12px 12px;
+        height: var(--sunbar-inner-h);
+        padding: 8px 12px;
         border-radius: 14px;
         background: rgba(255,255,255,0.78);
         border: 1px solid rgba(0,0,0,0.10);
         backdrop-filter: blur(6px);
+        box-sizing: border-box;
+        display: grid;
+        grid-template-rows: 14px 1fr;
+        gap: 8px;
       }
 
       .sunHoursRow{
         display: grid;
         grid-template-columns: repeat(24, 1fr);
         gap: 0;
-        font-size: 11px;
+        font-size: 10.5px;
         color: rgba(0,0,0,0.58);
-        margin-bottom: 8px;
         user-select: none;
+        line-height: 14px;
       }
 
       .sunHoursRow span{
@@ -553,16 +563,16 @@
 
       .sunTrack {
         position: relative;
-        height: 18px;
+        height: 14px;
         border-radius: 999px;
         background:
           linear-gradient(to right,
-            rgba(26,115,232,0.0) 0%,
-            rgba(26,115,232,0.0) var(--sr, 0%),
-            rgba(26,115,232,0.12) var(--sr, 0%),
-            rgba(26,115,232,0.12) var(--ss, 0%),
-            rgba(26,115,232,0.0) var(--ss, 0%),
-            rgba(26,115,232,0.0) 100%
+            rgba(255,176,0,0.0) 0%,
+            rgba(255,176,0,0.0) var(--sr, 0%),
+            rgba(255,176,0,0.16) var(--sr, 0%),
+            rgba(255,176,0,0.16) var(--ss, 0%),
+            rgba(255,176,0,0.0) var(--ss, 0%),
+            rgba(255,176,0,0.0) 100%
           );
         border: 1px solid rgba(0,0,0,0.10);
         overflow: hidden;
@@ -573,7 +583,7 @@
         position:absolute;
         inset: 0;
         background: linear-gradient(to right, rgba(0,0,0,0.06), rgba(0,0,0,0.03));
-        opacity: 0.35;
+        opacity: 0.28;
         pointer-events:none;
       }
 
@@ -590,36 +600,29 @@
 
       .sunRange::-webkit-slider-thumb{
         appearance: none;
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         border-radius: 999px;
-        background: rgba(26,115,232,0.95);
-        border: 3px solid rgba(255,255,255,0.95);
+        background: rgba(255,176,0,0.96);
+        border: 3px solid rgba(255,255,255,0.96);
         box-shadow: 0 8px 18px rgba(0,0,0,0.16);
         cursor: pointer;
       }
       .sunRange::-moz-range-thumb{
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         border-radius: 999px;
-        background: rgba(26,115,232,0.95);
-        border: 3px solid rgba(255,255,255,0.95);
+        background: rgba(255,176,0,0.96);
+        border: 3px solid rgba(255,255,255,0.96);
         box-shadow: 0 8px 18px rgba(0,0,0,0.16);
         cursor: pointer;
       }
 
-      .sunTimeNowLabel{
-        margin-top: 8px;
-        font-size: 12px;
-        color: rgba(0,0,0,0.70);
-        user-select:none;
-      }
-
-      /* Dock de fecha + ahora (abajo derecha, encima de la barra) */
+      /* Dock fecha + ahora (sin solaparse con barra) */
       .sunDateDock{
         position: absolute;
         right: 14px;
-        bottom: 92px;
+        bottom: calc(var(--sunbar-outer-pad) + var(--sunbar-inner-h) + var(--sunbar-gap));
         z-index: 720;
         display: none;
         pointer-events: auto;
@@ -647,8 +650,8 @@
 
       .sunDateDock button{
         border: 0;
-        background: #1a73e8;
-        color: #fff;
+        background: rgba(0,0,0,0.70);
+        color: rgba(255,255,255,0.92);
         padding: 8px 12px;
         border-radius: 12px;
         cursor: pointer;
@@ -656,7 +659,17 @@
         font-weight: 650;
       }
 
+      .sunDateDock button:hover{
+        background: rgba(0,0,0,0.78);
+      }
+
       @media (max-width: 720px) {
+        :root{
+          --sunbar-inner-h: 50px;
+          --sunbar-outer-pad: 10px;
+          --sunbar-gap: 10px;
+        }
+
         .sunTimebar{
           left: 10px;
           right: 10px;
@@ -664,7 +677,6 @@
         }
         .sunDateDock{
           right: 10px;
-          bottom: 92px;
         }
         .sunHoursRow{
           font-size: 10px;
@@ -703,13 +715,11 @@
       <div class="mapShell">
         <div id="map"></div>
 
-        <!-- Overlay grande, centrado, transparente -->
         <div id="sunOverlay" class="sunOverlay" aria-hidden="true">
           <div id="sunOverlayLabel" class="sunOverlayLabel">—</div>
           <svg id="sunPolarOverlay" aria-label="Diagrama solar"></svg>
         </div>
 
-        <!-- Dock fecha + ahora (abajo derecha) -->
         <div id="sunDateDock" class="sunDateDock" aria-hidden="true">
           <div class="sunDateDockInner">
             <input type="date" id="sunDate" />
@@ -717,14 +727,12 @@
           </div>
         </div>
 
-        <!-- Barra inferior de horas -->
         <div id="sunTimebar" class="sunTimebar" aria-hidden="true">
           <div class="sunTimebarInner">
             <div class="sunHoursRow" id="sunHoursRow"></div>
             <div class="sunTrack" id="sunTrack">
               <input id="sunRange" class="sunRange" type="range" min="0" max="1439" step="10" />
             </div>
-            <div class="sunTimeNowLabel" id="sunTimeText">—</div>
           </div>
         </div>
       </div>
@@ -815,7 +823,6 @@
       const sunHoursRowEl = document.getElementById("sunHoursRow");
       const sunTrackEl = document.getElementById("sunTrack");
       const sunRangeEl = document.getElementById("sunRange");
-      const sunTimeTextEl = document.getElementById("sunTimeText");
       const sunDateEl = document.getElementById("sunDate");
       const sunNowBtn = document.getElementById("sunNowBtn");
 
@@ -1242,9 +1249,9 @@
 
         svg.setAttribute("viewBox", `0 0 ${V} ${V}`);
         svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-
         svgClear(svg);
 
+        // Base (gris suave)
         svg.appendChild(svgEl("circle", {
           cx, cy, r: R,
           fill: "rgba(255,255,255,0.00)",
@@ -1289,6 +1296,7 @@
           svg.appendChild(t);
         });
 
+        // Colores estilo SunCalc (amarillo/naranja)
         const dayNoon = buildDateObj(dateISO, 12*60);
         const times = SunCalc.getTimes(dayNoon, centerLatLng.lat, centerLatLng.lng);
         const sunrise = times.sunrise;
@@ -1303,17 +1311,16 @@
 
           const d1 = arcPath(cx, cy, R, sunriseBearing, sunsetBearing);
 
-          const sector = svgEl("path", {
+          svg.appendChild(svgEl("path", {
             d: `${d1} L ${cx} ${cy} Z`,
-            fill: "rgba(26,115,232,0.08)",
+            fill: "rgba(255, 196, 50, 0.14)",
             stroke: "none"
-          });
-          svg.appendChild(sector);
+          }));
 
           svg.appendChild(svgEl("path", {
             d: d1,
             fill: "none",
-            stroke: "rgba(26,115,232,0.38)",
+            stroke: "rgba(255, 175, 0, 0.60)",
             "stroke-width": "6",
             "stroke-linecap": "round"
           }));
@@ -1323,14 +1330,14 @@
 
           svg.appendChild(svgEl("line", {
             x1: cx, y1: cy, x2: srPt.x, y2: srPt.y,
-            stroke: "rgba(26,115,232,0.30)",
+            stroke: "rgba(255, 175, 0, 0.52)",
             "stroke-width": "6",
             "stroke-linecap": "round"
           }));
 
           svg.appendChild(svgEl("line", {
             x1: cx, y1: cy, x2: ssPt.x, y2: ssPt.y,
-            stroke: "rgba(26,115,232,0.30)",
+            stroke: "rgba(255, 175, 0, 0.52)",
             "stroke-width": "6",
             "stroke-linecap": "round"
           }));
@@ -1349,7 +1356,7 @@
             svg.appendChild(svgEl("path", {
               d: dAttr,
               fill: "none",
-              stroke: "rgba(26,115,232,0.70)",
+              stroke: "rgba(255, 175, 0, 0.85)",
               "stroke-width": "8",
               "stroke-linecap": "round",
               "stroke-linejoin": "round"
@@ -1364,6 +1371,7 @@
           });
         }
 
+        // Sol actual (15% más grande)
         const curDate = buildDateObj(dateISO, minutes);
         const cur = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, curDate);
 
@@ -1374,16 +1382,19 @@
 
           svg.appendChild(svgEl("line", {
             x1: cx, y1: cy, x2: p.x, y2: p.y,
-            stroke: "rgba(26,115,232,0.38)",
+            stroke: "rgba(255, 175, 0, 0.65)",
             "stroke-width": "8",
             "stroke-linecap": "round"
           }));
 
+          const sunR = Math.round(18 * 1.15);   // antes 18
+          const sunStroke = Math.round(6 * 1.15);
+
           svg.appendChild(svgEl("circle", {
-            cx: p.x, cy: p.y, r: 18,
-            fill: "rgba(26,115,232,0.95)",
-            stroke: "rgba(255,255,255,0.85)",
-            "stroke-width": "6"
+            cx: p.x, cy: p.y, r: sunR,
+            fill: "rgba(255, 196, 50, 0.95)",
+            stroke: "rgba(255, 150, 0, 0.65)",
+            "stroke-width": String(sunStroke)
           }));
         } else {
           svg.appendChild(svgEl("circle", {
@@ -1439,10 +1450,8 @@
         if (meta.isDay) {
           const card = bearingToCardinal(meta.bearingDeg);
           sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
-          sunTimeTextEl.textContent = `${minutesToHHMM(mins)} · día`;
         } else {
           sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · noche`;
-          sunTimeTextEl.textContent = `${minutesToHHMM(mins)} · noche`;
         }
       }
 
