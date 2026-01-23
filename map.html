@@ -525,45 +525,54 @@
         width: 160px;
       }
 
-      .sunPolarWrap{
-        margin-top: 10px;
-        border-radius: 12px;
-        border: 1px solid rgba(0,0,0,0.12);
-        background: rgba(255,255,255,0.88);
-        padding: 8px;
+      /* Overlay del diagrama sobre el mapa (tipo suncalc) */
+      .sunOverlay {
+        position: absolute;
+        left: 14px;
+        bottom: 14px;
+        z-index: 650; /* por encima de tiles/markers, por debajo de la card (9999) */
+        width: 248px;
+        border-radius: 14px;
+        border: 1px solid rgba(0,0,0,0.16);
+        background: rgba(255,255,255,0.92);
+        box-shadow: 0 14px 34px rgba(0,0,0,0.18);
+        padding: 10px 10px 8px;
+        display: none;
+        pointer-events: none; /* no interfiere con el mapa */
+        backdrop-filter: blur(6px);
       }
 
-      .sunPolarTop{
+      .sunOverlayTop{
         display:flex;
         align-items:center;
         justify-content: space-between;
-        font-size: 12.5px;
-        color: rgba(0,0,0,0.82);
-        margin-bottom: 8px;
         gap: 10px;
+        margin-bottom: 8px;
       }
 
-      .sunPolarMeta{
+      .sunOverlayMeta{
         font-size: 12.5px;
         color: rgba(0,0,0,0.82);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         text-align: right;
-        flex: 1 1 auto;
+        width: 100%;
       }
 
       .sunPolarSvg{
         width: 100%;
-        height: 180px;
+        height: 190px;
         display:block;
       }
 
-      .sunNote{
-        margin-top: 8px;
-        font-size: 11.5px;
-        color: rgba(0,0,0,0.62);
-        line-height: 1.25;
+      @media (max-width: 720px) {
+        .sunOverlay{
+          left: 10px;
+          bottom: 10px;
+          width: 232px;
+        }
+        .sunPolarSvg{ height: 178px; }
       }
     </style>
   </head>
@@ -597,6 +606,14 @@
     <div class="page">
       <div class="mapShell">
         <div id="map"></div>
+
+        <!-- Overlay suncalc-like sobre el mapa -->
+        <div id="sunOverlay" class="sunOverlay" aria-hidden="true">
+          <div class="sunOverlayTop">
+            <div id="sunOverlayMeta" class="sunOverlayMeta">—</div>
+          </div>
+          <svg id="sunPolarOverlay" class="sunPolarSvg" aria-label="Diagrama solar"></svg>
+        </div>
       </div>
     </div>
 
@@ -676,6 +693,10 @@
       const cardPriceEl = document.getElementById("cardPrice");
       const cardFactsEl = document.getElementById("cardFacts");
       const cardAgencyEl = document.getElementById("cardAgency");
+
+      const sunOverlayEl = document.getElementById("sunOverlay");
+      const sunOverlayMetaEl = document.getElementById("sunOverlayMeta");
+      const sunPolarOverlaySvg = document.getElementById("sunPolarOverlay");
 
       function setStatus(msg) { statusEl.textContent = msg || ""; }
 
@@ -1016,10 +1037,9 @@
       map.on("click", () => closeCard());
 
       /* =========================
-         CAPA SOL (diagrama polar tipo suncalc)
+         CAPA SOL (diagrama polar superpuesto en el mapa)
          ========================= */
 
-      // Mantengo tu requisito de que no sea seleccionable si estás demasiado alejado.
       const ZOOM_SOL_MIN = 15;
       let sunEnabled = false;
 
@@ -1047,8 +1067,6 @@
       function rad2deg(r){ return r * 180 / Math.PI; }
 
       function sunBearingAndAltDeg(lat, lng, dateObj){
-        // SunCalc azimuth: rad desde SUR, positivo hacia OESTE.
-        // Lo convertimos a bearing desde NORTE (0=N, 90=E, 180=S, 270=O).
         const pos = SunCalc.getPosition(dateObj, lat, lng);
         const azDeg = rad2deg(pos.azimuth);
         const bearingDeg = (180 + azDeg + 360) % 360;
@@ -1077,8 +1095,6 @@
       }
 
       function polarXY(cx, cy, R, bearingDeg, altDeg){
-        // Horizonte = círculo exterior (alt=0 => r=R)
-        // Zenit = centro (alt=90 => r=0)
         const altClamped = Math.max(-10, Math.min(90, altDeg));
         const r = ((90 - altClamped) / 90) * R;
         const t = bearingDeg * Math.PI / 180;
@@ -1089,7 +1105,7 @@
 
       function drawSunPolar(svg, centerLatLng, dateISO, minutes){
         const W = 236;
-        const H = 180;
+        const H = 190;
         const cx = W/2;
         const cy = H/2 + 6;
         const R = Math.min(W, H) * 0.42;
@@ -1100,18 +1116,14 @@
 
         svgClear(svg);
 
-        // Fondo
-        svg.appendChild(svgEl("rect", { x:0, y:0, width:W, height:H, fill:"none" }));
-
-        // Anillos de altura (30 y 60)
         const ringStyle = { fill:"none", stroke:"rgba(0,0,0,0.14)", "stroke-width":"1.5" };
         const r30 = ((90-30)/90)*R;
         const r60 = ((90-60)/90)*R;
-        svg.appendChild(svgEl("circle", { cx, cy, r:R, ...ringStyle, stroke:"rgba(0,0,0,0.22)", "stroke-width":"2" })); // horizonte
+
+        svg.appendChild(svgEl("circle", { cx, cy, r:R, ...ringStyle, stroke:"rgba(0,0,0,0.22)", "stroke-width":"2" }));
         svg.appendChild(svgEl("circle", { cx, cy, r:r30, ...ringStyle }));
         svg.appendChild(svgEl("circle", { cx, cy, r:r60, ...ringStyle }));
 
-        // Líneas cardinales
         const axes = [
           { a:0,  label:"N", lx:cx,     ly:cy-R-8 },
           { a:90, label:"E", lx:cx+R+8, ly:cy+4 },
@@ -1124,52 +1136,45 @@
             x1:cx, y1:cy, x2:p.x, y2:p.y,
             stroke:"rgba(0,0,0,0.16)", "stroke-width":"1.5"
           }));
-          svg.appendChild(svgEl("text", {
+          const t = svgEl("text", {
             x:o.lx, y:o.ly,
             "text-anchor":"middle",
             "font-size":"11.5",
             fill:"rgba(0,0,0,0.70)"
-          })).textContent = o.label;
+          });
+          t.textContent = o.label;
+          svg.appendChild(t);
         });
 
-        // Sunrise / Sunset
         const dayNoon = buildDateObj(dateISO, 12*60);
         const times = SunCalc.getTimes(dayNoon, centerLatLng.lat, centerLatLng.lng);
         const sunrise = times.sunrise;
         const sunset = times.sunset;
 
-        let sunrisePt = null;
-        let sunsetPt = null;
-
         if (sunrise instanceof Date && !isNaN(sunrise.getTime()) && sunset instanceof Date && !isNaN(sunset.getTime())) {
           const sr = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunrise);
           const ss = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunset);
 
-          sunrisePt = polarXY(cx,cy,R,sr.bearingDeg, Math.max(0, sr.altDeg));
-          sunsetPt  = polarXY(cx,cy,R,ss.bearingDeg, Math.max(0, ss.altDeg));
+          const sunrisePt = polarXY(cx,cy,R,sr.bearingDeg, Math.max(0, sr.altDeg));
+          const sunsetPt  = polarXY(cx,cy,R,ss.bearingDeg, Math.max(0, ss.altDeg));
 
-          // Rayos desde el centro
           const rayStyle = { stroke:"rgba(0,0,0,0.28)", "stroke-width":"2" };
           svg.appendChild(svgEl("line", { x1:cx, y1:cy, x2:sunrisePt.x, y2:sunrisePt.y, ...rayStyle }));
           svg.appendChild(svgEl("line", { x1:cx, y1:cy, x2:sunsetPt.x,  y2:sunsetPt.y,  ...rayStyle }));
 
-          // Marcadores
           const mark = (pt) => svg.appendChild(svgEl("circle", { cx:pt.x, cy:pt.y, r:"4.2", fill:"rgba(0,0,0,0.38)" }));
           mark(sunrisePt);
           mark(sunsetPt);
 
-          // Trayectoria del día (muestreo)
           const pts = [];
           const stepMin = 8;
           const start = sunrise.getTime();
           const end = sunset.getTime();
-          for (let t = start; t <= end; t += stepMin*60*1000) {
-            const d = new Date(t);
+          for (let tt = start; tt <= end; tt += stepMin*60*1000) {
+            const d = new Date(tt);
             const pa = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, d);
-            const pt = polarXY(cx,cy,R,pa.bearingDeg, pa.altDeg);
-            if (pa.altDeg >= 0) pts.push(pt);
+            if (pa.altDeg >= 0) pts.push(polarXY(cx,cy,R,pa.bearingDeg, pa.altDeg));
           }
-
           if (pts.length >= 2) {
             const dAttr = pts.map((p,i)=> `${i===0?"M":"L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ");
             svg.appendChild(svgEl("path", {
@@ -1183,27 +1188,18 @@
           }
         }
 
-        // Sol en la hora seleccionada
         const curDate = buildDateObj(dateISO, minutes);
         const cur = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, curDate);
-
-        const meta = {
-          isDay: cur.altDeg > 0,
-          bearingDeg: cur.bearingDeg,
-          altDeg: cur.altDeg
-        };
 
         if (cur.altDeg > 0) {
           const p = polarXY(cx,cy,R,cur.bearingDeg, cur.altDeg);
 
-          // Línea hacia el sol (azimut actual)
           svg.appendChild(svgEl("line", {
             x1:cx, y1:cy, x2:p.x, y2:p.y,
             stroke:"rgba(0,0,0,0.20)",
             "stroke-width":"2"
           }));
 
-          // Punto sol
           svg.appendChild(svgEl("circle", {
             cx:p.x, cy:p.y, r:"6.2",
             fill:"rgba(255,196,50,0.98)",
@@ -1211,14 +1207,32 @@
             "stroke-width":"1.5"
           }));
         } else {
-          // Noche: pequeño indicador
           svg.appendChild(svgEl("circle", {
             cx:cx, cy:cy, r:"6.2",
             fill:"rgba(0,0,0,0.18)"
           }));
         }
 
-        return meta;
+        return { isDay: cur.altDeg > 0, bearingDeg: cur.bearingDeg, altDeg: cur.altDeg };
+      }
+
+      function updateSunOverlay(){
+        const ok = sunEnabled && map.getZoom() >= ZOOM_SOL_MIN;
+        sunOverlayEl.style.display = ok ? "block" : "none";
+        if (!ok) return;
+
+        const c = map.getCenter();
+        const iso = sunState.dateISO || todayISO();
+        const mins = (sunState.minutes != null) ? sunState.minutes : nowMinutes();
+
+        const meta = drawSunPolar(sunPolarOverlaySvg, c, iso, mins);
+
+        if (meta.isDay) {
+          const card = bearingToCardinal(meta.bearingDeg);
+          sunOverlayMetaEl.textContent = `${minutesToHHMM(mins)} · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
+        } else {
+          sunOverlayMetaEl.textContent = `${minutesToHHMM(mins)} · noche`;
+        }
       }
 
       const SunControl = L.Control.extend({
@@ -1258,26 +1272,12 @@
               <span></span>
               <button type="button" id="sunNow">Ahora</button>
             </div>
-
-            <div class="sunPolarWrap">
-              <div class="sunPolarTop">
-                <span>Diagrama</span>
-                <span id="sunMeta" class="sunPolarMeta">—</span>
-              </div>
-              <svg id="sunPolar" class="sunPolarSvg" aria-label="Diagrama solar"></svg>
-            </div>
-
-            <div class="sunNote">
-              Trayectoria diaria, amanecer/atardecer y posición del sol para la hora seleccionada.
-            </div>
           `;
 
           const dateEl = panel.querySelector("#sunDate");
           const rangeEl = panel.querySelector("#sunTime");
           const hhmmEl = panel.querySelector("#sunHHMM");
           const nowBtn = panel.querySelector("#sunNow");
-          const polarSvg = panel.querySelector("#sunPolar");
-          const metaEl = panel.querySelector("#sunMeta");
 
           sunState.dateISO = todayISO();
           sunState.minutes = nowMinutes();
@@ -1290,22 +1290,7 @@
             btn.classList.toggle("disabled", !ok);
             btn.title = ok ? "Sol" : `Acércate para activar (zoom ${ZOOM_SOL_MIN}+)`;
             if (!ok && sunEnabled) toggleSun(false);
-            if (sunEnabled) updateSunPolar();
-          }
-
-          function updateSunPolar(){
-            if (!sunEnabled) return;
-            if (map.getZoom() < ZOOM_SOL_MIN) return;
-
-            const c = map.getCenter();
-            const meta = drawSunPolar(polarSvg, c, sunState.dateISO, sunState.minutes);
-
-            if (meta.isDay) {
-              const card = bearingToCardinal(meta.bearingDeg);
-              metaEl.textContent = `${minutesToHHMM(sunState.minutes)} · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
-            } else {
-              metaEl.textContent = `${minutesToHHMM(sunState.minutes)} · noche`;
-            }
+            updateSunOverlay();
           }
 
           function toggleSun(force) {
@@ -1318,20 +1303,20 @@
             btn.classList.toggle("active", sunEnabled);
             panel.style.display = sunEnabled ? "block" : "none";
 
-            if (sunEnabled) updateSunPolar();
+            updateSunOverlay();
           }
 
           btn.addEventListener("click", () => toggleSun());
 
           dateEl.addEventListener("change", () => {
             sunState.dateISO = dateEl.value || todayISO();
-            if (sunEnabled) updateSunPolar();
+            if (sunEnabled) updateSunOverlay();
           });
 
           rangeEl.addEventListener("input", () => {
             sunState.minutes = parseInt(rangeEl.value, 10);
             hhmmEl.textContent = minutesToHHMM(sunState.minutes);
-            if (sunEnabled) updateSunPolar();
+            if (sunEnabled) updateSunOverlay();
           });
 
           nowBtn.addEventListener("click", () => {
@@ -1340,12 +1325,10 @@
             dateEl.value = sunState.dateISO;
             rangeEl.value = String(sunState.minutes);
             hhmmEl.textContent = minutesToHHMM(sunState.minutes);
-            if (sunEnabled) updateSunPolar();
+            if (sunEnabled) updateSunOverlay();
           });
 
           map.on("zoomend", setBtnEnabled);
-          map.on("moveend", () => { if (sunEnabled) updateSunPolar(); });
-
           setBtnEnabled();
 
           return container;
@@ -1353,6 +1336,10 @@
       });
 
       map.addControl(new SunControl());
+
+      map.on("moveend", () => { if (sunEnabled) updateSunOverlay(); });
+      map.on("zoomend", () => { if (sunEnabled) updateSunOverlay(); });
+      window.addEventListener("resize", () => { if (sunEnabled) updateSunOverlay(); });
 
       /* =========================
          FIN CAPA SOL
