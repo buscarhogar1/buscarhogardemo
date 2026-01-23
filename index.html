@@ -160,6 +160,7 @@
         justify-items:center;
       }
 
+      /* Titular estilo “iPhone” (SF) */
       .headline{
         font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, Segoe UI, Roboto, sans-serif;
         font-weight: 800;
@@ -171,6 +172,7 @@
         margin: 0 0 14px 0;
       }
 
+      /* Opciones arriba del buscador: centradas sobre la barra */
       .modeRow{
         width: min(720px, 100%);
         display:flex;
@@ -227,6 +229,7 @@
         background: var(--btn);
       }
 
+      /* Buscador */
       .searchBox{
         width: min(720px, 100%);
         border: 1px solid var(--border);
@@ -269,6 +272,7 @@
 
       .btn:active{ transform: translateY(1px); }
 
+      /* Frase debajo del buscador */
       .subTag{
         width: min(720px, 100%);
         font-size: 14px;
@@ -443,16 +447,10 @@
       .bh-proline{ height:1px; background:#eee; margin-bottom:14px; }
       .bh-protext a{ text-decoration:underline; }
 
-      /* Botón estilo Apple (negro) */
       .bh-apple{
         background:#000;
         color:#fff;
         border-color:#000;
-      }
-
-      /* Iconos simples (no oficiales, solo placeholder visual) */
-      .bh-ico{
-        width:18px; height:18px; display:inline-block;
       }
 
       @media (max-width: 520px){
@@ -548,27 +546,18 @@
       <div class="bh-modal" role="dialog" aria-modal="true" aria-labelledby="bhAuthTitle">
         <button class="bh-close" id="closeAuth" aria-label="Cerrar">×</button>
 
-        <!-- STEP 1: entrada -->
         <section id="stepEmail">
           <div class="bh-brand">Buscar Hogar</div>
           <h2 id="bhAuthTitle" class="bh-title">Inicia sesión o regístrate</h2>
           <p class="bh-subtitle">Acceso solo para usuarios.</p>
 
           <div class="bh-actions">
-            <button type="button" class="bh-btn" id="googleBtn" aria-label="Continuar con Google">
-              <span class="bh-ico" aria-hidden="true">G</span>
-              <span>Continuar con Google</span>
-            </button>
-
-            <button type="button" class="bh-btn bh-apple" id="appleBtn" aria-label="Continuar con Apple">
-              <span class="bh-ico" aria-hidden="true"></span>
-              <span>Continuar con Apple</span>
-            </button>
+            <button type="button" class="bh-btn" id="googleBtn">Continuar con Google</button>
+            <button type="button" class="bh-btn bh-apple" id="appleBtn">Continuar con Apple</button>
 
             <div class="bh-divider"><span>o</span></div>
 
             <input id="emailInput" class="bh-input" type="email" autocomplete="email" placeholder="Email" />
-
             <button type="button" class="bh-btn bh-primary" id="emailContinueBtn">Continuar con email</button>
 
             <div id="authMsg1" class="bh-msg bh-hidden" role="status" aria-live="polite"></div>
@@ -583,7 +572,6 @@
           </div>
         </section>
 
-        <!-- STEP 2: contraseña -->
         <section id="stepPassword" class="bh-hidden" aria-labelledby="bhPwTitle">
           <div class="bh-brand">Buscar Hogar</div>
           <h2 id="bhPwTitle" class="bh-title">Introduce tu contraseña</h2>
@@ -617,7 +605,6 @@
           </div>
         </section>
 
-        <!-- STEP 3: registro -->
         <section id="stepRegister" class="bh-hidden" aria-labelledby="bhRegTitle">
           <div class="bh-brand">Buscar Hogar</div>
           <h2 id="bhRegTitle" class="bh-title">Crea tu cuenta</h2>
@@ -666,15 +653,12 @@
     <script type="module">
       import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-      // 1) RELLENA ESTO CON TUS DATOS DE SUPABASE
       const SUPABASE_URL = "https://TU-PROYECTO.supabase.co";
       const SUPABASE_ANON_KEY = "TU_ANON_PUBLIC_KEY";
       const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      // 2) URL pública para volver tras OAuth
       const OAUTH_REDIRECT_TO = "https://buscarhogar1.github.io/buscarhogardemo/auth/callback.html";
 
-      // ===== buscador =====
       const form = document.getElementById("form");
       const q = document.getElementById("q");
 
@@ -794,12 +778,9 @@
       });
 
       // ===== Email flow =====
-      // Nota: para imitar pisos al 100% (decidir si existe antes de contraseña),
-      // necesitas una Edge Function. Aquí hacemos: email -> contraseña, y si falla, registro.
       document.getElementById("emailContinueBtn").addEventListener("click", async () => {
         const email = (emailInput.value || "").trim();
         if(!email) return;
-
         currentEmail = email;
         pwEmailLabel.textContent = email;
         passwordInput.value = "";
@@ -808,5 +789,123 @@
       });
 
       document.getElementById("loginBtn").addEventListener("click", async () => {
-        const pw
+        const pw = passwordInput.value || "";
+        if(!currentEmail || !pw) return;
+
+        setMsg(msg2, "Iniciando sesión…");
+        localStorage.setItem("bh_return_url", window.location.href);
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: currentEmail,
+          password: pw
+        });
+
+        if(error || !data?.session){
+          setMsg(msg2, "No se ha podido iniciar sesión. Si no tienes cuenta, regístrate.");
+          return;
+        }
+
+        setMsg(msg2, "Sesión iniciada.");
+        setTimeout(closeAuthModal, 400);
+      });
+
+      document.getElementById("registerBtn").addEventListener("click", async () => {
+        const name = (nameInput.value || "").trim();
+        const pw = regPasswordInput.value || "";
+        const marketingOptIn = document.getElementById("marketingOptIn").checked;
+
+        if(!currentEmail || !name || pw.length < 8) return;
+
+        setMsg(msg3, "Creando cuenta…");
+        localStorage.setItem("bh_return_url", window.location.href);
+
+        const { data, error } = await supabase.auth.signUp({
+          email: currentEmail,
+          password: pw,
+          options: {
+            data: { name, marketingOptIn },
+            emailRedirectTo: OAUTH_REDIRECT_TO
+          }
+        });
+
+        if(error){
+          setMsg(msg3, "No se ha podido crear la cuenta. Revisa los datos e inténtalo.");
+          return;
+        }
+
+        if(data?.session){
+          setMsg(msg3, "Cuenta creada. Sesión iniciada.");
+          setTimeout(closeAuthModal, 600);
+        } else {
+          setMsg(msg3, "Cuenta creada. Revisa tu email para confirmar y poder entrar.");
+        }
+      });
+
+      document.getElementById("goRegisterLink").addEventListener("click", (e) => {
+        e.preventDefault();
+        regEmailLabel.textContent = currentEmail;
+        nameInput.value = "";
+        regPasswordInput.value = "";
+        showStep("register");
+        setTimeout(() => nameInput.focus(), 0);
+      });
+
+      document.getElementById("backToEmail1").addEventListener("click", () => {
+        showStep("email");
+        setTimeout(() => emailInput.focus(), 0);
+      });
+
+      document.getElementById("backToEmail2").addEventListener("click", () => {
+        showStep("email");
+        setTimeout(() => emailInput.focus(), 0);
+      });
+
+      document.getElementById("backToPassword").addEventListener("click", () => {
+        pwEmailLabel.textContent = currentEmail;
+        showStep("password");
+        setTimeout(() => passwordInput.focus(), 0);
+      });
+
+      document.getElementById("forgotPw").addEventListener("click", async (e) => {
+        e.preventDefault();
+        if(!currentEmail){
+          setMsg(msg2, "Introduce tu email primero.");
+          return;
+        }
+
+        setMsg(msg2, "Enviando email de recuperación…");
+
+        const { error } = await supabase.auth.resetPasswordForEmail(currentEmail, {
+          redirectTo: OAUTH_REDIRECT_TO
+        });
+
+        if(error){
+          setMsg(msg2, "No se ha podido enviar el email de recuperación.");
+          return;
+        }
+
+        setMsg(msg2, "Te hemos enviado un email para cambiar tu contraseña.");
+      });
+
+      document.getElementById("togglePw").addEventListener("click", () => {
+        passwordInput.type = (passwordInput.type === "password") ? "text" : "password";
+      });
+      document.getElementById("toggleRegPw").addEventListener("click", () => {
+        regPasswordInput.type = (regPasswordInput.type === "password") ? "text" : "password";
+      });
+
+      document.getElementById("navFavoritos").addEventListener("click", async (e) => {
+        e.preventDefault();
+        const { data } = await supabase.auth.getSession();
+        if(!data?.session){
+          openAuth();
+          return;
+        }
+        alert("MVP: Favoritos (usuario logueado).");
+      });
+
+      q.focus();
+    </script>
+  </body>
+</html>
 
