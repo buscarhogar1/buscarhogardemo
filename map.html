@@ -1217,7 +1217,7 @@
       }
 
       function polarXY(cx, cy, R, bearingDeg, altDeg){
-        const altClamped = Math.max(-10, Math.min(90, altDeg));
+        const altClamped = Math.max(-24, Math.min(90, altDeg)); // permite noche "real" (fuera del círculo)
         const r = ((90 - altClamped) / 90) * R;
         const t = bearingDeg * Math.PI / 180;
         const x = cx + r * Math.sin(t);
@@ -1238,7 +1238,7 @@
       }
 
       function drawSunPolar(svg, centerLatLng, dateISO, minutes){
-        const V = 1000;
+        const V = 1120;
         const cx = V/2;
         const cy = V/2;
         const R = 450;
@@ -1254,23 +1254,28 @@
           "stroke-width": "3"
         }));
 
+        // Puntos cardinales un poco fuera del círculo
         const axes = [
-          { a:0,   label:"N", dx:0,          dy:-(R-28), anchor:"middle" },
-          { a:90,  label:"E", dx:(R-18),     dy:10,      anchor:"start"  },
-          { a:180, label:"S", dx:0,          dy:(R-10),  anchor:"middle" },
-          { a:270, label:"O", dx:-(R-18),    dy:10,      anchor:"end"    },
+          { a:0,   label:"N", x: cx,         y: cy - R - 22, anchor:"middle" },
+          { a:90,  label:"E", x: cx + R + 22, y: cy + 12,    anchor:"start"  },
+          { a:180, label:"S", x: cx,         y: cy + R + 42, anchor:"middle" },
+          { a:270, label:"O", x: cx - R - 22, y: cy + 12,    anchor:"end"    },
         ];
 
-        axes.forEach(o=>{
-          const p = polarXY(cx, cy, R, o.a, 0);
+        // Ejes finos
+        [0,90,180,270].forEach(a=>{
+          const p = polarXY(cx, cy, R, a, 0);
           svg.appendChild(svgEl("line", {
             x1: cx, y1: cy, x2: p.x, y2: p.y,
             stroke: "rgba(0,0,0,0.20)",
             "stroke-width": "2"
           }));
+        });
+
+        axes.forEach(o=>{
           const t = svgEl("text", {
-            x: cx + o.dx,
-            y: cy + o.dy,
+            x: o.x,
+            y: o.y,
             "text-anchor": o.anchor,
             "font-size": "34",
             fill: "rgba(0,0,0,0.45)"
@@ -1284,16 +1289,14 @@
         const sunrise = times.sunrise;
         const sunset = times.sunset;
 
-        let sunriseBearing = null;
-        let sunsetBearing = null;
         let haveSunTimes = false;
 
         if (sunrise instanceof Date && !isNaN(sunrise.getTime()) && sunset instanceof Date && !isNaN(sunset.getTime())) {
           const sr = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunrise);
           const ss = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunset);
 
-          sunriseBearing = sr.bearingDeg;
-          sunsetBearing = ss.bearingDeg;
+          const sunriseBearing = sr.bearingDeg;
+          const sunsetBearing = ss.bearingDeg;
           haveSunTimes = true;
 
           const d1 = arcPath(cx, cy, R, sunriseBearing, sunsetBearing);
@@ -1347,6 +1350,10 @@
         const sunR = Math.round(18 * 1.15);
         const sunStroke = Math.round(6 * 1.15);
 
+        // Colores solicitados
+        const sunRingYellow = "rgba(255, 196, 50, 0.98)";
+        const sunLineYellow = "rgba(255, 196, 50, 0.86)";
+
         if (meta.isDay) {
           if (haveSunTimes) {
             const pts = [];
@@ -1373,9 +1380,10 @@
 
           const p = polarXY(cx, cy, R, cur.bearingDeg, cur.altDeg);
 
+          // Línea centro-sol en amarillo
           svg.appendChild(svgEl("line", {
             x1: cx, y1: cy, x2: p.x, y2: p.y,
-            stroke: "rgba(255, 140, 0, 0.68)",
+            stroke: sunLineYellow,
             "stroke-width": "8",
             "stroke-linecap": "round"
           }));
@@ -1383,16 +1391,17 @@
           svg.appendChild(svgEl("circle", {
             cx: p.x, cy: p.y, r: sunR,
             fill: "rgba(255, 120, 60, 0.95)",
-            stroke: "rgba(220, 90, 40, 0.85)",
+            stroke: sunRingYellow,
             "stroke-width": String(sunStroke)
           }));
         } else {
-          const nightPos = polarXY(cx, cy, R, cur.bearingDeg, 0);
+          // Noche: posición REAL (usa altitud negativa, puede quedar ligeramente fuera del círculo)
+          const p = polarXY(cx, cy, R, cur.bearingDeg, cur.altDeg);
 
           svg.appendChild(svgEl("circle", {
-            cx: nightPos.x, cy: nightPos.y, r: sunR,
+            cx: p.x, cy: p.y, r: sunR,
             fill: "rgba(165,165,165,0.86)",
-            stroke: "rgba(120,120,120,0.92)",
+            stroke: sunRingYellow,
             "stroke-width": String(sunStroke)
           }));
         }
@@ -1446,7 +1455,7 @@
           sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
         } else {
           const card = bearingToCardinal(meta.bearingDeg);
-          sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · noche · ${card} · ${Math.round(meta.bearingDeg)}°`;
+          sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · noche · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
         }
       }
 
