@@ -30,6 +30,8 @@
 
         /* Cuánto se “sale” el bloque de fotos respecto al texto (ajustable) */
         --bleed: 56px;
+
+        --shadow: 0 1px 0 rgba(0,0,0,0.03);
       }
 
       html,body{
@@ -39,11 +41,10 @@
         background:var(--bg);
       }
 
-      /* Contenedor general (fondo blanco, sin tarjeta) */
       .wrap{
         max-width: var(--contentMax);
         margin:0 auto;
-        padding:14px 16px 44px;
+        padding:14px 16px 64px;
       }
 
       .topRow{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
@@ -81,16 +82,19 @@
         font-size:12.5px;
         margin:6px 0 12px;
       }
-      .crumbLink{color:var(--link); cursor:default;}
+      .crumbLink{
+        color:var(--link);
+        text-decoration:none;
+        cursor:pointer;
+      }
+      .crumbLink:hover{text-decoration:underline;}
       .crumbCurrent{color:var(--muted);}
       .sep{color:#c4c7cf;}
 
       /* ===== Media block (más ancho que el texto) ===== */
       .mediaOuter{
-        /* “bleed” hacia los lados */
         margin-left: calc(-1 * var(--bleed));
         margin-right: calc(-1 * var(--bleed));
-        /* separaciones verticales */
         margin-top: 8px;
         margin-bottom: 10px;
       }
@@ -98,7 +102,7 @@
       .mediaBlock{
         position:relative;
         overflow:hidden;
-        border:0;              /* sin borde exterior */
+        border:0;
         background:#fff;
       }
 
@@ -113,25 +117,23 @@
         display:grid;
         grid-template-columns: 66% 34%;
         gap: var(--gap);
-        padding: 0;            /* funda: sin “marco” */
+        padding: 0;
         height:100%;
         background:#fff;
       }
 
-      /* Fotos: bordes rectos + sin borde visible */
       .mediaBig, .mediaSmall{
-        border-radius: 0;      /* bordes rectos */
+        border-radius: 0;
         background:linear-gradient(135deg,#f0f1f3,#ffffff);
-        border:0;              /* sin borde */
+        border:0;
         display:grid;
         place-items:center;
         color:#9aa1aa;
         user-select:none;
         overflow:hidden;
+        position:relative;
       }
-
       .mediaBig{height:100%;}
-
       .mediaSmallGrid{
         display:grid;
         grid-template-columns: 1fr 1fr;
@@ -141,7 +143,6 @@
       }
       .mediaSmall{height:100%;}
 
-      /* Overlay actions (más discreto) */
       .mediaActions{
         position:absolute;
         right:12px;
@@ -162,12 +163,13 @@
         cursor:pointer;
         font-size:14px;
         gap:8px;
+        box-shadow: var(--shadow);
       }
       .actionBtn:active{transform:translateY(1px);}
       .actionIcon{width:36px; padding:0;}
       .icon{width:18px; height:18px; display:inline-block;}
 
-      /* Media tabs (vuelven al ancho normal del texto) */
+      /* Media tabs */
       .mediaTabs{
         display:flex;
         justify-content:space-between;
@@ -214,6 +216,12 @@
         font-weight:800;
         letter-spacing:-0.2px;
       }
+      .subTitle{
+        color: var(--muted);
+        margin: 0 0 10px;
+        font-size: 15px;
+      }
+
       .metaLine{
         display:flex;
         gap:10px;
@@ -237,12 +245,13 @@
         margin:0;
       }
       .priceNoteBtn{
-        color:var(--muted);
+        color:var(--link);
         font-size:14px;
         border:0;
         background:transparent;
         padding:0;
         cursor:pointer;
+        text-decoration:none;
       }
       .priceNoteBtn:hover{text-decoration:underline;}
 
@@ -264,6 +273,98 @@
         background:transparent;
       }
       .factMuted{color:var(--muted);}
+
+      /* Subnav (tipo Funda) */
+      .subnav{
+        display:flex;
+        gap:14px;
+        flex-wrap:wrap;
+        align-items:center;
+        margin-top:16px;
+        padding-top:14px;
+        border-top:1px solid var(--border);
+      }
+      .subnav a{
+        color:#111;
+        text-decoration:none;
+        font-size:14px;
+        padding:6px 8px;
+        border-radius:10px;
+      }
+      .subnav a:hover{background:#f6f7f9;}
+      .subnav .pill{
+        color:var(--muted);
+        font-size:13px;
+      }
+
+      /* Sections */
+      .section{
+        padding-top:22px;
+        margin-top:22px;
+        border-top:1px solid var(--border);
+      }
+      .h2{
+        font-size:20px;
+        margin:0 0 10px;
+        letter-spacing:-0.1px;
+      }
+      .p{
+        color:#111;
+        font-size:15px;
+        line-height:1.6;
+        margin:0;
+      }
+      .mutedP{color:var(--muted);}
+      .readMoreBtn{
+        margin-top:10px;
+        border:1px solid var(--border);
+        background:#fff;
+        padding:8px 10px;
+        border-radius:12px;
+        cursor:pointer;
+        font-size:14px;
+      }
+
+      .descClamp{
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+      }
+      .clamp5{ -webkit-line-clamp:5; }
+      .clamp999{ -webkit-line-clamp:999; }
+
+      /* Kenmerken estilo Funda: dos columnas de “bloques” */
+      .featuresGrid{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:18px;
+        margin-top:12px;
+      }
+      .featBlock{
+        border:1px solid var(--border);
+        border-radius:14px;
+        background:#fff;
+        overflow:hidden;
+      }
+      .featHead{
+        padding:12px 14px;
+        border-bottom:1px solid var(--border);
+        color:#111;
+        font-size:15px;
+      }
+      .featList{
+        padding:12px 14px;
+        display:grid;
+        gap:10px;
+      }
+      .featLine{
+        display:grid;
+        grid-template-columns: 150px 1fr;
+        gap:12px;
+        align-items:start;
+      }
+      .featK{ color: var(--muted); font-size:13px; }
+      .featV{ font-size:14px; color:#111; }
 
       /* Right cards */
       .sideSticky{position:sticky; top:14px; display:grid; gap:12px;}
@@ -301,6 +402,49 @@
       .mapHeaderSmall{font-size:13px; color:var(--muted);}
       .leaflet-control-zoom a{width:32px; height:32px; line-height:32px;}
 
+      /* Main map */
+      #mainMap{
+        height: 340px;
+        width: 100%;
+        border-radius:14px;
+        border:1px solid var(--border);
+        overflow:hidden;
+        background:linear-gradient(135deg,#f0f1f3,#ffffff);
+      }
+      .mapNote{
+        margin-top:10px;
+        color:var(--muted);
+        font-size:13px;
+      }
+
+      /* Contact card */
+      .contactBtns{
+        display:grid;
+        gap:10px;
+      }
+      .cta{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        width:100%;
+        height:42px;
+        border-radius:12px;
+        cursor:pointer;
+        border:1px solid var(--border);
+        background:#fff;
+        font-size:14px;
+      }
+      .ctaPrimary{
+        background:#111;
+        color:#fff;
+        border-color:#111;
+      }
+      .cta[disabled]{
+        opacity:0.55;
+        cursor:not-allowed;
+      }
+
       /* Responsive */
       @media (max-width: 1200px){
         :root{ --bleed: 24px; }
@@ -317,9 +461,13 @@
         .mediaSmall{min-height:150px;}
         .contentGrid{grid-template-columns:1fr;}
         .sideSticky{position:static;}
+        .featuresGrid{grid-template-columns:1fr;}
+        .featLine{grid-template-columns: 140px 1fr;}
       }
       @media (max-width: 560px){
         .mediaSmallGrid{grid-template-columns:1fr;}
+        .featLine{grid-template-columns: 1fr; gap:4px;}
+        .featK{font-size:12.5px;}
       }
     </style>
   </head>
@@ -334,9 +482,9 @@
       <div id="banner" class="banner"></div>
 
       <div class="crumbs">
-        <span class="crumbLink" id="crumbCity">Ciudad</span>
+        <a class="crumbLink" id="crumbCity" href="./">Ciudad</a>
         <span class="sep">/</span>
-        <span class="crumbLink" id="crumbNeighborhood">Barrio</span>
+        <a class="crumbLink" id="crumbNeighborhood" href="./">Barrio</a>
         <span class="sep">/</span>
         <span class="crumbCurrent" id="crumbAddress">Dirección</span>
       </div>
@@ -363,12 +511,14 @@
 
           <div class="mediaSizer">
             <div class="mediaGrid">
-              <div class="mediaBig">Foto principal (pendiente)</div>
+              <div class="mediaBig" id="mediaBig">
+                Foto principal (pendiente)
+              </div>
               <div class="mediaSmallGrid">
-                <div class="mediaSmall">Foto</div>
-                <div class="mediaSmall">Vídeo</div>
-                <div class="mediaSmall">Foto</div>
-                <div class="mediaSmall">Foto</div>
+                <div class="mediaSmall" id="mediaS1">Foto</div>
+                <div class="mediaSmall" id="mediaS2">Vídeo</div>
+                <div class="mediaSmall" id="mediaS3">Foto</div>
+                <div class="mediaSmall" id="mediaS4">Foto</div>
               </div>
             </div>
           </div>
@@ -382,7 +532,7 @@
               <path d="M21 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l2-2h4l2 2h3a2 2 0 0 1 2 2z"/>
               <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
             </svg>
-            Foto’s <span class="tabCount" id="photosCount">0</span>
+            Fotos <span class="tabCount" id="photosCount">0</span>
           </button>
 
           <button class="tabBtn" type="button" id="tabFloor">
@@ -408,26 +558,19 @@
               <path d="M14.5 8.5l6-3v13l-6-3"/>
               <path d="M3 6h11v12H3z"/>
             </svg>
-            Video
+            Vídeo
           </button>
         </div>
 
         <div class="tabsRight">
-          <button class="tabBtn" type="button" id="tabAllMedia">Alle media</button>
+          <button class="tabBtn" type="button" id="tabAllMedia">Todo el contenido</button>
         </div>
       </div>
 
       <div class="contentGrid">
         <div>
           <h1 class="title" id="title">Dirección</h1>
-
-          <div class="metaLine">
-            <span id="metaPostal">—</span>
-            <span class="metaDot">•</span>
-            <span id="metaCity">—</span>
-            <span class="metaDot">•</span>
-            <span id="metaNeighborhood">—</span>
-          </div>
+          <p class="subTitle" id="subTitle">—</p>
 
           <div class="priceRow">
             <p class="price" id="price">—</p>
@@ -435,13 +578,40 @@
           </div>
 
           <div class="factsRow" id="factsRow"></div>
+
+          <div class="subnav">
+            <a href="#descripcion" id="navDesc">Descripción</a>
+            <a href="#caracteristicas" id="navFeat">Características</a>
+            <a href="#ubicacion" id="navLoc">Ubicación</a>
+            <span class="pill" id="navHint">—</span>
+          </div>
+
+          <!-- Descripción -->
+          <div class="section" id="descripcion">
+            <h2 class="h2">Descripción</h2>
+            <div id="descWrap" class="p descClamp clamp5"></div>
+            <button id="descToggle" class="readMoreBtn" type="button" style="display:none;">Leer más</button>
+          </div>
+
+          <!-- Características -->
+          <div class="section" id="caracteristicas">
+            <h2 class="h2">Características</h2>
+            <div class="featuresGrid" id="featuresGrid"></div>
+          </div>
+
+          <!-- Ubicación -->
+          <div class="section" id="ubicacion">
+            <h2 class="h2">Ubicación</h2>
+            <div id="mainMap"></div>
+            <div class="mapNote" id="mainMapNote">—</div>
+          </div>
         </div>
 
         <div>
           <div class="sideSticky">
             <div class="sideCard">
               <div class="mapHeader">
-                <div class="mapHeaderTitle">Kaart</div>
+                <div class="mapHeaderTitle">Mapa</div>
                 <div class="mapHeaderSmall" id="mapHint">—</div>
               </div>
               <div id="miniMap"></div>
@@ -449,10 +619,15 @@
 
             <div class="sideCard">
               <div class="sideCardInner">
-                <p class="sideTitle">Agencia</p>
+                <p class="sideTitle">Contacto</p>
+                <div class="contactBtns">
+                  <button class="cta ctaPrimary" id="callBtn" type="button" disabled>Llamar</button>
+                  <button class="cta" id="emailBtn" type="button" disabled>Enviar mensaje</button>
+                </div>
+                <div style="height:10px;"></div>
                 <div class="kv">
                   <div class="kvLine">
-                    <div class="k">Nombre</div>
+                    <div class="k">Agencia</div>
                     <div class="v" id="agency">—</div>
                   </div>
                   <div class="kvLine">
@@ -467,6 +642,10 @@
                     <div class="k">ID</div>
                     <div class="v mono" id="id">—</div>
                   </div>
+                </div>
+                <div style="height:10px;"></div>
+                <div class="p mutedP" style="font-size:13px;">
+                  MVP: botones de contacto se activarán cuando tengamos teléfono/email en la base de datos.
                 </div>
               </div>
             </div>
@@ -491,15 +670,12 @@
       const bannerEl = document.getElementById("banner");
 
       const titleEl = document.getElementById("title");
+      const subTitleEl = document.getElementById("subTitle");
       const priceEl = document.getElementById("price");
       const agencyEl = document.getElementById("agency");
       const listedAtEl = document.getElementById("listedAt");
       const idEl = document.getElementById("id");
       const ptypeEl = document.getElementById("ptype");
-
-      const metaPostalEl = document.getElementById("metaPostal");
-      const metaCityEl = document.getElementById("metaCity");
-      const metaNeighborhoodEl = document.getElementById("metaNeighborhood");
 
       const crumbsCityEl = document.getElementById("crumbCity");
       const crumbsNeighborhoodEl = document.getElementById("crumbNeighborhood");
@@ -523,9 +699,20 @@
       const panoCountEl = document.getElementById("panoCount");
 
       const mapHintEl = document.getElementById("mapHint");
+      const navHintEl = document.getElementById("navHint");
+
+      const descWrapEl = document.getElementById("descWrap");
+      const descToggleEl = document.getElementById("descToggle");
+
+      const featuresGridEl = document.getElementById("featuresGrid");
+
+      const mainMapNoteEl = document.getElementById("mainMapNote");
 
       let miniMap = null;
       let miniMarker = null;
+
+      let mainMap = null;
+      let mainMarker = null;
 
       function showBanner(msg) {
         bannerEl.style.display = "block";
@@ -617,7 +804,7 @@
         mapHintEl.textContent = "Ver ubicación";
 
         if (!miniMap) {
-          miniMap = L.map("miniMap", { zoomControl: true, attributionControl: false, scrollWheelZoom: false }).setView([lat, lng], 15);
+          miniMap = L.map("miniMap", { zoomControl: true, attributionControl: false, scrollWheelZoom: false, dragging: false, doubleClickZoom: false, boxZoom: false, keyboard: false }).setView([lat, lng], 15);
           L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(miniMap);
         } else {
           miniMap.setView([lat, lng], 15);
@@ -627,20 +814,126 @@
         else miniMarker = L.marker([lat, lng]).addTo(miniMap);
       }
 
-      shareBtn.addEventListener("click", async () => {
-        const ok = await copyToClipboard(window.location.href);
-        if (!ok) window.prompt("Copia el enlace:", window.location.href);
-      });
+      function ensureMainMap(lat, lng) {
+        const hasCoords = (typeof lat === "number" && typeof lng === "number" && isFinite(lat) && isFinite(lng));
+        if (!hasCoords) {
+          mainMapNoteEl.textContent = "No hay coordenadas disponibles para mostrar la ubicación.";
+          if (mainMap) { mainMap.remove(); mainMap = null; mainMarker = null; }
+          return;
+        }
 
-      let saved = false;
-      saveBtn.addEventListener("click", () => {
-        saved = !saved;
-        saveTextEl.textContent = saved ? "Guardado" : "Guardar";
-      });
+        mainMapNoteEl.textContent = "Ubicación aproximada. La dirección exacta puede variar por privacidad.";
 
-      monthlyBtn.addEventListener("click", () => {
-        alert("MVP: aquí luego conectaremos calculadora / info financiera.");
-      });
+        if (!mainMap) {
+          mainMap = L.map("mainMap", { zoomControl: true, attributionControl: false, scrollWheelZoom: false }).setView([lat, lng], 14);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(mainMap);
+        } else {
+          mainMap.setView([lat, lng], 14);
+        }
+
+        if (mainMarker) mainMarker.setLatLng([lat, lng]);
+        else mainMarker = L.marker([lat, lng]).addTo(mainMap);
+      }
+
+      function makeFeatBlock(title, lines) {
+        const block = document.createElement("div");
+        block.className = "featBlock";
+
+        const head = document.createElement("div");
+        head.className = "featHead";
+        head.textContent = title;
+
+        const list = document.createElement("div");
+        list.className = "featList";
+
+        lines.forEach(([k, v]) => {
+          const line = document.createElement("div");
+          line.className = "featLine";
+
+          const kk = document.createElement("div");
+          kk.className = "featK";
+          kk.textContent = k;
+
+          const vv = document.createElement("div");
+          vv.className = "featV";
+          vv.textContent = v;
+
+          line.appendChild(kk);
+          line.appendChild(vv);
+          list.appendChild(line);
+        });
+
+        block.appendChild(head);
+        block.appendChild(list);
+        return block;
+      }
+
+      function renderFeatures(row) {
+        featuresGridEl.innerHTML = "";
+
+        const vOrDash = (x) => (x == null || x === "") ? "—" : String(x);
+
+        const b1 = makeFeatBlock("Transacción", [
+          ["Precio", row.price_eur != null ? euro(row.price_eur) : "—"],
+          ["Publicado", fmtDate(row.listed_at)],
+          ["Agencia", vOrDash(row.agency_name)],
+          ["Tipo de inmueble", vOrDash(row.property_type)]
+        ]);
+
+        const b2 = makeFeatBlock("Ubicación", [
+          ["Dirección", vOrDash(row.address_display)],
+          ["Código postal", vOrDash(row.postcode)],
+          ["Ciudad", vOrDash(row.city)],
+          ["Barrio", vOrDash(row.neighborhood)],
+          ["Provincia", vOrDash(row.province)]
+        ]);
+
+        const b3 = makeFeatBlock("Superficies", [
+          ["Superficie útil", row.useful_area_m2 != null ? (String(row.useful_area_m2) + " m²") : "—"],
+          ["Año de construcción", row.built_year != null ? String(row.built_year) : "—"],
+          ["Coordenadas", (row.lat != null && row.lng != null) ? (Number(row.lat).toFixed(5) + ", " + Number(row.lng).toFixed(5)) : "—"]
+        ]);
+
+        const b4 = makeFeatBlock("Referencia", [
+          ["ID anuncio", vOrDash(row.listing_id)],
+          ["Fuente", "Profesional verificado (MVP)"],
+          ["Estado", "Disponible (MVP)"]
+        ]);
+
+        featuresGridEl.appendChild(b1);
+        featuresGridEl.appendChild(b2);
+        featuresGridEl.appendChild(b3);
+        featuresGridEl.appendChild(b4);
+      }
+
+      function renderDescription(row) {
+        // MVP: no tenemos aún descripción en listing_detail_public.
+        // Dejamos un texto estilo “placeholder” que no canta demasiado.
+        const city = row.city || "la zona";
+        const neighborhood = row.neighborhood ? (" en " + row.neighborhood) : "";
+        const area = row.useful_area_m2 != null ? (String(row.useful_area_m2) + " m²") : null;
+        const year = row.built_year != null ? String(row.built_year) : null;
+
+        const parts = [];
+        parts.push("Descripción pendiente de publicación por la agencia. En cuanto esté disponible, aquí verás el texto completo con distribución, estado, equipamiento y detalles relevantes.");
+        parts.push("");
+        parts.push("Datos básicos:");
+        parts.push("- Ubicación: " + (row.city ? (row.city + neighborhood) : city));
+        parts.push("- Tipo: " + (row.property_type || "—"));
+        parts.push("- Superficie útil: " + (area || "—"));
+        parts.push("- Año: " + (year || "—"));
+        parts.push("");
+        parts.push("MVP: esta sección se conectará a la descripción estructurada (sin texto libre) en cuanto definamos el estándar final.");
+
+        descWrapEl.textContent = parts.join("\n");
+        descWrapEl.classList.add("descClamp", "clamp5");
+
+        // Mostrar botón “Leer más” cuando el texto sea largo
+        // (heurística simple)
+        const needsToggle = descWrapEl.textContent.length > 240;
+        descToggleEl.style.display = needsToggle ? "inline-flex" : "none";
+        descToggleEl.textContent = "Leer más";
+      }
 
       function wireMediaButtons() {
         const msg = "MVP: este botón abrirá la galería/visor cuando haya fotos/plano/vídeo.";
@@ -651,8 +944,34 @@
         tabAllMedia.addEventListener("click", () => alert(msg));
       }
 
+      function wireReadMore() {
+        let open = false;
+        descToggleEl.addEventListener("click", () => {
+          open = !open;
+          descWrapEl.classList.toggle("clamp5", !open);
+          descWrapEl.classList.toggle("clamp999", open);
+          descToggleEl.textContent = open ? "Leer menos" : "Leer más";
+        });
+      }
+
+      function storageKey(listingId){ return "bh_saved_" + listingId; }
+
+      function setSavedUI(isSaved){
+        saveTextEl.textContent = isSaved ? "Guardado" : "Guardar";
+      }
+
+      shareBtn.addEventListener("click", async () => {
+        const ok = await copyToClipboard(window.location.href);
+        if (!ok) window.prompt("Copia el enlace:", window.location.href);
+      });
+
+      monthlyBtn.addEventListener("click", () => {
+        alert("MVP: aquí conectaremos calculadora de mensualidad (hipoteca + gastos) con supuestos configurables.");
+      });
+
       (async () => {
         wireMediaButtons();
+        wireReadMore();
 
         const listingId = getParam("id");
         if (!listingId) {
@@ -660,6 +979,16 @@
           titleEl.textContent = "Ficha no disponible";
           return;
         }
+
+        // Guardados (MVP con localStorage)
+        const initialSaved = localStorage.getItem(storageKey(listingId)) === "1";
+        setSavedUI(initialSaved);
+
+        saveBtn.addEventListener("click", () => {
+          const nowSaved = !(localStorage.getItem(storageKey(listingId)) === "1");
+          localStorage.setItem(storageKey(listingId), nowSaved ? "1" : "0");
+          setSavedUI(nowSaved);
+        });
 
         try {
           const row = await fetchDetail(listingId);
@@ -671,36 +1000,47 @@
             return;
           }
 
+          // Migas
           crumbsCityEl.textContent = row.city || "Ciudad";
           crumbsNeighborhoodEl.textContent = row.neighborhood || "Barrio";
           crumbsAddressEl.textContent = row.address_display || "Dirección";
 
+          // Header
           titleEl.textContent = row.address_display || "Dirección";
-
-          metaPostalEl.textContent = row.postcode || "—";
-          metaCityEl.textContent = row.city || "—";
-          metaNeighborhoodEl.textContent = row.neighborhood || "—";
+          subTitleEl.textContent = (row.postcode ? (row.postcode + " ") : "") + (row.city || "—") + (row.neighborhood ? (" · " + row.neighborhood) : "");
 
           priceEl.textContent = row.price_eur != null ? euro(row.price_eur) : "—";
 
+          // Side
           agencyEl.textContent = row.agency_name || "—";
           listedAtEl.textContent = fmtDate(row.listed_at);
           ptypeEl.textContent = row.property_type || "—";
           idEl.textContent = row.listing_id || listingId;
 
+          // Facts estilo Funda (lo que tenemos en BD ahora)
           factsRowEl.innerHTML = "";
-          if (row.useful_area_m2 != null) addFact(ICON_AREA, String(row.useful_area_m2) + " m²");
-          if (row.built_year != null) addFact(ICON_YEAR, "Año " + row.built_year, true);
+          if (row.useful_area_m2 != null) addFact(ICON_AREA, String(row.useful_area_m2) + " m² útiles");
           if (row.property_type) addFact(ICON_TYPE, row.property_type, true);
+          if (row.built_year != null) addFact(ICON_YEAR, "Año " + row.built_year, true);
           if (row.province) addFact(ICON_LOC, row.province, true);
 
+          // Hint en subnav
+          navHintEl.textContent = "Actualizado: " + fmtDate(row.listed_at);
+
+          // Media counts (MVP)
           photosCountEl.textContent = "0";
           floorCountEl.textContent = "0";
           panoCountEl.textContent = "0";
 
+          // Descripción y características
+          renderDescription(row);
+          renderFeatures(row);
+
+          // Mapas
           const lat = (row.lat != null) ? Number(row.lat) : null;
           const lng = (row.lng != null) ? Number(row.lng) : null;
           ensureMiniMap(lat, lng);
+          ensureMainMap(lat, lng);
 
         } catch (e) {
           console.error(e);
