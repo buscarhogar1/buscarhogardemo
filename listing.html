@@ -22,13 +22,8 @@
 
         --gap:4px;
 
-        /* Ratio del bloque de media */
         --mediaRatio: 2.55 / 1;
-
-        /* Ancho del contenido “texto” */
         --contentMax: 1140px;
-
-        /* Cuánto se “sale” el bloque de fotos respecto al texto (ajustable) */
         --bleed: 56px;
 
         --shadow: 0 1px 0 rgba(0,0,0,0.03);
@@ -91,7 +86,6 @@
       .crumbCurrent{color:var(--muted);}
       .sep{color:#c4c7cf;}
 
-      /* ===== Media block (más ancho que el texto) ===== */
       .mediaOuter{
         margin-left: calc(-1 * var(--bleed));
         margin-right: calc(-1 * var(--bleed));
@@ -169,7 +163,6 @@
       .actionIcon{width:36px; padding:0;}
       .icon{width:18px; height:18px; display:inline-block;}
 
-      /* Media tabs */
       .mediaTabs{
         display:flex;
         justify-content:space-between;
@@ -201,7 +194,6 @@
         border-radius:12px;
       }
 
-      /* Content grid */
       .contentGrid{
         display:grid;
         grid-template-columns: 2fr 1fr;
@@ -221,16 +213,6 @@
         margin: 0 0 10px;
         font-size: 15px;
       }
-
-      .metaLine{
-        display:flex;
-        gap:10px;
-        flex-wrap:wrap;
-        color:var(--muted);
-        font-size:14px;
-        margin-bottom:10px;
-      }
-      .metaDot{color:#c4c7cf;}
 
       .priceRow{
         display:flex;
@@ -274,7 +256,6 @@
       }
       .factMuted{color:var(--muted);}
 
-      /* Subnav (tipo Funda) */
       .subnav{
         display:flex;
         gap:14px;
@@ -297,7 +278,6 @@
         font-size:13px;
       }
 
-      /* Sections */
       .section{
         padding-top:22px;
         margin-top:22px;
@@ -313,6 +293,7 @@
         font-size:15px;
         line-height:1.6;
         margin:0;
+        white-space:pre-wrap;
       }
       .mutedP{color:var(--muted);}
       .readMoreBtn{
@@ -333,7 +314,6 @@
       .clamp5{ -webkit-line-clamp:5; }
       .clamp999{ -webkit-line-clamp:999; }
 
-      /* Kenmerken estilo Funda: dos columnas de “bloques” */
       .featuresGrid{
         display:grid;
         grid-template-columns: 1fr 1fr;
@@ -359,14 +339,13 @@
       }
       .featLine{
         display:grid;
-        grid-template-columns: 150px 1fr;
+        grid-template-columns: 190px 1fr;
         gap:12px;
         align-items:start;
       }
       .featK{ color: var(--muted); font-size:13px; }
       .featV{ font-size:14px; color:#111; }
 
-      /* Right cards */
       .sideSticky{position:sticky; top:14px; display:grid; gap:12px;}
       .sideCard{
         background:#fff;
@@ -388,7 +367,6 @@
         word-break:break-all;
       }
 
-      /* Mini-map */
       #miniMap{height:160px; width:100%; background:linear-gradient(135deg,#f0f1f3,#ffffff);}
       .mapHeader{
         display:flex;
@@ -402,7 +380,6 @@
       .mapHeaderSmall{font-size:13px; color:var(--muted);}
       .leaflet-control-zoom a{width:32px; height:32px; line-height:32px;}
 
-      /* Main map */
       #mainMap{
         height: 340px;
         width: 100%;
@@ -417,7 +394,6 @@
         font-size:13px;
       }
 
-      /* Contact card */
       .contactBtns{
         display:grid;
         gap:10px;
@@ -445,15 +421,11 @@
         cursor:not-allowed;
       }
 
-      /* Responsive */
       @media (max-width: 1200px){
         :root{ --bleed: 24px; }
       }
       @media (max-width: 980px){
-        .mediaOuter{
-          margin-left: 0;
-          margin-right: 0;
-        }
+        .mediaOuter{ margin-left: 0; margin-right: 0; }
         .mediaSizer{aspect-ratio:auto; min-height:0; max-height:none;}
         .mediaGrid{grid-template-columns:1fr; height:auto;}
         .mediaBig{min-height:260px;}
@@ -462,12 +434,10 @@
         .contentGrid{grid-template-columns:1fr;}
         .sideSticky{position:static;}
         .featuresGrid{grid-template-columns:1fr;}
-        .featLine{grid-template-columns: 140px 1fr;}
+        .featLine{grid-template-columns: 1fr; gap:4px;}
       }
       @media (max-width: 560px){
         .mediaSmallGrid{grid-template-columns:1fr;}
-        .featLine{grid-template-columns: 1fr; gap:4px;}
-        .featK{font-size:12.5px;}
       }
     </style>
   </head>
@@ -489,7 +459,6 @@
         <span class="crumbCurrent" id="crumbAddress">Dirección</span>
       </div>
 
-      <!-- Bloque de fotos a ancho extendido -->
       <div class="mediaOuter">
         <div class="mediaBlock">
           <div class="mediaActions">
@@ -511,9 +480,7 @@
 
           <div class="mediaSizer">
             <div class="mediaGrid">
-              <div class="mediaBig" id="mediaBig">
-                Foto principal (pendiente)
-              </div>
+              <div class="mediaBig" id="mediaBig">Foto principal (pendiente)</div>
               <div class="mediaSmallGrid">
                 <div class="mediaSmall" id="mediaS1">Foto</div>
                 <div class="mediaSmall" id="mediaS2">Vídeo</div>
@@ -580,26 +547,23 @@
           <div class="factsRow" id="factsRow"></div>
 
           <div class="subnav">
-            <a href="#descripcion" id="navDesc">Descripción</a>
-            <a href="#caracteristicas" id="navFeat">Características</a>
-            <a href="#ubicacion" id="navLoc">Ubicación</a>
+            <a href="#descripcion">Descripción</a>
+            <a href="#caracteristicas">Características</a>
+            <a href="#ubicacion">Ubicación</a>
             <span class="pill" id="navHint">—</span>
           </div>
 
-          <!-- Descripción -->
           <div class="section" id="descripcion">
             <h2 class="h2">Descripción</h2>
             <div id="descWrap" class="p descClamp clamp5"></div>
             <button id="descToggle" class="readMoreBtn" type="button" style="display:none;">Leer más</button>
           </div>
 
-          <!-- Características -->
           <div class="section" id="caracteristicas">
             <h2 class="h2">Características</h2>
             <div class="featuresGrid" id="featuresGrid"></div>
           </div>
 
-          <!-- Ubicación -->
           <div class="section" id="ubicacion">
             <h2 class="h2">Ubicación</h2>
             <div id="mainMap"></div>
@@ -767,7 +731,28 @@
 
       async function fetchDetail(listingId) {
         const params = new URLSearchParams();
-        params.set("select", "listing_id,price_eur,listed_at,agency_name,property_type,useful_area_m2,built_year,city,neighborhood,address_display,postcode,province,lat,lng");
+        params.set(
+          "select",
+          [
+            "listing_id",
+            "price_eur",
+            "listed_at",
+            "agency_name",
+            "property_type",
+            "useful_area_m2",
+            "built_year",
+            "city",
+            "neighborhood",
+            "address_display",
+            "postcode",
+            "province",
+            "lat",
+            "lng",
+            /* campos nuevos (si no existen aún, Supabase dará error; por eso NO los pedimos todavía)
+               acceptance,status,hoa_fee_eur_month,apartment_type,construction_type,roof_type
+            */
+          ].join(",")
+        );
         params.set("listing_id", "eq." + listingId);
         params.set("limit", "1");
 
@@ -804,7 +789,15 @@
         mapHintEl.textContent = "Ver ubicación";
 
         if (!miniMap) {
-          miniMap = L.map("miniMap", { zoomControl: true, attributionControl: false, scrollWheelZoom: false, dragging: false, doubleClickZoom: false, boxZoom: false, keyboard: false }).setView([lat, lng], 15);
+          miniMap = L.map("miniMap", {
+            zoomControl: true,
+            attributionControl: false,
+            scrollWheelZoom: false,
+            dragging: false,
+            doubleClickZoom: false,
+            boxZoom: false,
+            keyboard: false
+          }).setView([lat, lng], 15);
           L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(miniMap);
         } else {
           miniMap.setView([lat, lng], 15);
@@ -873,42 +866,53 @@
 
         const vOrDash = (x) => (x == null || x === "") ? "—" : String(x);
 
+        const price = row.price_eur != null ? Number(row.price_eur) : null;
+        const area = row.useful_area_m2 != null ? Number(row.useful_area_m2) : null;
+
+        const pricePerM2 =
+          (price != null && area != null && isFinite(price) && isFinite(area) && area > 0)
+            ? Math.round(price / area)
+            : null;
+
+        const offeredSince = row.listed_at ? fmtDate(row.listed_at) : "—";
+        const askingPrice = (price != null) ? euro(price) : "—";
+
+        /* Estos campos aún no están en tu vista actual.
+           Los leemos por si en el futuro los añades, pero al no estar en el select,
+           quedarán como "—" sin romper nada.
+        */
+        const acceptance = vOrDash(row.acceptance);
+        const status = vOrDash(row.status);
+        const hoaFee = (row.hoa_fee_eur_month != null)
+          ? (euro(Number(row.hoa_fee_eur_month)) + " / mes")
+          : "—";
+
+        const typeOfApartment = vOrDash(row.apartment_type);
+        const typeOfConstruction = vOrDash(row.construction_type);
+        const yearOfConstruction = (row.built_year != null) ? String(row.built_year) : "—";
+        const roofType = vOrDash(row.roof_type);
+
         const b1 = makeFeatBlock("Transacción", [
-          ["Precio", row.price_eur != null ? euro(row.price_eur) : "—"],
-          ["Publicado", fmtDate(row.listed_at)],
-          ["Agencia", vOrDash(row.agency_name)],
-          ["Tipo de inmueble", vOrDash(row.property_type)]
+          ["En venta desde", offeredSince],
+          ["Aceptación", acceptance],
+          ["Precio de venta", askingPrice],
+          ["Precio por m²", pricePerM2 != null ? euro(pricePerM2) : "—"],
+          ["Estado", status],
+          ["Cuota de comunidad", hoaFee]
         ]);
 
-        const b2 = makeFeatBlock("Ubicación", [
-          ["Dirección", vOrDash(row.address_display)],
-          ["Código postal", vOrDash(row.postcode)],
-          ["Ciudad", vOrDash(row.city)],
-          ["Barrio", vOrDash(row.neighborhood)],
-          ["Provincia", vOrDash(row.province)]
-        ]);
-
-        const b3 = makeFeatBlock("Superficies", [
-          ["Superficie útil", row.useful_area_m2 != null ? (String(row.useful_area_m2) + " m²") : "—"],
-          ["Año de construcción", row.built_year != null ? String(row.built_year) : "—"],
-          ["Coordenadas", (row.lat != null && row.lng != null) ? (Number(row.lat).toFixed(5) + ", " + Number(row.lng).toFixed(5)) : "—"]
-        ]);
-
-        const b4 = makeFeatBlock("Referencia", [
-          ["ID anuncio", vOrDash(row.listing_id)],
-          ["Fuente", "Profesional verificado (MVP)"],
-          ["Estado", "Disponible (MVP)"]
+        const b2 = makeFeatBlock("Construcción", [
+          ["Tipo de vivienda", typeOfApartment],
+          ["Tipo de construcción", typeOfConstruction],
+          ["Año de construcción", yearOfConstruction],
+          ["Tipo de cubierta", roofType]
         ]);
 
         featuresGridEl.appendChild(b1);
         featuresGridEl.appendChild(b2);
-        featuresGridEl.appendChild(b3);
-        featuresGridEl.appendChild(b4);
       }
 
       function renderDescription(row) {
-        // MVP: no tenemos aún descripción en listing_detail_public.
-        // Dejamos un texto estilo “placeholder” que no canta demasiado.
         const city = row.city || "la zona";
         const neighborhood = row.neighborhood ? (" en " + row.neighborhood) : "";
         const area = row.useful_area_m2 != null ? (String(row.useful_area_m2) + " m²") : null;
@@ -923,13 +927,11 @@
         parts.push("- Superficie útil: " + (area || "—"));
         parts.push("- Año: " + (year || "—"));
         parts.push("");
-        parts.push("MVP: esta sección se conectará a la descripción estructurada (sin texto libre) en cuanto definamos el estándar final.");
+        parts.push("MVP: esta sección se conectará a la descripción estructurada en cuanto definamos el estándar final.");
 
         descWrapEl.textContent = parts.join("\n");
         descWrapEl.classList.add("descClamp", "clamp5");
 
-        // Mostrar botón “Leer más” cuando el texto sea largo
-        // (heurística simple)
         const needsToggle = descWrapEl.textContent.length > 240;
         descToggleEl.style.display = needsToggle ? "inline-flex" : "none";
         descToggleEl.textContent = "Leer más";
@@ -980,7 +982,6 @@
           return;
         }
 
-        // Guardados (MVP con localStorage)
         const initialSaved = localStorage.getItem(storageKey(listingId)) === "1";
         setSavedUI(initialSaved);
 
@@ -1000,43 +1001,38 @@
             return;
           }
 
-          // Migas
           crumbsCityEl.textContent = row.city || "Ciudad";
           crumbsNeighborhoodEl.textContent = row.neighborhood || "Barrio";
           crumbsAddressEl.textContent = row.address_display || "Dirección";
 
-          // Header
           titleEl.textContent = row.address_display || "Dirección";
-          subTitleEl.textContent = (row.postcode ? (row.postcode + " ") : "") + (row.city || "—") + (row.neighborhood ? (" · " + row.neighborhood) : "");
+          subTitleEl.textContent =
+            (row.postcode ? (row.postcode + " ") : "") +
+            (row.city || "—") +
+            (row.neighborhood ? (" · " + row.neighborhood) : "");
 
           priceEl.textContent = row.price_eur != null ? euro(row.price_eur) : "—";
 
-          // Side
           agencyEl.textContent = row.agency_name || "—";
           listedAtEl.textContent = fmtDate(row.listed_at);
           ptypeEl.textContent = row.property_type || "—";
           idEl.textContent = row.listing_id || listingId;
 
-          // Facts estilo Funda (lo que tenemos en BD ahora)
           factsRowEl.innerHTML = "";
           if (row.useful_area_m2 != null) addFact(ICON_AREA, String(row.useful_area_m2) + " m² útiles");
           if (row.property_type) addFact(ICON_TYPE, row.property_type, true);
           if (row.built_year != null) addFact(ICON_YEAR, "Año " + row.built_year, true);
           if (row.province) addFact(ICON_LOC, row.province, true);
 
-          // Hint en subnav
           navHintEl.textContent = "Actualizado: " + fmtDate(row.listed_at);
 
-          // Media counts (MVP)
           photosCountEl.textContent = "0";
           floorCountEl.textContent = "0";
           panoCountEl.textContent = "0";
 
-          // Descripción y características
           renderDescription(row);
           renderFeatures(row);
 
-          // Mapas
           const lat = (row.lat != null) ? Number(row.lat) : null;
           const lng = (row.lng != null) ? Number(row.lng) : null;
           ensureMiniMap(lat, lng);
@@ -1051,7 +1047,6 @@
     </script>
   </body>
 </html>
-
 
 
 
