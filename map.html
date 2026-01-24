@@ -23,10 +23,9 @@
         --border:#111;
         --softBorder:#e6e7eb;
 
-        /* Alturas para posicionar UI inferior sin solapes */
-        --sunbar-inner-h: 52px; /* franja más baja */
-        --sunbar-outer-pad: 14px; /* coincide con .sunTimebar bottom y padding del mapa */
-        --sunbar-gap: 12px; /* separación entre barra y dock fecha */
+        --sunbar-inner-h: 52px;
+        --sunbar-outer-pad: 14px;
+        --sunbar-gap: 12px;
       }
 
       html, body {
@@ -477,7 +476,6 @@
         box-shadow: none;
       }
 
-      /* Overlay tipo SunCalc: grande, centrado, transparente */
       .sunOverlay {
         position: absolute;
         left: 50%;
@@ -521,7 +519,6 @@
         }
       }
 
-      /* Barra inferior (más baja) */
       .sunTimebar {
         position: absolute;
         left: 14px;
@@ -618,7 +615,6 @@
         cursor: pointer;
       }
 
-      /* Dock fecha + ahora (sin solaparse con barra) */
       .sunDateDock{
         position: absolute;
         right: 14px;
@@ -1251,7 +1247,6 @@
         svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
         svgClear(svg);
 
-        // Base (gris suave)
         svg.appendChild(svgEl("circle", {
           cx, cy, r: R,
           fill: "rgba(255,255,255,0.00)",
@@ -1259,23 +1254,11 @@
           "stroke-width": "3"
         }));
 
-        const r30 = ((90-30)/90)*R;
-        const r60 = ((90-60)/90)*R;
-
-        [r30, r60].forEach(rr=>{
-          svg.appendChild(svgEl("circle", {
-            cx, cy, r: rr,
-            fill: "none",
-            stroke: "rgba(0,0,0,0.18)",
-            "stroke-width": "2"
-          }));
-        });
-
         const axes = [
-          { a:0,   label:"N", dx:0,   dy:-(R+35), anchor:"middle" },
-          { a:90,  label:"E", dx:(R+30), dy:8,    anchor:"start"  },
-          { a:180, label:"S", dx:0,   dy:(R+45),  anchor:"middle" },
-          { a:270, label:"O", dx:-(R+30), dy:8,   anchor:"end"    },
+          { a:0,   label:"N", dx:0,          dy:-(R-28), anchor:"middle" },
+          { a:90,  label:"E", dx:(R-18),     dy:10,      anchor:"start"  },
+          { a:180, label:"S", dx:0,          dy:(R-10),  anchor:"middle" },
+          { a:270, label:"O", dx:-(R-18),    dy:10,      anchor:"end"    },
         ];
 
         axes.forEach(o=>{
@@ -1296,18 +1279,22 @@
           svg.appendChild(t);
         });
 
-        // Colores estilo SunCalc (amarillo/naranja)
         const dayNoon = buildDateObj(dateISO, 12*60);
         const times = SunCalc.getTimes(dayNoon, centerLatLng.lat, centerLatLng.lng);
         const sunrise = times.sunrise;
         const sunset = times.sunset;
 
+        let sunriseBearing = null;
+        let sunsetBearing = null;
+        let haveSunTimes = false;
+
         if (sunrise instanceof Date && !isNaN(sunrise.getTime()) && sunset instanceof Date && !isNaN(sunset.getTime())) {
           const sr = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunrise);
           const ss = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, sunset);
 
-          const sunriseBearing = sr.bearingDeg;
-          const sunsetBearing = ss.bearingDeg;
+          sunriseBearing = sr.bearingDeg;
+          sunsetBearing = ss.bearingDeg;
+          haveSunTimes = true;
 
           const d1 = arcPath(cx, cy, R, sunriseBearing, sunsetBearing);
 
@@ -1320,7 +1307,7 @@
           svg.appendChild(svgEl("path", {
             d: d1,
             fill: "none",
-            stroke: "rgba(255, 175, 0, 0.60)",
+            stroke: "rgba(255, 140, 0, 0.65)",
             "stroke-width": "6",
             "stroke-linecap": "round"
           }));
@@ -1328,40 +1315,21 @@
           const srPt = polarXY(cx, cy, R, sunriseBearing, 0);
           const ssPt = polarXY(cx, cy, R, sunsetBearing, 0);
 
+          const riseSetStroke = "rgba(255, 140, 0, 0.85)";
+
           svg.appendChild(svgEl("line", {
             x1: cx, y1: cy, x2: srPt.x, y2: srPt.y,
-            stroke: "rgba(255, 175, 0, 0.52)",
+            stroke: riseSetStroke,
             "stroke-width": "6",
             "stroke-linecap": "round"
           }));
 
           svg.appendChild(svgEl("line", {
             x1: cx, y1: cy, x2: ssPt.x, y2: ssPt.y,
-            stroke: "rgba(255, 175, 0, 0.52)",
+            stroke: riseSetStroke,
             "stroke-width": "6",
             "stroke-linecap": "round"
           }));
-
-          const pts = [];
-          const stepMin = 6;
-          const start = sunrise.getTime();
-          const end = sunset.getTime();
-          for (let tt = start; tt <= end; tt += stepMin*60*1000) {
-            const d = new Date(tt);
-            const pa = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, d);
-            if (pa.altDeg >= 0) pts.push(polarXY(cx, cy, R, pa.bearingDeg, pa.altDeg));
-          }
-          if (pts.length >= 2) {
-            const dAttr = pts.map((p,i)=> `${i===0?"M":"L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ");
-            svg.appendChild(svgEl("path", {
-              d: dAttr,
-              fill: "none",
-              stroke: "rgba(255, 175, 0, 0.85)",
-              "stroke-width": "8",
-              "stroke-linecap": "round",
-              "stroke-linejoin": "round"
-            }));
-          }
 
           [srPt, ssPt].forEach(pt=>{
             svg.appendChild(svgEl("circle", {
@@ -1371,35 +1339,61 @@
           });
         }
 
-        // Sol actual (15% más grande)
         const curDate = buildDateObj(dateISO, minutes);
         const cur = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, curDate);
 
         const meta = { isDay: cur.altDeg > 0, bearingDeg: cur.bearingDeg, altDeg: cur.altDeg };
 
-        if (cur.altDeg > 0) {
+        const sunR = Math.round(18 * 1.15);
+        const sunStroke = Math.round(6 * 1.15);
+
+        if (meta.isDay) {
+          if (haveSunTimes) {
+            const pts = [];
+            const stepMin = 6;
+            const start = sunrise.getTime();
+            const end = sunset.getTime();
+            for (let tt = start; tt <= end; tt += stepMin*60*1000) {
+              const d = new Date(tt);
+              const pa = sunBearingAndAltDeg(centerLatLng.lat, centerLatLng.lng, d);
+              if (pa.altDeg >= 0) pts.push(polarXY(cx, cy, R, pa.bearingDeg, pa.altDeg));
+            }
+            if (pts.length >= 2) {
+              const dAttr = pts.map((p,i)=> `${i===0?"M":"L"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ");
+              svg.appendChild(svgEl("path", {
+                d: dAttr,
+                fill: "none",
+                stroke: "rgba(255, 140, 0, 0.88)",
+                "stroke-width": "8",
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round"
+              }));
+            }
+          }
+
           const p = polarXY(cx, cy, R, cur.bearingDeg, cur.altDeg);
 
           svg.appendChild(svgEl("line", {
             x1: cx, y1: cy, x2: p.x, y2: p.y,
-            stroke: "rgba(255, 175, 0, 0.65)",
+            stroke: "rgba(255, 140, 0, 0.68)",
             "stroke-width": "8",
             "stroke-linecap": "round"
           }));
 
-          const sunR = Math.round(18 * 1.15);   // antes 18
-          const sunStroke = Math.round(6 * 1.15);
-
           svg.appendChild(svgEl("circle", {
             cx: p.x, cy: p.y, r: sunR,
-            fill: "rgba(255, 196, 50, 0.95)",
-            stroke: "rgba(255, 150, 0, 0.65)",
+            fill: "rgba(255, 120, 60, 0.95)",
+            stroke: "rgba(220, 90, 40, 0.85)",
             "stroke-width": String(sunStroke)
           }));
         } else {
+          const nightPos = polarXY(cx, cy, R, cur.bearingDeg, 0);
+
           svg.appendChild(svgEl("circle", {
-            cx: cx, cy: cy, r: 14,
-            fill: "rgba(0,0,0,0.18)"
+            cx: nightPos.x, cy: nightPos.y, r: sunR,
+            fill: "rgba(165,165,165,0.86)",
+            stroke: "rgba(120,120,120,0.92)",
+            "stroke-width": String(sunStroke)
           }));
         }
 
@@ -1451,7 +1445,8 @@
           const card = bearingToCardinal(meta.bearingDeg);
           sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
         } else {
-          sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · noche`;
+          const card = bearingToCardinal(meta.bearingDeg);
+          sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · noche · ${card} · ${Math.round(meta.bearingDeg)}°`;
         }
       }
 
