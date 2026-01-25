@@ -449,6 +449,12 @@
         flex-direction: column;
         gap: 10px;
       }
+      
+.quickRow{
+        display:flex;
+        flex-direction: row;
+        gap: 10px;
+      }
 
       .qBtn {
         width: 44px;
@@ -476,7 +482,7 @@
         box-shadow: none;
       }
 
-      .qBtnSmall{
+  .qBtnSmall{
         width: 40px;
         height: 40px;
         border-radius: 11px;
@@ -491,33 +497,39 @@
       .qBtnSmall:hover{ background:#fff; }
       .qBtnSmall svg{ width: 18px; height: 18px; color: rgba(0,0,0,0.78); }
 
+      .qBtnSmall.active{
+        border-color: rgba(26,115,232,0.55);
+        box-shadow: 0 12px 26px rgba(26,115,232,0.16);
+      }
+
       .qBtnSmall.disabled{
         opacity: 0.45;
         cursor: not-allowed;
         box-shadow: none;
       }
 
-      .areaHint{
+.areaHint{
         position: absolute;
-        left: 14px;
-        right: 14px;
+        left: 50%;
         bottom: 14px;
+        transform: translateX(-50%);
         z-index: 760;
         display: none;
         pointer-events: none;
+        max-width: calc(100% - 28px);
       }
       .areaHintInner{
         height: 44px;
-        padding: 10px 12px;
+        padding: 10px 14px;
         border-radius: 14px;
         background: rgba(255,255,255,0.78);
         border: 1px solid rgba(0,0,0,0.10);
         backdrop-filter: blur(6px);
         box-sizing: border-box;
-        display: flex;
+        display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 10px;
-        overflow: hidden;
       }
       .areaHintDot{
         width: 10px;
@@ -530,8 +542,7 @@
         font-size: 13px;
         color: rgba(0,0,0,0.78);
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        text-align: center;
       }
 
       .areaDel{
@@ -553,11 +564,12 @@
         transform: translateY(-0.5px);
       }
 
-      @media (max-width: 720px) {
+    @media (max-width: 720px) {
         .areaHint{
-          left: 10px;
-          right: 10px;
+          left: 50%;
           bottom: 10px;
+          transform: translateX(-50%);
+          max-width: calc(100% - 20px);
         }
         .areaHintInner{
           height: 42px;
@@ -2234,12 +2246,22 @@
          CONTROLES AREAS
          ========================= */
 
-      const AreasControl = L.Control.extend({
+    const AreasControl = L.Control.extend({
         options: { position: "topright" },
         onAdd: function() {
-          const container = L.DomUtil.create("div", "quickCol");
+          const container = L.DomUtil.create("div", "quickRow");
           L.DomEvent.disableClickPropagation(container);
           L.DomEvent.disableScrollPropagation(container);
+
+          const btnPlus = L.DomUtil.create("div", "qBtnSmall", container);
+          btnPlus.id = "areaPlusBtn";
+          btnPlus.title = "Añadir otra área";
+          btnPlus.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14"></path>
+              <path d="M5 12h14"></path>
+            </svg>
+          `;
 
           const btnPoints = L.DomUtil.create("div", "qBtnSmall", container);
           btnPoints.id = "areaPointsBtn";
@@ -2266,15 +2288,18 @@
             </svg>
           `;
 
-          const btnPlus = L.DomUtil.create("div", "qBtnSmall", container);
-          btnPlus.id = "areaPlusBtn";
-          btnPlus.title = "Añadir otra área";
-          btnPlus.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14"></path>
-              <path d="M5 12h14"></path>
-            </svg>
-          `;
+          function clearAllAreas(){
+            // borra polígonos existentes
+            for (const a of areaState.polys.slice()) {
+              if (a.poly) areasLayer.removeLayer(a.poly);
+              if (a.delMarker) areasLayer.removeLayer(a.delMarker);
+            }
+            areaState.polys = [];
+            // limpia dibujo temporal y estado
+            cancelAreaDrawingOnly();
+            deactivateAreasIfNone();
+            scheduleReload();
+          }
 
           function setBtnsDisabled(disabled){
             btnPoints.classList.toggle("disabled", disabled);
@@ -2296,6 +2321,8 @@
 
             setBtnsDisabled(reached);
 
+            // Visible si hay al menos 1 área y aún no llegamos al límite.
+            // Da igual si estás en puntos o libre: está a la izquierda para ambos.
             btnPlus.style.display = (areaState.polys.length >= 1 && areaState.polys.length < MAX_AREAS) ? "grid" : "none";
 
             btnPoints.classList.toggle("active", areaState.mode === "points");
@@ -2310,10 +2337,13 @@
             }
 
             if (areaState.mode === "points") {
-              setAreaMode(null);
-            } else {
-              setAreaMode("points");
+              // deseleccionar = borrar áreas
+              clearAllAreas();
+              refresh();
+              return;
             }
+
+            setAreaMode("points");
             refresh();
           });
 
@@ -2325,10 +2355,13 @@
             }
 
             if (areaState.mode === "freehand") {
-              setAreaMode(null);
-            } else {
-              setAreaMode("freehand");
+              // deseleccionar = borrar áreas
+              clearAllAreas();
+              refresh();
+              return;
             }
+
+            setAreaMode("freehand");
             refresh();
           });
 
@@ -2339,6 +2372,10 @@
             if (sunEnabled) {
               if (areaState.sunBtnForceOff) areaState.sunBtnForceOff();
             }
+
+            // “+” sirve en ambos modos: inicia otro dibujo con el modo activo.
+            // Si no hay modo activo, no hacemos nada (porque no sabemos cuál usar).
+            if (!areaState.mode) return;
 
             startNewAreaDrawing();
             refresh();
