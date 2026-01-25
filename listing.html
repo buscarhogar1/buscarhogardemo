@@ -346,27 +346,50 @@
       .featK{ color: var(--muted); font-size:13px; }
       .featV{ font-size:14px; color:#111; }
 
-      /* Popularidad estilo funda: 3 bloques dentro del card */
-      .popGrid{
+      /* Apartados tipo Funda: título grande + tarjeta */
+      .bigSection{
+        margin-top:28px;
+      }
+      .bigTitle{
+        font-size:44px;
+        line-height:1.06;
+        margin:0 0 14px;
+        letter-spacing:-0.6px;
+        font-weight:900;
+      }
+      .panelCard{
+        border:1px solid var(--border);
+        border-radius:14px;
+        background:#fff;
+        overflow:hidden;
+      }
+
+      /* Popularidad: 3 columnas dentro de tarjeta */
+      .popWrap{
         display:grid;
         grid-template-columns: 1fr 1fr 1fr;
-        gap:0;
       }
-      .popItem{
-        padding:14px 10px;
+      .popCell{
+        padding:18px 16px;
         text-align:center;
       }
-      .popItem + .popItem{
+      .popCell + .popCell{
         border-left:1px solid var(--border);
       }
-      .popTop{
-        font-size:22px;
-        font-weight:800;
-        letter-spacing:-0.2px;
+      .popIcon{
+        width:24px;
+        height:24px;
+        margin:0 auto 10px;
+        color:#6b7280;
+      }
+      .popNumber{
+        font-size:28px;
+        font-weight:900;
+        letter-spacing:-0.4px;
         margin-bottom:2px;
       }
-      .popBottom{
-        font-size:14px;
+      .popLabel{
+        font-size:16px;
         color:#111;
       }
       .popSub{
@@ -375,32 +398,49 @@
         margin-top:2px;
       }
 
-      /* Barrio card tipo funda */
-      .hoodHeader{
+      /* Barrio: cabecera con mini-mapa/imagen y debajo líneas */
+      .hoodInner{
+        padding:16px;
+      }
+      .hoodTop{
         display:grid;
-        grid-template-columns: 56px 1fr;
-        gap:12px;
+        grid-template-columns: 64px 1fr;
+        gap:14px;
         align-items:center;
         margin-bottom:10px;
       }
       .hoodThumb{
-        width:56px;
-        height:56px;
-        border-radius:10px;
-        background:linear-gradient(135deg,#f0f1f3,#ffffff);
+        width:64px;
+        height:64px;
+        border-radius:12px;
         border:1px solid var(--border);
+        background:linear-gradient(135deg,#f0f1f3,#ffffff);
       }
-      .hoodTitle{
-        font-size:18px;
-        font-weight:800;
-        letter-spacing:-0.2px;
+      .hoodName{
+        font-size:22px;
+        font-weight:900;
+        letter-spacing:-0.3px;
         margin:0;
+        color: var(--link);
       }
       .hoodCity{
-        font-size:14px;
-        color:var(--muted);
-        margin:2px 0 0;
+        font-size:16px;
+        margin:4px 0 0;
+        color:#111;
       }
+      .hoodRows{
+        border-top:1px solid var(--border);
+        margin-top:12px;
+      }
+      .hoodRow{
+        display:grid;
+        grid-template-columns: 220px 1fr;
+        gap:12px;
+        padding:12px 0;
+        border-bottom:1px solid var(--border);
+      }
+      .hoodK{ color:var(--muted); font-size:14px; }
+      .hoodV{ color:#111; font-size:16px; }
 
       .sideSticky{position:sticky; top:14px; display:grid; gap:12px;}
       .sideCard{
@@ -491,11 +531,16 @@
         .sideSticky{position:static;}
         .featuresGrid{grid-template-columns:1fr;}
         .featLine{grid-template-columns: 1fr; gap:4px;}
-        .popGrid{grid-template-columns:1fr;}
-        .popItem + .popItem{border-left:0;border-top:1px solid var(--border);}
+
+        .popWrap{grid-template-columns:1fr;}
+        .popCell + .popCell{border-left:0;border-top:1px solid var(--border);}
+
+        .hoodRow{grid-template-columns: 1fr; gap:6px;}
+        .bigTitle{font-size:36px;}
       }
       @media (max-width: 560px){
         .mediaSmallGrid{grid-template-columns:1fr;}
+        .bigTitle{font-size:32px;}
       }
     </style>
   </head>
@@ -619,7 +664,18 @@
 
           <div class="section" id="caracteristicas">
             <h2 class="h2">Características</h2>
+
             <div class="featuresGrid" id="featuresGrid"></div>
+
+            <div class="bigSection" id="popularidad">
+              <h3 class="bigTitle">Popularidad</h3>
+              <div class="panelCard" id="popCard"></div>
+            </div>
+
+            <div class="bigSection" id="barrio">
+              <h3 class="bigTitle">Barrio</h3>
+              <div class="panelCard" id="hoodCard"></div>
+            </div>
           </div>
 
           <div class="section" id="ubicacion">
@@ -727,6 +783,8 @@
       const descToggleEl = document.getElementById("descToggle");
 
       const featuresGridEl = document.getElementById("featuresGrid");
+      const popCardEl = document.getElementById("popCard");
+      const hoodCardEl = document.getElementById("hoodCard");
 
       const mainMapNoteEl = document.getElementById("mainMapNote");
 
@@ -786,6 +844,10 @@
       const ICON_YEAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18"/><path d="M7 3v4"/><path d="M17 3v4"/><path d="M5 7h14v14H5z"/></svg>';
       const ICON_TYPE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>';
       const ICON_LOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-4.5 7-11a7 7 0 0 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2"/></svg>';
+
+      const POP_ICON_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+      const POP_ICON_HEART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>';
+      const POP_ICON_CAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18"/><path d="M7 3v4"/><path d="M17 3v4"/><path d="M5 7h14v14H5z"/></svg>';
 
       async function fetchDetail(listingId) {
         const params = new URLSearchParams();
@@ -916,108 +978,121 @@
         return block;
       }
 
-      function makePopularityBlock(title, viewsText, savesText, sinceText) {
-        const block = document.createElement("div");
-        block.className = "featBlock";
+      function renderPopularity(row) {
+        const vOrDash = (x) => (x == null || x === "") ? "—" : String(x);
 
-        const head = document.createElement("div");
-        head.className = "featHead";
-        head.textContent = title;
+        const views = vOrDash(row.popularity_views);
+        const saves = vOrDash(row.popularity_saves);
+        const onPortal = (row.popularity_since != null) ? fmtDate(row.popularity_since) : "—";
 
-        const list = document.createElement("div");
-        list.className = "featList";
-        list.style.padding = "0";
+        popCardEl.innerHTML = "";
 
-        const grid = document.createElement("div");
-        grid.className = "popGrid";
+        const wrap = document.createElement("div");
+        wrap.className = "popWrap";
 
-        const item = (top, bottom, sub) => {
-          const d = document.createElement("div");
-          d.className = "popItem";
+        const cell = (iconSvg, number, label, sub) => {
+          const c = document.createElement("div");
+          c.className = "popCell";
 
-          const t = document.createElement("div");
-          t.className = "popTop";
-          t.textContent = top;
+          const ic = document.createElement("div");
+          ic.className = "popIcon";
+          ic.innerHTML = iconSvg;
 
-          const b = document.createElement("div");
-          b.className = "popBottom";
-          b.textContent = bottom;
+          const n = document.createElement("div");
+          n.className = "popNumber";
+          n.textContent = number;
+
+          const l = document.createElement("div");
+          l.className = "popLabel";
+          l.textContent = label;
 
           const s = document.createElement("div");
           s.className = "popSub";
           s.textContent = sub;
 
-          d.appendChild(t);
-          d.appendChild(b);
-          d.appendChild(s);
-          return d;
+          c.appendChild(ic);
+          c.appendChild(n);
+          c.appendChild(l);
+          c.appendChild(s);
+          return c;
         };
 
-        grid.appendChild(item(viewsText, "Vistas", "en Buscar Hogar"));
-        grid.appendChild(item(savesText, "Guardados", "en Buscar Hogar"));
-        grid.appendChild(item(sinceText, "Publicado", "en Buscar Hogar"));
+        wrap.appendChild(cell(POP_ICON_EYE, views, "Vistas", "en Buscar Hogar"));
+        wrap.appendChild(cell(POP_ICON_HEART, saves, "Guardados", "en Buscar Hogar"));
+        wrap.appendChild(cell(POP_ICON_CAL, onPortal, "En Buscar Hogar", "fecha de alta"));
 
-        list.appendChild(grid);
-
-        block.appendChild(head);
-        block.appendChild(list);
-        return block;
+        popCardEl.appendChild(wrap);
       }
 
-      function makeNeighborhoodBlock(title, name, city, lines) {
-        const block = document.createElement("div");
-        block.className = "featBlock";
+      function renderNeighborhood(row) {
+        const vOrDash = (x) => (x == null || x === "") ? "—" : String(x);
 
-        const head = document.createElement("div");
-        head.className = "featHead";
-        head.textContent = title;
+        const hoodName = vOrDash(row.neighborhood_name || row.neighborhood);
+        const hoodCity = vOrDash(row.neighborhood_city || row.city);
 
-        const list = document.createElement("div");
-        list.className = "featList";
+        const residents = (row.neighborhood_residents != null) ? String(row.neighborhood_residents) : "—";
+        const familyPct = (row.neighborhood_family_with_children_pct != null)
+          ? (String(row.neighborhood_family_with_children_pct) + "%")
+          : "—";
+        const avgAsk = (row.neighborhood_avg_asking_price_m2_eur != null)
+          ? euro(Number(row.neighborhood_avg_asking_price_m2_eur))
+          : "—";
 
-        const hh = document.createElement("div");
-        hh.className = "hoodHeader";
+        hoodCardEl.innerHTML = "";
 
-        const th = document.createElement("div");
-        th.className = "hoodThumb";
+        const inner = document.createElement("div");
+        inner.className = "hoodInner";
 
-        const txt = document.createElement("div");
-        const hTitle = document.createElement("p");
-        hTitle.className = "hoodTitle";
-        hTitle.textContent = name;
+        const top = document.createElement("div");
+        top.className = "hoodTop";
 
-        const hCity = document.createElement("p");
-        hCity.className = "hoodCity";
-        hCity.textContent = city;
+        const thumb = document.createElement("div");
+        thumb.className = "hoodThumb";
 
-        txt.appendChild(hTitle);
-        txt.appendChild(hCity);
+        const text = document.createElement("div");
 
-        hh.appendChild(th);
-        hh.appendChild(txt);
+        const name = document.createElement("p");
+        name.className = "hoodName";
+        name.textContent = hoodName;
 
-        list.appendChild(hh);
+        const city = document.createElement("p");
+        city.className = "hoodCity";
+        city.textContent = hoodCity;
 
-        lines.forEach(([k, v]) => {
-          const line = document.createElement("div");
-          line.className = "featLine";
+        text.appendChild(name);
+        text.appendChild(city);
+
+        top.appendChild(thumb);
+        top.appendChild(text);
+
+        const rows = document.createElement("div");
+        rows.className = "hoodRows";
+
+        const rowLine = (k,v) => {
+          const r = document.createElement("div");
+          r.className = "hoodRow";
 
           const kk = document.createElement("div");
-          kk.className = "featK";
+          kk.className = "hoodK";
           kk.textContent = k;
 
           const vv = document.createElement("div");
-          vv.className = "featV";
+          vv.className = "hoodV";
           vv.textContent = v;
 
-          line.appendChild(kk);
-          line.appendChild(vv);
-          list.appendChild(line);
-        });
+          r.appendChild(kk);
+          r.appendChild(vv);
+          return r;
+        };
 
-        block.appendChild(head);
-        block.appendChild(list);
-        return block;
+        rows.appendChild(rowLine("Residentes", residents));
+        rows.appendChild(rowLine("Familias con niños", familyPct));
+        rows.appendChild(rowLine("Precio medio de venta / m²", avgAsk));
+
+        inner.appendChild(top);
+        inner.appendChild(rows);
+
+        hoodCardEl.appendChild(inner);
       }
 
       function renderFeatures(row) {
@@ -1036,9 +1111,6 @@
         const offeredSince = row.listed_at ? fmtDate(row.listed_at) : "—";
         const askingPrice = (price != null) ? euro(price) : "—";
 
-        /* Campos “funda-like” que probablemente aún no existan en tu vista:
-           se renderizan como — hasta que los añadas.
-        */
         const acceptance = vOrDash(row.acceptance);
         const status = vOrDash(row.status);
         const hoaFee = (row.hoa_fee_eur_month != null) ? (euro(Number(row.hoa_fee_eur_month)) + " / mes") : "—";
@@ -1048,20 +1120,16 @@
         const yearOfConstruction = (row.built_year != null) ? String(row.built_year) : "—";
         const roofType = vOrDash(row.roof_type);
 
-        // Superficies y volúmenes
         const livingArea = (row.living_area_m2 != null) ? (String(row.living_area_m2) + " m²") : "—";
         const outdoorRelated = (row.building_related_outdoor_m2 != null) ? (String(row.building_related_outdoor_m2) + " m²") : "—";
         const contentsVol = (row.contents_m3 != null) ? (String(row.contents_m3) + " m³") : "—";
 
-        // Distribución
-        const rooms = vOrDash(row.rooms_total); // puede ser "7" o "7 estancias (5 dormitorios)" si lo guardas ya montado
+        const rooms = vOrDash(row.rooms_total);
         const bedrooms = vOrDash(row.bedrooms);
         const roomsDisplay = (row.rooms_total != null && row.bedrooms != null)
           ? (String(row.rooms_total) + " estancias (" + String(row.bedrooms) + " dormitorios)")
           : (rooms !== "—" ? rooms : "—");
 
-        const bathrooms = vOrDash(row.bathrooms);
-        const toilets = vOrDash(row.toilets_separate);
         const bathroomsDisplay = (row.bathrooms != null || row.toilets_separate != null)
           ? ((row.bathrooms != null ? (String(row.bathrooms) + " baños") : "—") +
              (row.toilets_separate != null ? (" y " + String(row.toilets_separate) + " aseos separados") : ""))
@@ -1072,41 +1140,21 @@
         const facilities = vOrDash(row.facilities);
         const locatedOn = vOrDash(row.located_on);
 
-        // Energía
         const energyLabel = vOrDash(row.energy_label);
         const insulation = vOrDash(row.insulation);
         const heating = vOrDash(row.heating);
         const warmWater = vOrDash(row.warm_water);
         const heatingSystem = vOrDash(row.heating_system_details);
 
-        // Catastral
         const cadastralCode = vOrDash(row.cadastral_code);
         const ownership = vOrDash(row.ownership_situation);
-        const cadastralMapLink = vOrDash(row.cadastral_map_link); // si un día pones URL
+        const cadastralMapLink = vOrDash(row.cadastral_map_link);
         const cadastralMapDisplay = (cadastralMapLink !== "—") ? "Mapa catastral" : "—";
 
-        // Espacio exterior
         const outdoorLocation = vOrDash(row.outdoor_location);
         const balcony = vOrDash(row.balcony_or_terrace);
 
-        // Aparcamiento
         const parkingType = vOrDash(row.parking_type);
-
-        // Popularidad
-        const views = (row.popularity_views != null) ? String(row.popularity_views) : "—";
-        const saves = (row.popularity_saves != null) ? String(row.popularity_saves) : "—";
-        const onPortal = (row.popularity_since != null) ? fmtDate(row.popularity_since) : "—";
-
-        // Barrio
-        const hoodName = vOrDash(row.neighborhood_name || row.neighborhood);
-        const hoodCity = vOrDash(row.neighborhood_city || row.city);
-        const residents = (row.neighborhood_residents != null) ? String(row.neighborhood_residents) : "—";
-        const familyPct = (row.neighborhood_family_with_children_pct != null)
-          ? (String(row.neighborhood_family_with_children_pct) + "%")
-          : "—";
-        const avgAsk = (row.neighborhood_avg_asking_price_m2_eur != null)
-          ? euro(Number(row.neighborhood_avg_asking_price_m2_eur))
-          : "—";
 
         const b1 = makeFeatBlock("Transacción", [
           ["En venta desde", offeredSince],
@@ -1162,14 +1210,6 @@
           ["Tipo de aparcamiento", parkingType]
         ]);
 
-        const b9 = makePopularityBlock("Popularidad", views, saves, onPortal);
-
-        const b10 = makeNeighborhoodBlock("Barrio", hoodName, hoodCity, [
-          ["Residentes", residents],
-          ["Familias con niños", familyPct],
-          ["Precio medio de venta / m²", avgAsk]
-        ]);
-
         featuresGridEl.appendChild(b1);
         featuresGridEl.appendChild(b2);
         featuresGridEl.appendChild(b3);
@@ -1178,8 +1218,6 @@
         featuresGridEl.appendChild(b6);
         featuresGridEl.appendChild(b7);
         featuresGridEl.appendChild(b8);
-        featuresGridEl.appendChild(b9);
-        featuresGridEl.appendChild(b10);
       }
 
       function renderDescription(row) {
@@ -1302,6 +1340,10 @@
 
           renderDescription(row);
           renderFeatures(row);
+
+          /* Apartados funda-like */
+          renderPopularity(row);
+          renderNeighborhood(row);
 
           const lat = (row.lat != null) ? Number(row.lat) : null;
           const lng = (row.lng != null) ? Number(row.lng) : null;
