@@ -256,14 +256,15 @@
       }
       .factMuted{color:var(--muted);}
 
+      /* Subnav sin línea superior (lo que pides quitar) */
       .subnav{
         display:flex;
         gap:14px;
         flex-wrap:wrap;
         align-items:center;
         margin-top:16px;
-        padding-top:14px;
-        border-top:1px solid var(--border);
+        padding-top:0;
+        border-top:0;
       }
       .subnav a{
         color:#111;
@@ -346,101 +347,113 @@
       .featK{ color: var(--muted); font-size:13px; }
       .featV{ font-size:14px; color:#111; }
 
-      /* Apartados tipo Funda: título grande + tarjeta */
+      /* Apartados tipo Funda (Popularidad / Barrio) */
       .bigSection{
-        margin-top:28px;
+        margin-top:26px;
       }
       .bigTitle{
-        font-size:44px;
-        line-height:1.06;
-        margin:0 0 14px;
-        letter-spacing:-0.6px;
+        font-size:56px;
+        line-height:1.03;
+        margin:0 0 16px;
+        letter-spacing:-0.8px;
         font-weight:900;
       }
       .panelCard{
         border:1px solid var(--border);
-        border-radius:14px;
+        border-radius:18px;
         background:#fff;
         overflow:hidden;
       }
 
-      /* Popularidad: 3 columnas dentro de tarjeta */
+      /* Popularidad */
       .popWrap{
         display:grid;
         grid-template-columns: 1fr 1fr 1fr;
       }
       .popCell{
-        padding:18px 16px;
+        padding:28px 18px;
         text-align:center;
       }
       .popCell + .popCell{
         border-left:1px solid var(--border);
       }
       .popIcon{
-        width:24px;
-        height:24px;
-        margin:0 auto 10px;
+        width:30px;
+        height:30px;
+        margin:0 auto 14px;
         color:#6b7280;
       }
       .popNumber{
-        font-size:28px;
+        font-size:46px;
         font-weight:900;
-        letter-spacing:-0.4px;
-        margin-bottom:2px;
+        letter-spacing:-0.6px;
+        margin-bottom:6px;
+        line-height:1;
       }
       .popLabel{
-        font-size:16px;
+        font-size:22px;
         color:#111;
+        letter-spacing:-0.2px;
       }
       .popSub{
-        font-size:13px;
+        font-size:18px;
         color:var(--muted);
         margin-top:2px;
       }
 
-      /* Barrio: cabecera con mini-mapa/imagen y debajo líneas */
+      /* Barrio */
       .hoodInner{
-        padding:16px;
+        padding:22px;
       }
       .hoodTop{
         display:grid;
-        grid-template-columns: 64px 1fr;
-        gap:14px;
+        grid-template-columns: 96px 1fr;
+        gap:16px;
         align-items:center;
-        margin-bottom:10px;
+        padding-bottom:14px;
+        border-bottom:1px solid var(--border);
+        margin-bottom:2px;
       }
       .hoodThumb{
-        width:64px;
-        height:64px;
-        border-radius:12px;
+        width:96px;
+        height:96px;
+        border-radius:16px;
         border:1px solid var(--border);
         background:linear-gradient(135deg,#f0f1f3,#ffffff);
       }
       .hoodName{
-        font-size:22px;
+        font-size:40px;
         font-weight:900;
-        letter-spacing:-0.3px;
+        letter-spacing:-0.7px;
         margin:0;
         color: var(--link);
       }
       .hoodCity{
-        font-size:16px;
-        margin:4px 0 0;
+        font-size:22px;
+        margin:6px 0 0;
         color:#111;
+        letter-spacing:-0.2px;
       }
       .hoodRows{
-        border-top:1px solid var(--border);
-        margin-top:12px;
+        margin-top:6px;
       }
       .hoodRow{
         display:grid;
-        grid-template-columns: 220px 1fr;
-        gap:12px;
-        padding:12px 0;
+        grid-template-columns: 1fr 260px;
+        gap:14px;
+        padding:18px 0;
         border-bottom:1px solid var(--border);
       }
-      .hoodK{ color:var(--muted); font-size:14px; }
-      .hoodV{ color:#111; font-size:16px; }
+      .hoodK{
+        color:var(--muted);
+        font-size:18px;
+      }
+      .hoodV{
+        color:#111;
+        font-size:22px;
+        text-align:center;
+        letter-spacing:-0.2px;
+      }
 
       .sideSticky{position:sticky; top:14px; display:grid; gap:12px;}
       .sideCard{
@@ -535,12 +548,15 @@
         .popWrap{grid-template-columns:1fr;}
         .popCell + .popCell{border-left:0;border-top:1px solid var(--border);}
 
-        .hoodRow{grid-template-columns: 1fr; gap:6px;}
-        .bigTitle{font-size:36px;}
+        .hoodTop{grid-template-columns: 84px 1fr;}
+        .hoodThumb{width:84px;height:84px;border-radius:14px;}
+        .hoodRow{grid-template-columns: 1fr; gap:8px;}
+        .hoodV{text-align:left;}
+        .bigTitle{font-size:44px;}
       }
       @media (max-width: 560px){
         .mediaSmallGrid{grid-template-columns:1fr;}
-        .bigTitle{font-size:32px;}
+        .bigTitle{font-size:40px;}
       }
     </style>
   </head>
@@ -1148,8 +1164,6 @@
 
         const cadastralCode = vOrDash(row.cadastral_code);
         const ownership = vOrDash(row.ownership_situation);
-        const cadastralMapLink = vOrDash(row.cadastral_map_link);
-        const cadastralMapDisplay = (cadastralMapLink !== "—") ? "Mapa catastral" : "—";
 
         const outdoorLocation = vOrDash(row.outdoor_location);
         const balcony = vOrDash(row.balcony_or_terrace);
@@ -1197,7 +1211,6 @@
 
         const b6 = makeFeatBlock("Datos catastrales", [
           ["Referencia", cadastralCode],
-          ["Mapa catastral", cadastralMapDisplay],
           ["Tipo de propiedad", ownership]
         ]);
 
@@ -1341,7 +1354,6 @@
           renderDescription(row);
           renderFeatures(row);
 
-          /* Apartados funda-like */
           renderPopularity(row);
           renderNeighborhood(row);
 
