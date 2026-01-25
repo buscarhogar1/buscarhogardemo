@@ -476,6 +476,98 @@
         box-shadow: none;
       }
 
+      .qBtnSmall{
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        border: 1px solid rgba(0,0,0,0.14);
+        background: rgba(255,255,255,0.96);
+        cursor: pointer;
+        display: grid;
+        place-items:center;
+        box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+        user-select: none;
+      }
+      .qBtnSmall:hover{ background:#fff; }
+      .qBtnSmall svg{ width: 18px; height: 18px; color: rgba(0,0,0,0.78); }
+
+      .qBtnSmall.disabled{
+        opacity: 0.45;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .areaHint{
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        bottom: 14px;
+        z-index: 760;
+        display: none;
+        pointer-events: none;
+      }
+      .areaHintInner{
+        height: 44px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.78);
+        border: 1px solid rgba(0,0,0,0.10);
+        backdrop-filter: blur(6px);
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        overflow: hidden;
+      }
+      .areaHintDot{
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(26,115,232,0.85);
+        flex: 0 0 auto;
+      }
+      .areaHintText{
+        font-size: 13px;
+        color: rgba(0,0,0,0.78);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .areaDel{
+        width: 22px;
+        height: 22px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(0,0,0,0.18);
+        box-shadow: 0 10px 22px rgba(0,0,0,0.14);
+        display: grid;
+        place-items: center;
+        user-select: none;
+        cursor: pointer;
+      }
+      .areaDel span{
+        font-size: 14px;
+        line-height: 1;
+        color: rgba(0,0,0,0.62);
+        transform: translateY(-0.5px);
+      }
+
+      @media (max-width: 720px) {
+        .areaHint{
+          left: 10px;
+          right: 10px;
+          bottom: 10px;
+        }
+        .areaHintInner{
+          height: 42px;
+        }
+        .qBtnSmall{
+          width: 38px;
+          height: 38px;
+        }
+      }
+
       .sunOverlay {
         position: absolute;
         left: 50%;
@@ -731,6 +823,13 @@
             </div>
           </div>
         </div>
+
+        <div id="areaHint" class="areaHint" aria-hidden="true">
+          <div class="areaHintInner">
+            <div class="areaHintDot" aria-hidden="true"></div>
+            <div id="areaHintText" class="areaHintText">—</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -821,6 +920,9 @@
       const sunRangeEl = document.getElementById("sunRange");
       const sunDateEl = document.getElementById("sunDate");
       const sunNowBtn = document.getElementById("sunNowBtn");
+
+      const areaHintEl = document.getElementById("areaHint");
+      const areaHintTextEl = document.getElementById("areaHintText");
 
       function setStatus(msg) { statusEl.textContent = msg || ""; }
 
@@ -1012,6 +1114,7 @@
         const m = L.marker([p.lat, p.lng], { icon }).addTo(markersLayer);
 
         m.on("click", () => {
+          if (areaState.isDrawing) return;
           if (activeMarker && activeMarker._icon) {
             activeMarker._icon.querySelector(".dot")?.classList.remove("active");
           }
@@ -1090,18 +1193,562 @@
 
       let debounceTimer = null;
 
+      /* =========================
+         AREAS (puntos + libre)
+         ========================= */
+
+      const MAX_AREAS = 5;
+
+      const areaState = {
+        mode: null,              // "points" | "freehand" | null
+        isDrawing: false,
+        isFreehandActive: false,
+        points: [],
+        tempLine: null,
+        tempFirstMarker: null,
+        tempVertexMarkers: [],
+        tempLivePoly: null,
+        polys: [],               // { id, latlngs, poly, delMarker }
+        nextId: 1,
+        plusBtnEl: null,
+        btnPointsEl: null,
+        btnFreeEl: null,
+        sunBtnEl: null,
+        sunBtnSetActive: null,   // set from SunControl
+        sunBtnForceOff: null,    // set from SunControl
+        lastHint: ""
+      };
+
+      const areasLayer = L.layerGroup().addTo(map);
+
+      function setAreaHintVisible(visible, text){
+        areaHintEl.style.display = visible ? "block" : "none";
+        areaHintEl.setAttribute("aria-hidden", visible ? "false" : "true");
+        if (typeof text === "string") {
+          areaHintTextEl.textContent = text;
+          areaState.lastHint = text;
+        }
+      }
+
+      function setMarkersVisible(visible){
+        const has = map.hasLayer(markersLayer);
+        if (visible && !has) markersLayer.addTo(map);
+        if (!visible && has) map.removeLayer(markersLayer);
+      }
+
+      function clearTempDrawing(){
+        if (areaState.tempLine) { areasLayer.removeLayer(areaState.tempLine); areaState.tempLine = null; }
+        if (areaState.tempLivePoly) { areasLayer.removeLayer(areaState.tempLivePoly); areaState.tempLivePoly = null; }
+
+        if (areaState.tempFirstMarker) {
+          areasLayer.removeLayer(areaState.tempFirstMarker);
+          areaState.tempFirstMarker = null;
+        }
+
+        areaState.tempVertexMarkers.forEach(m => areasLayer.removeLayer(m));
+        areaState.tempVertexMarkers = [];
+        areaState.points = [];
+      }
+
+      function setAreaMode(nextMode){
+        if (nextMode !== "points" && nextMode !== "freehand") nextMode = null;
+
+        if (nextMode && areaState.sunBtnForceOff) {
+          areaState.sunBtnForceOff();
+        }
+
+        if (areaState.mode && areaState.mode !== nextMode) {
+          cancelAreaDrawingOnly();
+        }
+
+        areaState.mode = nextMode;
+
+        if (areaState.btnPointsEl) areaState.btnPointsEl.classList.toggle("active", nextMode === "points");
+        if (areaState.btnFreeEl) areaState.btnFreeEl.classList.toggle("active", nextMode === "freehand");
+
+        if (!nextMode) {
+          setAreaHintVisible(false, "");
+          areaState.isDrawing = false;
+          areaState.isFreehandActive = false;
+          clearTempDrawing();
+          setMarkersVisible(true);
+          closeCard();
+        } else {
+          startNewAreaDrawing();
+        }
+
+        updatePlusVisibility();
+      }
+
+      function cancelAreaDrawingOnly(){
+        if (!areaState.mode) return;
+        areaState.isDrawing = false;
+        areaState.isFreehandActive = false;
+        clearTempDrawing();
+        setMarkersVisible(true);
+        setAreaHintVisible(false, "");
+      }
+
+      function deactivateAreasIfNone(){
+        if (areaState.polys.length === 0) {
+          if (areaState.mode) {
+            if (areaState.btnPointsEl) areaState.btnPointsEl.classList.remove("active");
+            if (areaState.btnFreeEl) areaState.btnFreeEl.classList.remove("active");
+          }
+          areaState.mode = null;
+          areaState.isDrawing = false;
+          areaState.isFreehandActive = false;
+          clearTempDrawing();
+          setMarkersVisible(true);
+          setAreaHintVisible(false, "");
+        }
+        updatePlusVisibility();
+      }
+
+      function updatePlusVisibility(){
+        const can = (areaState.polys.length >= 1) && (areaState.polys.length < MAX_AREAS);
+        if (areaState.plusBtnEl) {
+          areaState.plusBtnEl.style.display = can ? "grid" : "none";
+        }
+      }
+
+      function latlngsToSimple(latlngs){
+        return latlngs.map(ll => ({ lat: ll.lat, lng: ll.lng }));
+      }
+
+      function pointInPoly(lat, lng, poly){
+        let inside = false;
+        for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+          const xi = poly[i].lng, yi = poly[i].lat;
+          const xj = poly[j].lng, yj = poly[j].lat;
+
+          const intersect = ((yi > lat) !== (yj > lat)) &&
+            (lng < (xj - xi) * (lat - yi) / ((yj - yi) || 1e-12) + xi);
+
+          if (intersect) inside = !inside;
+        }
+        return inside;
+      }
+
+      function isInsideAnyArea(p){
+        if (!areaState.polys.length) return true;
+        if (p.lat == null || p.lng == null) return false;
+        const lat = p.lat, lng = p.lng;
+        for (const a of areaState.polys) {
+          if (pointInPoly(lat, lng, a.latlngs)) return true;
+        }
+        return false;
+      }
+
+      function northwestVertex(latlngs){
+        let best = null;
+        for (const ll of latlngs) {
+          if (!best) { best = ll; continue; }
+          if (ll.lat > best.lat) best = ll;
+          else if (ll.lat === best.lat && ll.lng < best.lng) best = ll;
+        }
+        return best || latlngs[0];
+      }
+
+      function makeDelMarker(latlng, areaId){
+        const el = document.createElement("div");
+        el.className = "areaDel";
+        const s = document.createElement("span");
+        s.textContent = "×";
+        el.appendChild(s);
+
+        const icon = L.divIcon({
+          className: "",
+          html: el,
+          iconSize: [22,22],
+          iconAnchor: [11,11]
+        });
+
+        const m = L.marker(latlng, { icon, interactive: true, keyboard: false });
+
+        m.on("click", (e) => {
+          L.DomEvent.stopPropagation(e);
+          removeAreaById(areaId);
+        });
+
+        return m;
+      }
+
+      function removeAreaById(id){
+        const idx = areaState.polys.findIndex(x => x.id === id);
+        if (idx < 0) return;
+        const a = areaState.polys[idx];
+
+        if (a.poly) areasLayer.removeLayer(a.poly);
+        if (a.delMarker) areasLayer.removeLayer(a.delMarker);
+
+        areaState.polys.splice(idx, 1);
+
+        if (areaState.polys.length === 0) {
+          closeCard();
+          deactivateAreasIfNone();
+          scheduleReload();
+          return;
+        }
+
+        updatePlusVisibility();
+        scheduleReload();
+      }
+
+      function addAreaPolygon(latlngs){
+        if (!latlngs || latlngs.length < 3) return false;
+        if (areaState.polys.length >= MAX_AREAS) return false;
+
+        const id = areaState.nextId++;
+        const poly = L.polygon(latlngs, {
+          color: "rgba(26,115,232,0.80)",
+          weight: 3,
+          opacity: 1,
+          fillColor: "rgba(26,115,232,0.20)",
+          fillOpacity: 0.18
+        }).addTo(areasLayer);
+
+        const nw = northwestVertex(latlngs);
+        const delMarker = makeDelMarker(nw, id).addTo(areasLayer);
+
+        areaState.polys.push({
+          id,
+          latlngs: latlngsToSimple(latlngs),
+          poly,
+          delMarker
+        });
+
+        updatePlusVisibility();
+        return true;
+      }
+
+      function startNewAreaDrawing(){
+        if (!areaState.mode) return;
+
+        if (areaState.polys.length >= MAX_AREAS) {
+          updatePlusVisibility();
+          return;
+        }
+
+        closeCard();
+        clearTempDrawing();
+        areaState.isDrawing = true;
+        setMarkersVisible(false);
+
+        if (areaState.mode === "points") {
+          setAreaHintVisible(true, "Haz clic punto a punto para dibujar el área. Cierra en el primer punto.");
+          areaState.points = [];
+          areaState.tempLine = L.polyline([], {
+            color: "rgba(26,115,232,0.88)",
+            weight: 3,
+            opacity: 1
+          }).addTo(areasLayer);
+        }
+
+        if (areaState.mode === "freehand") {
+          setAreaHintVisible(true, "Mantén pulsado y dibuja el área. Suelta para terminar.");
+          areaState.points = [];
+          areaState.isFreehandActive = false;
+        }
+      }
+
+      function finishDrawingPoints(){
+        const pts = areaState.points.slice();
+        if (pts.length < 3) {
+          clearTempDrawing();
+          areaState.isDrawing = false;
+          setMarkersVisible(true);
+          setAreaHintVisible(false, "");
+          scheduleReload();
+          return;
+        }
+
+        const ok = addAreaPolygon(pts);
+        clearTempDrawing();
+        areaState.isDrawing = false;
+        setMarkersVisible(true);
+        setAreaHintVisible(false, "");
+
+        if (ok) {
+          scheduleReload();
+        } else {
+          scheduleReload();
+        }
+      }
+
+      function addPointVertex(latlng){
+        areaState.points.push(latlng);
+
+        if (areaState.tempLine) {
+          areaState.tempLine.addLatLng(latlng);
+        }
+
+        const isFirst = areaState.points.length === 1;
+
+        const circle = L.circleMarker(latlng, {
+          radius: isFirst ? 7 : 6,
+          color: "rgba(255,255,255,0.95)",
+          weight: 3,
+          fillColor: "rgba(26,115,232,0.90)",
+          fillOpacity: 1
+        }).addTo(areasLayer);
+
+        if (isFirst) {
+          areaState.tempFirstMarker = circle;
+          circle.on("click", (e) => {
+            L.DomEvent.stopPropagation(e);
+            if (!areaState.isDrawing || areaState.mode !== "points") return;
+            finishDrawingPoints();
+          });
+        } else {
+          areaState.tempVertexMarkers.push(circle);
+        }
+      }
+
+      function maybeCloseFirst(latlng){
+        if (!areaState.tempFirstMarker) return false;
+        const first = areaState.points[0];
+        if (!first) return false;
+        const d = map.distance(first, latlng);
+        return d <= 12;
+      }
+
+      function simplifyRDP(points, epsilonPx){
+        if (!points || points.length < 3) return points || [];
+        const sqEps = epsilonPx * epsilonPx;
+
+        function sqDist(a, b){
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          return dx*dx + dy*dy;
+        }
+
+        function sqSegDist(p, a, b){
+          let x = a.x, y = a.y;
+          let dx = b.x - x;
+          let dy = b.y - y;
+
+          if (dx !== 0 || dy !== 0) {
+            const t = ((p.x - x) * dx + (p.y - y) * dy) / (dx*dx + dy*dy);
+            if (t > 1) { x = b.x; y = b.y; }
+            else if (t > 0) { x += dx * t; y += dy * t; }
+          }
+
+          dx = p.x - x;
+          dy = p.y - y;
+          return dx*dx + dy*dy;
+        }
+
+        function rdp(pts, first, last, out){
+          let maxSqDist = sqEps;
+          let index = -1;
+
+          for (let i = first + 1; i < last; i++) {
+            const sqD = sqSegDist(pts[i], pts[first], pts[last]);
+            if (sqD > maxSqDist) {
+              index = i;
+              maxSqDist = sqD;
+            }
+          }
+
+          if (index !== -1) {
+            if (index - first > 1) rdp(pts, first, index, out);
+            out.push(pts[index]);
+            if (last - index > 1) rdp(pts, index, last, out);
+          }
+        }
+
+        const out = [points[0]];
+        rdp(points, 0, points.length - 1, out);
+        out.push(points[points.length - 1]);
+        return out;
+      }
+
+      function latlngsFromFreehand(rawLatLngs){
+        if (!rawLatLngs || rawLatLngs.length < 3) return [];
+        const zoom = map.getZoom();
+        const proj = rawLatLngs.map(ll => {
+          const p = map.project(ll, zoom);
+          return { x: p.x, y: p.y, ll };
+        });
+
+        const simplified = simplifyRDP(proj, 3.0);
+        const out = simplified.map(p => p.ll);
+
+        if (out.length >= 3) {
+          const first = out[0];
+          const last = out[out.length - 1];
+          const d = map.distance(first, last);
+          if (d > 5) out.push(first);
+        }
+
+        const uniq = [];
+        for (const ll of out) {
+          const prev = uniq[uniq.length - 1];
+          if (!prev) { uniq.push(ll); continue; }
+          const dd = map.distance(prev, ll);
+          if (dd >= 1) uniq.push(ll);
+        }
+        return uniq.length >= 3 ? uniq : [];
+      }
+
+      let freehandMoveHandler = null;
+      let freehandUpHandler = null;
+      let freehandLastSample = null;
+
+      function startFreehand(e){
+        if (!areaState.isDrawing || areaState.mode !== "freehand") return;
+        if (areaState.isFreehandActive) return;
+
+        areaState.isFreehandActive = true;
+        areaState.points = [];
+        freehandLastSample = null;
+
+        map.dragging.disable();
+
+        const startLL = e.latlng;
+        if (startLL) {
+          areaState.points.push(startLL);
+          freehandLastSample = { ll: startLL, t: Date.now() };
+        }
+
+        if (areaState.tempLine) { areasLayer.removeLayer(areaState.tempLine); areaState.tempLine = null; }
+        if (areaState.tempLivePoly) { areasLayer.removeLayer(areaState.tempLivePoly); areaState.tempLivePoly = null; }
+
+        areaState.tempLine = L.polyline([startLL], {
+          color: "rgba(26,115,232,0.88)",
+          weight: 3,
+          opacity: 1
+        }).addTo(areasLayer);
+
+        freehandMoveHandler = (ev) => {
+          if (!areaState.isFreehandActive) return;
+          const ll = ev.latlng;
+          if (!ll) return;
+
+          const now = Date.now();
+          const prev = freehandLastSample?.ll;
+
+          let ok = true;
+          if (freehandLastSample) {
+            const dt = now - freehandLastSample.t;
+            const dist = prev ? map.distance(prev, ll) : 999;
+            ok = (dt >= 18) && (dist >= 2.0);
+          }
+
+          if (!ok) return;
+
+          areaState.points.push(ll);
+          freehandLastSample = { ll, t: now };
+          if (areaState.tempLine) areaState.tempLine.addLatLng(ll);
+        };
+
+        freehandUpHandler = () => {
+          finishFreehand();
+        };
+
+        map.on("mousemove", freehandMoveHandler);
+        map.on("mouseup", freehandUpHandler);
+
+        map.on("touchmove", freehandMoveHandler);
+        map.on("touchend", freehandUpHandler);
+        map.on("touchcancel", freehandUpHandler);
+      }
+
+      function finishFreehand(){
+        if (!areaState.isDrawing || areaState.mode !== "freehand") return;
+
+        map.off("mousemove", freehandMoveHandler);
+        map.off("mouseup", freehandUpHandler);
+        map.off("touchmove", freehandMoveHandler);
+        map.off("touchend", freehandUpHandler);
+        map.off("touchcancel", freehandUpHandler);
+
+        freehandMoveHandler = null;
+        freehandUpHandler = null;
+
+        if (areaState.tempLine) { areasLayer.removeLayer(areaState.tempLine); areaState.tempLine = null; }
+
+        map.dragging.enable();
+
+        const raw = areaState.points.slice();
+        areaState.isFreehandActive = false;
+
+        const simplifiedLL = latlngsFromFreehand(raw);
+
+        const totalLen = (() => {
+          let sum = 0;
+          for (let i = 1; i < raw.length; i++) sum += map.distance(raw[i-1], raw[i]);
+          return sum;
+        })();
+
+        if (!simplifiedLL || simplifiedLL.length < 3 || totalLen < 20) {
+          clearTempDrawing();
+          areaState.isDrawing = false;
+          setMarkersVisible(true);
+          setAreaHintVisible(false, "");
+          scheduleReload();
+          return;
+        }
+
+        const ok = addAreaPolygon(simplifiedLL);
+        clearTempDrawing();
+        areaState.isDrawing = false;
+        setMarkersVisible(true);
+        setAreaHintVisible(false, "");
+        scheduleReload();
+      }
+
+      function handleMapClickForAreas(e){
+        if (!areaState.isDrawing) return false;
+
+        if (areaState.mode === "points") {
+          const ll = e.latlng;
+          if (!ll) return true;
+
+          if (areaState.points.length >= 3 && maybeCloseFirst(ll)) {
+            finishDrawingPoints();
+            return true;
+          }
+
+          addPointVertex(ll);
+          return true;
+        }
+
+        return true;
+      }
+
+      map.on("mousedown", (e) => {
+        if (areaState.isDrawing && areaState.mode === "freehand") {
+          startFreehand(e);
+        }
+      });
+
+      map.on("touchstart", (e) => {
+        if (areaState.isDrawing && areaState.mode === "freehand") {
+          startFreehand(e);
+        }
+      });
+
       async function loadPointsForCurrentView() {
         const b = getCurrentBounds();
         const z = map.getZoom();
         const f = getParams();
 
+        if (areaState.isDrawing) {
+          setStatus(areaState.lastHint || "Dibujando área...");
+          return;
+        }
+
         setStatus(`Cargando...`);
         const rows = await rpcSearchMapPoints(b, f);
 
-        clearMarkers();
-        rows.forEach(addPoint);
+        const filtered = rows.filter(isInsideAnyArea);
 
-        setStatus(`Anuncios: ${rows.length} | zoom ${z} | modo=${f.mode}`);
+        clearMarkers();
+        filtered.forEach(addPoint);
+
+        setStatus(`Anuncios: ${filtered.length} | zoom ${z} | modo=${f.mode}`);
       }
 
       function scheduleReload() {
@@ -1157,7 +1804,12 @@
 
       map.on("moveend", scheduleReload);
       map.on("zoomend", scheduleReload);
-      map.on("click", () => closeCard());
+
+      map.on("click", (e) => {
+        const consumed = handleMapClickForAreas(e);
+        if (consumed) return;
+        closeCard();
+      });
 
       /* =========================
          CAPA SOL (SunCalc-like)
@@ -1217,7 +1869,7 @@
       }
 
       function polarXY(cx, cy, R, bearingDeg, altDeg){
-        const altClamped = Math.max(-24, Math.min(90, altDeg)); // permite noche "real" (fuera del círculo)
+        const altClamped = Math.max(-24, Math.min(90, altDeg));
         const r = ((90 - altClamped) / 90) * R;
         const t = bearingDeg * Math.PI / 180;
         const x = cx + r * Math.sin(t);
@@ -1254,7 +1906,6 @@
           "stroke-width": "3"
         }));
 
-        // Puntos cardinales un poco fuera del círculo
         const axes = [
           { a:0,   label:"N", x: cx,         y: cy - R - 22, anchor:"middle" },
           { a:90,  label:"E", x: cx + R + 22, y: cy + 12,    anchor:"start"  },
@@ -1262,7 +1913,6 @@
           { a:270, label:"O", x: cx - R - 22, y: cy + 12,    anchor:"end"    },
         ];
 
-        // Ejes finos
         [0,90,180,270].forEach(a=>{
           const p = polarXY(cx, cy, R, a, 0);
           svg.appendChild(svgEl("line", {
@@ -1350,7 +2000,6 @@
         const sunR = Math.round(18 * 1.15);
         const sunStroke = Math.round(6 * 1.15);
 
-        // Colores solicitados
         const sunRingYellow = "rgba(255, 196, 50, 0.98)";
         const sunLineYellow = "rgba(255, 196, 50, 0.86)";
 
@@ -1380,7 +2029,6 @@
 
           const p = polarXY(cx, cy, R, cur.bearingDeg, cur.altDeg);
 
-          // Línea centro-sol en amarillo
           svg.appendChild(svgEl("line", {
             x1: cx, y1: cy, x2: p.x, y2: p.y,
             stroke: sunLineYellow,
@@ -1395,7 +2043,6 @@
             "stroke-width": String(sunStroke)
           }));
         } else {
-          // Noche: posición REAL (usa altitud negativa, puede quedar ligeramente fuera del círculo)
           const p = polarXY(cx, cy, R, cur.bearingDeg, cur.altDeg);
 
           svg.appendChild(svgEl("circle", {
@@ -1542,9 +2189,21 @@
             }
           }
 
+          function forceOff(){
+            if (sunEnabled) {
+              sunEnabled = false;
+              btn.classList.remove("active");
+              updateSunOverlay();
+            }
+          }
+
           btn.addEventListener("click", () => {
             const ok = map.getZoom() >= ZOOM_SOL_MIN;
             if (!ok) return;
+
+            if (areaState.mode) {
+              setAreaMode(null);
+            }
 
             const next = !sunEnabled;
             btn.classList.toggle("active", next);
@@ -1553,6 +2212,9 @@
 
           map.on("zoomend", setBtnEnabled);
           setBtnEnabled();
+
+          areaState.sunBtnEl = btn;
+          areaState.sunBtnForceOff = forceOff;
 
           return container;
         }
@@ -1566,6 +2228,155 @@
 
       /* =========================
          FIN CAPA SOL
+         ========================= */
+
+      /* =========================
+         CONTROLES AREAS
+         ========================= */
+
+      const AreasControl = L.Control.extend({
+        options: { position: "topright" },
+        onAdd: function() {
+          const container = L.DomUtil.create("div", "quickCol");
+          L.DomEvent.disableClickPropagation(container);
+          L.DomEvent.disableScrollPropagation(container);
+
+          const btnPoints = L.DomUtil.create("div", "qBtnSmall", container);
+          btnPoints.id = "areaPointsBtn";
+          btnPoints.title = "Dibujar área por puntos";
+          btnPoints.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 6h6"></path>
+              <path d="M5 12h10"></path>
+              <path d="M5 18h14"></path>
+              <circle cx="4" cy="6" r="1.2"></circle>
+              <circle cx="4" cy="12" r="1.2"></circle>
+              <circle cx="4" cy="18" r="1.2"></circle>
+            </svg>
+          `;
+
+          const btnFree = L.DomUtil.create("div", "qBtnSmall", container);
+          btnFree.id = "areaFreeBtn";
+          btnFree.title = "Dibujar área libre";
+          btnFree.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 16c2-6 6-9 10-9 3 0 5 2 6 5"></path>
+              <path d="M4 16c2 3 5 5 9 5 3 0 6-1 7-3"></path>
+              <path d="M7 6l2 2"></path>
+            </svg>
+          `;
+
+          const btnPlus = L.DomUtil.create("div", "qBtnSmall", container);
+          btnPlus.id = "areaPlusBtn";
+          btnPlus.title = "Añadir otra área";
+          btnPlus.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14"></path>
+              <path d="M5 12h14"></path>
+            </svg>
+          `;
+
+          function setBtnsDisabled(disabled){
+            btnPoints.classList.toggle("disabled", disabled);
+            btnFree.classList.toggle("disabled", disabled);
+            btnPlus.classList.toggle("disabled", disabled);
+            if (disabled) {
+              btnPoints.title = "Límite alcanzado";
+              btnFree.title = "Límite alcanzado";
+              btnPlus.title = "Límite alcanzado";
+            } else {
+              btnPoints.title = "Dibujar área por puntos";
+              btnFree.title = "Dibujar área libre";
+              btnPlus.title = "Añadir otra área";
+            }
+          }
+
+          function refresh(){
+            const reached = areaState.polys.length >= MAX_AREAS;
+
+            setBtnsDisabled(reached);
+
+            btnPlus.style.display = (areaState.polys.length >= 1 && areaState.polys.length < MAX_AREAS) ? "grid" : "none";
+
+            btnPoints.classList.toggle("active", areaState.mode === "points");
+            btnFree.classList.toggle("active", areaState.mode === "freehand");
+          }
+
+          btnPoints.addEventListener("click", () => {
+            if (areaState.polys.length >= MAX_AREAS) return;
+
+            if (sunEnabled) {
+              if (areaState.sunBtnForceOff) areaState.sunBtnForceOff();
+            }
+
+            if (areaState.mode === "points") {
+              setAreaMode(null);
+            } else {
+              setAreaMode("points");
+            }
+            refresh();
+          });
+
+          btnFree.addEventListener("click", () => {
+            if (areaState.polys.length >= MAX_AREAS) return;
+
+            if (sunEnabled) {
+              if (areaState.sunBtnForceOff) areaState.sunBtnForceOff();
+            }
+
+            if (areaState.mode === "freehand") {
+              setAreaMode(null);
+            } else {
+              setAreaMode("freehand");
+            }
+            refresh();
+          });
+
+          btnPlus.addEventListener("click", () => {
+            if (areaState.polys.length >= MAX_AREAS) return;
+            if (!areaState.polys.length) return;
+
+            if (sunEnabled) {
+              if (areaState.sunBtnForceOff) areaState.sunBtnForceOff();
+            }
+
+            startNewAreaDrawing();
+            refresh();
+          });
+
+          areaState.plusBtnEl = btnPlus;
+          areaState.btnPointsEl = btnPoints;
+          areaState.btnFreeEl = btnFree;
+
+          refresh();
+          return container;
+        }
+      });
+
+      map.addControl(new AreasControl());
+
+      function stopAreaInteractions(){
+        cancelAreaDrawingOnly();
+      }
+
+      // Evitar que el “click” normal cierre la card mientras estamos dibujando, ya controlado arriba.
+      // Aquí gestionamos el cierre por ESC para abortar dibujo (si quieres).
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          if (areaState.isDrawing) {
+            stopAreaInteractions();
+            updatePlusVisibility();
+            scheduleReload();
+          }
+        }
+      });
+
+      // Si empiezas a dibujar, ocultamos anuncios; cuando terminas, vuelven (loadPointsForCurrentView hace el filtrado)
+      // Implementación “B”: los modos no coexisten entre sí ni con Sol (ya forzamos apagado).
+      // Al recargar: se borran (no persistimos nada).
+
+      /* =========================
+         ARRANQUE INICIAL
          ========================= */
 
       (async () => {
@@ -1586,4 +2397,3 @@
     </script>
   </body>
 </html>
-
