@@ -256,7 +256,6 @@
       }
       .factMuted{color:var(--muted);}
 
-      /* Subnav sin línea superior (lo que pides quitar) */
       .subnav{
         display:flex;
         gap:14px;
@@ -340,14 +339,13 @@
       }
       .featLine{
         display:grid;
-        grid-template-columns: 190px 1fr;
+        grid-template-columns: 210px 1fr;
         gap:12px;
         align-items:start;
       }
       .featK{ color: var(--muted); font-size:13px; }
       .featV{ font-size:14px; color:#111; }
 
-      /* Apartados tipo Funda (Popularidad / Barrio) */
       .bigSection{
         margin-top:26px;
       }
@@ -365,7 +363,6 @@
         overflow:hidden;
       }
 
-      /* Popularidad */
       .popWrap{
         display:grid;
         grid-template-columns: 1fr 1fr 1fr;
@@ -401,7 +398,6 @@
         margin-top:2px;
       }
 
-      /* Barrio */
       .hoodInner{
         padding:22px;
       }
@@ -867,25 +863,7 @@
 
       async function fetchDetail(listingId) {
         const params = new URLSearchParams();
-        params.set(
-          "select",
-          [
-            "listing_id",
-            "price_eur",
-            "listed_at",
-            "agency_name",
-            "property_type",
-            "useful_area_m2",
-            "built_year",
-            "city",
-            "neighborhood",
-            "address_display",
-            "postcode",
-            "province",
-            "lat",
-            "lng"
-          ].join(",")
-        );
+        params.set("select", "*");
         params.set("listing_id", "eq." + listingId);
         params.set("limit", "1");
 
@@ -1116,111 +1094,109 @@
 
         const vOrDash = (x) => (x == null || x === "") ? "—" : String(x);
 
-        const price = row.price_eur != null ? Number(row.price_eur) : null;
-        const area = row.useful_area_m2 != null ? Number(row.useful_area_m2) : null;
+        const toNum = (x) => {
+          const n = Number(x);
+          return (x == null || x === "" || !isFinite(n)) ? null : n;
+        };
 
-        const pricePerM2 =
-          (price != null && area != null && isFinite(price) && isFinite(area) && area > 0)
-            ? Math.round(price / area)
+        const fmtM2 = (x) => {
+          const n = toNum(x);
+          return (n == null) ? "—" : (String(n) + " m²");
+        };
+
+        const fmtM3 = (x) => {
+          const n = toNum(x);
+          return (n == null) ? "—" : (String(n) + " m³");
+        };
+
+        const fmtM = (x) => {
+          const n = toNum(x);
+          return (n == null) ? "—" : (String(n) + " m");
+        };
+
+        const price = toNum(row.price_eur);
+        const usefulInterior = toNum(row.useful_area_m2 ?? row.useful_area_interior_m2);
+
+        const pricePerUsefulM2 =
+          (price != null && usefulInterior != null && usefulInterior > 0)
+            ? Math.round(price / usefulInterior)
             : null;
 
-        const offeredSince = row.listed_at ? fmtDate(row.listed_at) : "—";
-        const askingPrice = (price != null) ? euro(price) : "—";
-
-        const acceptance = vOrDash(row.acceptance);
         const status = vOrDash(row.status);
-        const hoaFee = (row.hoa_fee_eur_month != null) ? (euro(Number(row.hoa_fee_eur_month)) + " / mes") : "—";
-
-        const typeOfApartment = vOrDash(row.apartment_type);
-        const typeOfConstruction = vOrDash(row.construction_type);
-        const yearOfConstruction = (row.built_year != null) ? String(row.built_year) : "—";
-        const roofType = vOrDash(row.roof_type);
-
-        const livingArea = (row.living_area_m2 != null) ? (String(row.living_area_m2) + " m²") : "—";
-        const outdoorRelated = (row.building_related_outdoor_m2 != null) ? (String(row.building_related_outdoor_m2) + " m²") : "—";
-        const contentsVol = (row.contents_m3 != null) ? (String(row.contents_m3) + " m³") : "—";
-
-        const rooms = vOrDash(row.rooms_total);
-        const bedrooms = vOrDash(row.bedrooms);
-        const roomsDisplay = (row.rooms_total != null && row.bedrooms != null)
-          ? (String(row.rooms_total) + " estancias (" + String(row.bedrooms) + " dormitorios)")
-          : (rooms !== "—" ? rooms : "—");
-
-        const bathroomsDisplay = (row.bathrooms != null || row.toilets_separate != null)
-          ? ((row.bathrooms != null ? (String(row.bathrooms) + " baños") : "—") +
-             (row.toilets_separate != null ? (" y " + String(row.toilets_separate) + " aseos separados") : ""))
+        const community = (toNum(row.hoa_fee_eur_month) != null)
+          ? (euro(toNum(row.hoa_fee_eur_month)) + " / mes")
           : "—";
 
-        const bathroomAmenities = vOrDash(row.bathroom_amenities);
-        const floorsCount = vOrDash(row.residential_floors);
-        const facilities = vOrDash(row.facilities);
-        const locatedOn = vOrDash(row.located_on);
+        const apartmentType = vOrDash(row.apartment_type);
+        const builtYear = (row.built_year != null && row.built_year !== "") ? String(row.built_year) : "—";
+
+        const usefulExterior = fmtM2(row.useful_area_exterior_m2);
+        const usefulTotal = fmtM2(row.useful_area_total_m2);
+        const builtTotal = fmtM2(row.built_area_total_m2);
+        const diningHeight = fmtM(row.dining_height_m);
+        const volumeTotal = fmtM3(row.total_volume_m3);
+
+        const bedrooms = (row.bedrooms != null && row.bedrooms !== "") ? String(row.bedrooms) : "—";
+        const bathrooms = (row.bathrooms != null && row.bathrooms !== "") ? String(row.bathrooms) : "—";
+        const floorLevel = vOrDash(row.floor_level);
 
         const energyLabel = vOrDash(row.energy_label);
         const insulation = vOrDash(row.insulation);
         const heating = vOrDash(row.heating);
-        const warmWater = vOrDash(row.warm_water);
-        const heatingSystem = vOrDash(row.heating_system_details);
+        const cooling = vOrDash(row.cooling);
+        const hotWater = vOrDash(row.warm_water);
 
-        const cadastralCode = vOrDash(row.cadastral_code);
-        const ownership = vOrDash(row.ownership_situation);
+        const storage = vOrDash(row.storage_room);
+        const storageLocation = vOrDash(row.storage_location);
+        const storageArea = fmtM2(row.storage_area_m2);
 
-        const outdoorLocation = vOrDash(row.outdoor_location);
-        const balcony = vOrDash(row.balcony_or_terrace);
+        const parkingSpaces = (row.parking_spaces != null && row.parking_spaces !== "") ? String(row.parking_spaces) : "—";
+        const parkingIncluded = vOrDash(row.parking_included_in_price);
 
-        const parkingType = vOrDash(row.parking_type);
-
-        const b1 = makeFeatBlock("Transacción", [
-          ["En venta desde", offeredSince],
-          ["Aceptación", acceptance],
-          ["Precio de venta", askingPrice],
-          ["Precio por m²", pricePerM2 != null ? euro(pricePerM2) : "—"],
+        const b1 = makeFeatBlock("Datos principales", [
+          ["Precio", (price != null) ? euro(price) : "—"],
+          ["Precio por metro cuadrado útil", (pricePerUsefulM2 != null) ? euro(pricePerUsefulM2) : "—"],
           ["Estado", status],
-          ["Cuota de comunidad", hoaFee]
+          ["Gastos de comunidad", community]
         ]);
 
-        const b2 = makeFeatBlock("Construcción", [
-          ["Tipo de vivienda", typeOfApartment],
-          ["Tipo de construcción", typeOfConstruction],
-          ["Año de construcción", yearOfConstruction],
-          ["Tipo de cubierta", roofType]
+        const b2 = makeFeatBlock("Edificio", [
+          ["Tipo de apartamento", apartmentType],
+          ["Año de construcción", builtYear]
         ]);
 
-        const b3 = makeFeatBlock("Superficies y volúmenes", [
-          ["Superficie útil (interior)", livingArea],
-          ["Espacio exterior vinculado", outdoorRelated],
-          ["Volumen", contentsVol]
+        const b3 = makeFeatBlock("Superficies", [
+          ["Superficie útil interior", (usefulInterior != null) ? (String(usefulInterior) + " m²") : "—"],
+          ["Superficie útil exterior", usefulExterior],
+          ["Superficie total útil", usefulTotal],
+          ["Superficie construida total", builtTotal],
+          ["Altura comedor", diningHeight],
+          ["Volumen total vivienda", volumeTotal]
         ]);
 
         const b4 = makeFeatBlock("Distribución", [
-          ["Número de estancias", roomsDisplay],
-          ["Número de baños", bathroomsDisplay],
-          ["Equipamiento baños", bathroomAmenities],
-          ["Número de plantas", floorsCount],
-          ["Instalaciones", facilities],
-          ["Ubicado en", locatedOn]
+          ["Numero de dormitorios", bedrooms],
+          ["Numero de baños", bathrooms],
+          ["Planta", floorLevel]
         ]);
 
         const b5 = makeFeatBlock("Energía", [
           ["Etiqueta energética", energyLabel],
-          ["Aislamiento", insulation],
+          ["Aislamiento termico", insulation],
           ["Calefacción", heating],
-          ["Agua caliente", warmWater],
-          ["Sistema de calefacción", heatingSystem]
+          ["Refrigeración", cooling],
+          ["Agua caliente", hotWater]
         ]);
 
-        const b6 = makeFeatBlock("Datos catastrales", [
-          ["Referencia", cadastralCode],
-          ["Tipo de propiedad", ownership]
+        const b6 = makeFeatBlock("Almacenaje", [
+          ["Trastero", storage],
+          ["Localización", storageLocation],
+          ["Superficie", storageArea]
         ]);
 
-        const b7 = makeFeatBlock("Espacio exterior", [
-          ["Ubicación", outdoorLocation],
-          ["Balcón o terraza", balcony]
-        ]);
-
-        const b8 = makeFeatBlock("Aparcamiento", [
-          ["Tipo de aparcamiento", parkingType]
+        const b7 = makeFeatBlock("Aparcamiento", [
+          ["Numero de plazas de aparcamiento", parkingSpaces],
+          ["incluida en el precio", parkingIncluded]
         ]);
 
         featuresGridEl.appendChild(b1);
@@ -1230,7 +1206,6 @@
         featuresGridEl.appendChild(b5);
         featuresGridEl.appendChild(b6);
         featuresGridEl.appendChild(b7);
-        featuresGridEl.appendChild(b8);
       }
 
       function renderDescription(row) {
@@ -1332,7 +1307,7 @@
             (row.city || "—") +
             (row.neighborhood ? (" · " + row.neighborhood) : "");
 
-          priceEl.textContent = row.price_eur != null ? euro(row.price_eur) : "—";
+          priceEl.textContent = row.price_eur != null ? euro(Number(row.price_eur)) : "—";
 
           agencyEl.textContent = row.agency_name || "—";
           listedAtEl.textContent = fmtDate(row.listed_at);
