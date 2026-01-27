@@ -449,8 +449,8 @@
         flex-direction: column;
         gap: 10px;
       }
-      
-.quickRow{
+
+      .quickRow{
         display:flex;
         flex-direction: row;
         gap: 10px;
@@ -482,7 +482,7 @@
         box-shadow: none;
       }
 
-  .qBtnSmall{
+      .qBtnSmall{
         width: 40px;
         height: 40px;
         border-radius: 11px;
@@ -508,7 +508,7 @@
         box-shadow: none;
       }
 
-.areaHint{
+      .areaHint{
         position: absolute;
         left: 50%;
         bottom: 14px;
@@ -530,6 +530,8 @@
         align-items: center;
         justify-content: center;
         gap: 10px;
+        width: fit-content; /* cambio: ajusta al texto */
+        max-width: 100%;
       }
       .areaHintDot{
         width: 10px;
@@ -564,7 +566,7 @@
         transform: translateY(-0.5px);
       }
 
-    @media (max-width: 720px) {
+      @media (max-width: 720px) {
         .areaHint{
           left: 50%;
           bottom: 10px;
@@ -1226,8 +1228,8 @@
         btnPointsEl: null,
         btnFreeEl: null,
         sunBtnEl: null,
-        sunBtnSetActive: null,   // set from SunControl
-        sunBtnForceOff: null,    // set from SunControl
+        sunBtnSetActive: null,
+        sunBtnForceOff: null,
         lastHint: ""
       };
 
@@ -1262,6 +1264,18 @@
         areaState.points = [];
       }
 
+      // cambio: función única para borrar todas las áreas (para usarla desde cualquier sitio)
+      function clearAllAreas(){
+        for (const a of areaState.polys.slice()) {
+          if (a.poly) areasLayer.removeLayer(a.poly);
+          if (a.delMarker) areasLayer.removeLayer(a.delMarker);
+        }
+        areaState.polys = [];
+        cancelAreaDrawingOnly();
+        deactivateAreasIfNone();
+      }
+
+      // cambio: al desactivar el modo (nextMode=null) se borran todas las áreas
       function setAreaMode(nextMode){
         if (nextMode !== "points" && nextMode !== "freehand") nextMode = null;
 
@@ -1279,12 +1293,11 @@
         if (areaState.btnFreeEl) areaState.btnFreeEl.classList.toggle("active", nextMode === "freehand");
 
         if (!nextMode) {
-          setAreaHintVisible(false, "");
-          areaState.isDrawing = false;
-          areaState.isFreehandActive = false;
-          clearTempDrawing();
-          setMarkersVisible(true);
+          // cambio clave: desactivar modo = borrar todas las áreas
+          clearAllAreas();
           closeCard();
+          scheduleReload();
+          return;
         } else {
           startNewAreaDrawing();
         }
@@ -1475,17 +1488,12 @@
           return;
         }
 
-        const ok = addAreaPolygon(pts);
+        addAreaPolygon(pts);
         clearTempDrawing();
         areaState.isDrawing = false;
         setMarkersVisible(true);
         setAreaHintVisible(false, "");
-
-        if (ok) {
-          scheduleReload();
-        } else {
-          scheduleReload();
-        }
+        scheduleReload();
       }
 
       function addPointVertex(latlng){
@@ -1528,12 +1536,6 @@
       function simplifyRDP(points, epsilonPx){
         if (!points || points.length < 3) return points || [];
         const sqEps = epsilonPx * epsilonPx;
-
-        function sqDist(a, b){
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
-          return dx*dx + dy*dy;
-        }
 
         function sqSegDist(p, a, b){
           let x = a.x, y = a.y;
@@ -1703,7 +1705,7 @@
           return;
         }
 
-        const ok = addAreaPolygon(simplifiedLL);
+        addAreaPolygon(simplifiedLL);
         clearTempDrawing();
         areaState.isDrawing = false;
         setMarkersVisible(true);
@@ -2109,11 +2111,10 @@
 
         const meta = drawSunPolar(sunPolarOverlaySvg, c, iso, mins);
 
+        const card = bearingToCardinal(meta.bearingDeg);
         if (meta.isDay) {
-          const card = bearingToCardinal(meta.bearingDeg);
           sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
         } else {
-          const card = bearingToCardinal(meta.bearingDeg);
           sunOverlayLabelEl.textContent = `${minutesToHHMM(mins)} · noche · ${card} · ${Math.round(meta.bearingDeg)}° · alt ${Math.round(meta.altDeg)}°`;
         }
       }
@@ -2213,6 +2214,7 @@
             const ok = map.getZoom() >= ZOOM_SOL_MIN;
             if (!ok) return;
 
+            // cambio: activar sol desactiva modo áreas (y por setAreaMode(null) borra las áreas)
             if (areaState.mode) {
               setAreaMode(null);
             }
@@ -2246,191 +2248,93 @@
          CONTROLES AREAS
          ========================= */
 
-    const AreasControl = L.Control.extend({
+         const AreasControl = L.Control.extend({
         options: { position: "topright" },
         onAdd: function() {
-          const container = L.DomUtil.create("div", "quickRow");
+          const container = L.DomUtil.create("div", "quickCol");
           L.DomEvent.disableClickPropagation(container);
           L.DomEvent.disableScrollPropagation(container);
 
-          const btnPlus = L.DomUtil.create("div", "qBtnSmall", container);
-          btnPlus.id = "areaPlusBtn";
-          btnPlus.title = "Añadir otra área";
-          btnPlus.innerHTML = `
+          // Botón +
+          const plusBtn = L.DomUtil.create("div", "qBtnSmall", container);
+          plusBtn.title = "Añadir otra área";
+          plusBtn.style.display = "none";
+          plusBtn.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 5v14"></path>
               <path d="M5 12h14"></path>
             </svg>
           `;
 
-          const btnPoints = L.DomUtil.create("div", "qBtnSmall", container);
-          btnPoints.id = "areaPointsBtn";
-          btnPoints.title = "Dibujar área por puntos";
+          plusBtn.addEventListener("click", () => {
+            if (!areaState.mode) return;
+            if (areaState.polys.length >= MAX_AREAS) return;
+            startNewAreaDrawing();
+          });
+
+          // Botón polígonos por puntos
+          const btnPoints = L.DomUtil.create("div", "qBtn", container);
+          btnPoints.title = "Dibujar área (puntos)";
           btnPoints.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 6h6"></path>
-              <path d="M5 12h10"></path>
-              <path d="M5 18h14"></path>
-              <circle cx="4" cy="6" r="1.2"></circle>
-              <circle cx="4" cy="12" r="1.2"></circle>
-              <circle cx="4" cy="18" r="1.2"></circle>
+              <path d="M4 4h16v16H4z"></path>
+              <path d="M4 10h16"></path>
+              <path d="M10 10v10"></path>
             </svg>
           `;
 
-          const btnFree = L.DomUtil.create("div", "qBtnSmall", container);
-          btnFree.id = "areaFreeBtn";
+          btnPoints.addEventListener("click", () => {
+            const next = (areaState.mode === "points") ? null : "points";
+            setAreaMode(next);
+          });
+
+          // Botón dibujo libre
+          const btnFree = L.DomUtil.create("div", "qBtn", container);
           btnFree.title = "Dibujar área libre";
           btnFree.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 16c2-6 6-9 10-9 3 0 5 2 6 5"></path>
-              <path d="M4 16c2 3 5 5 9 5 3 0 6-1 7-3"></path>
-              <path d="M7 6l2 2"></path>
+              <path d="M3 12c4-6 14-6 18 0"></path>
+              <path d="M3 12c4 6 14 6 18 0"></path>
             </svg>
           `;
 
-          function clearAllAreas(){
-            // borra polígonos existentes
-            for (const a of areaState.polys.slice()) {
-              if (a.poly) areasLayer.removeLayer(a.poly);
-              if (a.delMarker) areasLayer.removeLayer(a.delMarker);
-            }
-            areaState.polys = [];
-            // limpia dibujo temporal y estado
-            cancelAreaDrawingOnly();
-            deactivateAreasIfNone();
-            scheduleReload();
-          }
-
-          function setBtnsDisabled(disabled){
-            btnPoints.classList.toggle("disabled", disabled);
-            btnFree.classList.toggle("disabled", disabled);
-            btnPlus.classList.toggle("disabled", disabled);
-            if (disabled) {
-              btnPoints.title = "Límite alcanzado";
-              btnFree.title = "Límite alcanzado";
-              btnPlus.title = "Límite alcanzado";
-            } else {
-              btnPoints.title = "Dibujar área por puntos";
-              btnFree.title = "Dibujar área libre";
-              btnPlus.title = "Añadir otra área";
-            }
-          }
-
-          function refresh(){
-            const reached = areaState.polys.length >= MAX_AREAS;
-
-            setBtnsDisabled(reached);
-
-            // Visible si hay al menos 1 área y aún no llegamos al límite.
-            // Da igual si estás en puntos o libre: está a la izquierda para ambos.
-            btnPlus.style.display = (areaState.polys.length >= 1 && areaState.polys.length < MAX_AREAS) ? "grid" : "none";
-
-            btnPoints.classList.toggle("active", areaState.mode === "points");
-            btnFree.classList.toggle("active", areaState.mode === "freehand");
-          }
-
-          btnPoints.addEventListener("click", () => {
-            if (areaState.polys.length >= MAX_AREAS) return;
-
-            if (sunEnabled) {
-              if (areaState.sunBtnForceOff) areaState.sunBtnForceOff();
-            }
-
-            if (areaState.mode === "points") {
-              // deseleccionar = borrar áreas
-              clearAllAreas();
-              refresh();
-              return;
-            }
-
-            setAreaMode("points");
-            refresh();
-          });
-
           btnFree.addEventListener("click", () => {
-            if (areaState.polys.length >= MAX_AREAS) return;
-
-            if (sunEnabled) {
-              if (areaState.sunBtnForceOff) areaState.sunBtnForceOff();
-            }
-
-            if (areaState.mode === "freehand") {
-              // deseleccionar = borrar áreas
-              clearAllAreas();
-              refresh();
-              return;
-            }
-
-            setAreaMode("freehand");
-            refresh();
+            const next = (areaState.mode === "freehand") ? null : "freehand";
+            setAreaMode(next);
           });
 
-          btnPlus.addEventListener("click", () => {
-            if (areaState.polys.length >= MAX_AREAS) return;
-            if (!areaState.polys.length) return;
-
-            if (sunEnabled) {
-              if (areaState.sunBtnForceOff) areaState.sunBtnForceOff();
-            }
-
-            // “+” sirve en ambos modos: inicia otro dibujo con el modo activo.
-            // Si no hay modo activo, no hacemos nada (porque no sabemos cuál usar).
-            if (!areaState.mode) return;
-
-            startNewAreaDrawing();
-            refresh();
-          });
-
-          areaState.plusBtnEl = btnPlus;
+          // Guardar referencias
+          areaState.plusBtnEl = plusBtn;
           areaState.btnPointsEl = btnPoints;
           areaState.btnFreeEl = btnFree;
 
-          refresh();
+          updatePlusVisibility();
+
           return container;
         }
       });
 
       map.addControl(new AreasControl());
 
-      function stopAreaInteractions(){
-        cancelAreaDrawingOnly();
-      }
-
-      // Evitar que el “click” normal cierre la card mientras estamos dibujando, ya controlado arriba.
-      // Aquí gestionamos el cierre por ESC para abortar dibujo (si quieres).
-      window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          if (areaState.isDrawing) {
-            stopAreaInteractions();
-            updatePlusVisibility();
-            scheduleReload();
-          }
-        }
-      });
-
-      // Si empiezas a dibujar, ocultamos anuncios; cuando terminas, vuelven (loadPointsForCurrentView hace el filtrado)
-      // Implementación “B”: los modos no coexisten entre sí ni con Sol (ya forzamos apagado).
-      // Al recargar: se borran (no persistimos nada).
-
       /* =========================
          ARRANQUE INICIAL
          ========================= */
 
-      (async () => {
+      (async function init(){
         try {
-          if (initialParams.city) {
-            miniQ.value = initialParams.city;
-            await goToCity(initialParams.city);
+          const city = initialParams.city;
+          if (city) {
+            await goToCity(city);
           } else {
-            await loadPointsForCurrentView();
+            scheduleReload();
           }
         } catch (e) {
-          const msg = (e && e.message) ? e.message : String(e);
-          setStatus(`Error al cargar datos: ${msg}`);
-          alert("Error al cargar datos. Revisa Supabase.");
           console.error(e);
+          setStatus("Error al iniciar el mapa");
         }
       })();
     </script>
   </body>
 </html>
+
+
