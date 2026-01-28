@@ -346,15 +346,15 @@
       .featK{ color: var(--muted); font-size:13px; }
       .featV{ font-size:14px; color:#111; }
 
-      .bigSection{
-        margin-top:26px;
-      }
+      /* Popularidad + Barrio (estilo como tu captura) */
+      .bigSection{ margin-top:26px; }
       .bigTitle{
-        font-size:56px;
-        line-height:1.03;
-        margin:0 0 16px;
-        letter-spacing:-0.8px;
+        font-size:64px;
+        line-height:1.00;
+        margin:0 0 18px;
+        letter-spacing:-1.0px;
         font-weight:900;
+        color:#111;
       }
       .panelCard{
         border:1px solid var(--border);
@@ -368,7 +368,7 @@
         grid-template-columns: 1fr 1fr 1fr;
       }
       .popCell{
-        padding:28px 18px;
+        padding:30px 18px 26px;
         text-align:center;
       }
       .popCell + .popCell{
@@ -381,72 +381,69 @@
         color:#6b7280;
       }
       .popNumber{
-        font-size:46px;
+        font-size:56px;
         font-weight:900;
-        letter-spacing:-0.6px;
-        margin-bottom:6px;
+        letter-spacing:-0.9px;
+        margin:0 0 10px;
         line-height:1;
       }
       .popLabel{
-        font-size:22px;
+        font-size:26px;
         color:#111;
-        letter-spacing:-0.2px;
+        letter-spacing:-0.3px;
+        margin:0;
       }
       .popSub{
-        font-size:18px;
+        font-size:20px;
         color:var(--muted);
         margin-top:2px;
       }
 
-      .hoodInner{
-        padding:22px;
-      }
+      .hoodInner{ padding:22px; }
       .hoodTop{
         display:grid;
-        grid-template-columns: 96px 1fr;
-        gap:16px;
+        grid-template-columns: 110px 1fr;
+        gap:18px;
         align-items:center;
-        padding-bottom:14px;
+        padding-bottom:18px;
         border-bottom:1px solid var(--border);
-        margin-bottom:2px;
       }
       .hoodThumb{
-        width:96px;
-        height:96px;
-        border-radius:16px;
+        width:110px;
+        height:110px;
+        border-radius:18px;
         border:1px solid var(--border);
         background:linear-gradient(135deg,#f0f1f3,#ffffff);
       }
       .hoodName{
-        font-size:40px;
+        font-size:44px;
         font-weight:900;
-        letter-spacing:-0.7px;
+        letter-spacing:-0.9px;
         margin:0;
         color: var(--link);
       }
       .hoodCity{
-        font-size:22px;
+        font-size:26px;
         margin:6px 0 0;
         color:#111;
-        letter-spacing:-0.2px;
+        letter-spacing:-0.3px;
       }
-      .hoodRows{
-        margin-top:6px;
-      }
+      .hoodRows{ margin-top:6px; }
       .hoodRow{
         display:grid;
         grid-template-columns: 1fr 260px;
         gap:14px;
-        padding:18px 0;
+        padding:20px 0;
         border-bottom:1px solid var(--border);
       }
+      .hoodRow:last-child{ border-bottom:0; }
       .hoodK{
         color:var(--muted);
-        font-size:18px;
+        font-size:20px;
       }
       .hoodV{
         color:#111;
-        font-size:22px;
+        font-size:26px;
         text-align:center;
         letter-spacing:-0.2px;
       }
@@ -493,10 +490,26 @@
         overflow:hidden;
         background:linear-gradient(135deg,#f0f1f3,#ffffff);
       }
-      .mapNote{
-        margin-top:10px;
-        color:var(--muted);
-        font-size:13px;
+
+      .gmapsBtn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        width:100%;
+        height:44px;
+        margin-top:12px;
+        border-radius:12px;
+        border:1px solid var(--border);
+        background:#fff;
+        color:#111;
+        font-size:14px;
+        text-decoration:none;
+        cursor:pointer;
+      }
+      .gmapsBtn:hover{background:#f6f7f9;}
+      .gmapsBtn[aria-disabled="true"]{
+        opacity:0.55;
+        pointer-events:none;
       }
 
       .contactBtns{
@@ -544,15 +557,23 @@
         .popWrap{grid-template-columns:1fr;}
         .popCell + .popCell{border-left:0;border-top:1px solid var(--border);}
 
-        .hoodTop{grid-template-columns: 84px 1fr;}
-        .hoodThumb{width:84px;height:84px;border-radius:14px;}
-        .hoodRow{grid-template-columns: 1fr; gap:8px;}
+        .hoodTop{grid-template-columns: 96px 1fr;}
+        .hoodThumb{width:96px;height:96px;border-radius:16px;}
+        .hoodRow{grid-template-columns: 1fr; gap:10px;}
         .hoodV{text-align:left;}
-        .bigTitle{font-size:44px;}
+
+        .bigTitle{font-size:48px;}
+        .popNumber{font-size:48px;}
+        .popLabel{font-size:24px;}
+        .popSub{font-size:18px;}
+        .hoodName{font-size:36px;}
+        .hoodCity{font-size:22px;}
+        .hoodK{font-size:18px;}
+        .hoodV{font-size:22px;}
       }
       @media (max-width: 560px){
         .mediaSmallGrid{grid-template-columns:1fr;}
-        .bigTitle{font-size:40px;}
+        .bigTitle{font-size:44px;}
       }
     </style>
   </head>
@@ -693,7 +714,7 @@
           <div class="section" id="ubicacion">
             <h2 class="h2">Ubicación</h2>
             <div id="mainMap"></div>
-            <div class="mapNote" id="mainMapNote">—</div>
+            <a class="gmapsBtn" id="gmapsBtn" href="#" target="_blank" rel="noopener" aria-disabled="true">Calcular tiempo de viaje con Google Maps</a>
           </div>
         </div>
 
@@ -798,7 +819,7 @@
       const popCardEl = document.getElementById("popCard");
       const hoodCardEl = document.getElementById("hoodCard");
 
-      const mainMapNoteEl = document.getElementById("mainMapNote");
+      const gmapsBtnEl = document.getElementById("gmapsBtn");
 
       let miniMap = null;
       let miniMarker = null;
@@ -918,15 +939,27 @@
         else miniMarker = L.marker([lat, lng]).addTo(miniMap);
       }
 
-      function ensureMainMap(lat, lng) {
+      function setGoogleMapsLink(lat, lng) {
         const hasCoords = (typeof lat === "number" && typeof lng === "number" && isFinite(lat) && isFinite(lng));
         if (!hasCoords) {
-          mainMapNoteEl.textContent = "No hay coordenadas disponibles para mostrar la ubicación.";
+          gmapsBtnEl.setAttribute("aria-disabled", "true");
+          gmapsBtnEl.href = "#";
+          return;
+        }
+        const dest = encodeURIComponent(lat + "," + lng);
+        const url = "https://www.google.com/maps/dir/?api=1&destination=" + dest + "&travelmode=driving";
+        gmapsBtnEl.setAttribute("aria-disabled", "false");
+        gmapsBtnEl.href = url;
+      }
+
+      function ensureMainMap(lat, lng) {
+        const hasCoords = (typeof lat === "number" && typeof lng === "number" && isFinite(lat) && isFinite(lng));
+        setGoogleMapsLink(lat, lng);
+
+        if (!hasCoords) {
           if (mainMap) { mainMap.remove(); mainMap = null; mainMarker = null; }
           return;
         }
-
-        mainMapNoteEl.textContent = "Ubicación aproximada. La dirección exacta puede variar por privacidad.";
 
         if (!mainMap) {
           mainMap = L.map("mainMap", { zoomControl: true, attributionControl: false, scrollWheelZoom: false }).setView([lat, lng], 14);
@@ -1328,12 +1361,12 @@
 
           renderDescription(row);
           renderFeatures(row);
-
           renderPopularity(row);
           renderNeighborhood(row);
 
           const lat = (row.lat != null) ? Number(row.lat) : null;
           const lng = (row.lng != null) ? Number(row.lng) : null;
+
           ensureMiniMap(lat, lng);
           ensureMainMap(lat, lng);
 
@@ -1346,5 +1379,4 @@
     </script>
   </body>
 </html>
-
 
