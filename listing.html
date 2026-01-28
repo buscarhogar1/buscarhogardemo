@@ -346,106 +346,114 @@
       .featK{ color: var(--muted); font-size:13px; }
       .featV{ font-size:14px; color:#111; }
 
-      /* Popularidad + Barrio (estilo como tu captura) */
-      .bigSection{ margin-top:26px; }
-      .bigTitle{
-        font-size:64px;
-        line-height:1.00;
-        margin:0 0 18px;
-        letter-spacing:-1.0px;
-        font-weight:900;
+      /* Popularidad + Barrio (más parecido a la captura de Funda: tamaño y jerarquía) */
+      .pophoodWrap{
+        display:grid;
+        gap:18px;
+        margin-top:18px;
+      }
+
+      .pophoodTitle{
+        font-size:28px;
+        font-weight:800;
+        letter-spacing:-0.2px;
+        margin:0 0 10px;
         color:#111;
       }
-      .panelCard{
+
+      .fundaCard{
         border:1px solid var(--border);
-        border-radius:18px;
+        border-radius:8px;
         background:#fff;
         overflow:hidden;
       }
 
-      .popWrap{
+      /* Popularidad card */
+      .popCardInner{
         display:grid;
         grid-template-columns: 1fr 1fr 1fr;
       }
-      .popCell{
-        padding:30px 18px 26px;
+      .popItem{
+        padding:18px 16px;
         text-align:center;
       }
-      .popCell + .popCell{
+      .popItem + .popItem{
         border-left:1px solid var(--border);
       }
-      .popIcon{
-        width:30px;
-        height:30px;
-        margin:0 auto 14px;
+      .popIco{
+        width:22px;
+        height:22px;
+        margin:0 auto 10px;
         color:#6b7280;
       }
-      .popNumber{
-        font-size:56px;
-        font-weight:900;
-        letter-spacing:-0.9px;
-        margin:0 0 10px;
-        line-height:1;
-      }
-      .popLabel{
-        font-size:26px;
+      .popVal{
+        font-size:22px;
+        font-weight:800;
+        margin:0 0 4px;
+        letter-spacing:-0.2px;
         color:#111;
-        letter-spacing:-0.3px;
+      }
+      .popLbl{
+        font-size:13px;
+        color:#111;
         margin:0;
       }
       .popSub{
-        font-size:20px;
+        font-size:13px;
         color:var(--muted);
         margin-top:2px;
       }
 
-      .hoodInner{ padding:22px; }
-      .hoodTop{
+      /* Barrio card */
+      .hoodGrid{
         display:grid;
-        grid-template-columns: 110px 1fr;
-        gap:18px;
+        grid-template-columns: 1fr;
+      }
+      .hoodHead{
+        display:grid;
+        grid-template-columns: 60px 1fr;
+        gap:12px;
         align-items:center;
-        padding-bottom:18px;
-        border-bottom:1px solid var(--border);
+        padding:14px 14px 12px;
       }
       .hoodThumb{
-        width:110px;
-        height:110px;
-        border-radius:18px;
+        width:60px;
+        height:60px;
+        border-radius:6px;
         border:1px solid var(--border);
         background:linear-gradient(135deg,#f0f1f3,#ffffff);
       }
       .hoodName{
-        font-size:44px;
-        font-weight:900;
-        letter-spacing:-0.9px;
+        font-size:16px;
+        font-weight:800;
         margin:0;
-        color: var(--link);
+        color:var(--link);
+        line-height:1.15;
       }
       .hoodCity{
-        font-size:26px;
-        margin:6px 0 0;
+        font-size:14px;
+        margin:3px 0 0;
         color:#111;
-        letter-spacing:-0.3px;
       }
-      .hoodRows{ margin-top:6px; }
+      .hoodRows{
+        border-top:1px solid var(--border);
+      }
       .hoodRow{
         display:grid;
-        grid-template-columns: 1fr 260px;
+        grid-template-columns: 1fr 200px;
         gap:14px;
-        padding:20px 0;
+        align-items:center;
+        padding:12px 14px;
         border-bottom:1px solid var(--border);
       }
-      .hoodRow:last-child{ border-bottom:0; }
+      .hoodRow:last-child{border-bottom:0;}
       .hoodK{
+        font-size:13px;
         color:var(--muted);
-        font-size:20px;
       }
       .hoodV{
+        font-size:13px;
         color:#111;
-        font-size:26px;
-        text-align:center;
-        letter-spacing:-0.2px;
       }
 
       .sideSticky{position:sticky; top:14px; display:grid; gap:12px;}
@@ -554,26 +562,12 @@
         .featuresGrid{grid-template-columns:1fr;}
         .featLine{grid-template-columns: 1fr; gap:4px;}
 
-        .popWrap{grid-template-columns:1fr;}
-        .popCell + .popCell{border-left:0;border-top:1px solid var(--border);}
-
-        .hoodTop{grid-template-columns: 96px 1fr;}
-        .hoodThumb{width:96px;height:96px;border-radius:16px;}
-        .hoodRow{grid-template-columns: 1fr; gap:10px;}
-        .hoodV{text-align:left;}
-
-        .bigTitle{font-size:48px;}
-        .popNumber{font-size:48px;}
-        .popLabel{font-size:24px;}
-        .popSub{font-size:18px;}
-        .hoodName{font-size:36px;}
-        .hoodCity{font-size:22px;}
-        .hoodK{font-size:18px;}
-        .hoodV{font-size:22px;}
+        .popCardInner{grid-template-columns:1fr;}
+        .popItem + .popItem{border-left:0;border-top:1px solid var(--border);}
+        .hoodRow{grid-template-columns: 1fr; gap:6px;}
       }
       @media (max-width: 560px){
         .mediaSmallGrid{grid-template-columns:1fr;}
-        .bigTitle{font-size:44px;}
       }
     </style>
   </head>
@@ -582,7 +576,7 @@
     <div class="wrap">
 
       <div class="topRow">
-        <a class="back" href="./">Volver al mapa</a>
+        <a class="back" id="backBtn" href="./">Volver al mapa</a>
       </div>
 
       <div id="banner" class="banner"></div>
@@ -700,14 +694,16 @@
 
             <div class="featuresGrid" id="featuresGrid"></div>
 
-            <div class="bigSection" id="popularidad">
-              <h3 class="bigTitle">Popularidad</h3>
-              <div class="panelCard" id="popCard"></div>
-            </div>
+            <div class="pophoodWrap">
+              <div>
+                <div class="pophoodTitle">Popularidad</div>
+                <div class="fundaCard" id="popCard"></div>
+              </div>
 
-            <div class="bigSection" id="barrio">
-              <h3 class="bigTitle">Barrio</h3>
-              <div class="panelCard" id="hoodCard"></div>
+              <div>
+                <div class="pophoodTitle">Barrio</div>
+                <div class="fundaCard" id="hoodCard"></div>
+              </div>
             </div>
           </div>
 
@@ -779,6 +775,8 @@
       const VIEW_DETAIL = "listing_detail_public";
 
       const bannerEl = document.getElementById("banner");
+
+      const backBtnEl = document.getElementById("backBtn");
 
       const titleEl = document.getElementById("title");
       const subTitleEl = document.getElementById("subTitle");
@@ -1014,41 +1012,41 @@
 
         popCardEl.innerHTML = "";
 
-        const wrap = document.createElement("div");
-        wrap.className = "popWrap";
+        const inner = document.createElement("div");
+        inner.className = "popCardInner";
 
-        const cell = (iconSvg, number, label, sub) => {
+        const mk = (iconSvg, val, lbl, sub) => {
           const c = document.createElement("div");
-          c.className = "popCell";
+          c.className = "popItem";
 
           const ic = document.createElement("div");
-          ic.className = "popIcon";
+          ic.className = "popIco";
           ic.innerHTML = iconSvg;
 
-          const n = document.createElement("div");
-          n.className = "popNumber";
-          n.textContent = number;
+          const v = document.createElement("div");
+          v.className = "popVal";
+          v.textContent = val;
 
           const l = document.createElement("div");
-          l.className = "popLabel";
-          l.textContent = label;
+          l.className = "popLbl";
+          l.textContent = lbl;
 
           const s = document.createElement("div");
           s.className = "popSub";
           s.textContent = sub;
 
           c.appendChild(ic);
-          c.appendChild(n);
+          c.appendChild(v);
           c.appendChild(l);
           c.appendChild(s);
           return c;
         };
 
-        wrap.appendChild(cell(POP_ICON_EYE, views, "Vistas", "en Buscar Hogar"));
-        wrap.appendChild(cell(POP_ICON_HEART, saves, "Guardados", "en Buscar Hogar"));
-        wrap.appendChild(cell(POP_ICON_CAL, onPortal, "En Buscar Hogar", "fecha de alta"));
+        inner.appendChild(mk(POP_ICON_EYE, views, "Vistas", "en Buscar Hogar"));
+        inner.appendChild(mk(POP_ICON_HEART, saves, "Guardados", "en Buscar Hogar"));
+        inner.appendChild(mk(POP_ICON_CAL, onPortal, "En Buscar Hogar", "fecha de alta"));
 
-        popCardEl.appendChild(wrap);
+        popCardEl.appendChild(inner);
       }
 
       function renderNeighborhood(row) {
@@ -1067,17 +1065,16 @@
 
         hoodCardEl.innerHTML = "";
 
-        const inner = document.createElement("div");
-        inner.className = "hoodInner";
+        const grid = document.createElement("div");
+        grid.className = "hoodGrid";
 
-        const top = document.createElement("div");
-        top.className = "hoodTop";
+        const head = document.createElement("div");
+        head.className = "hoodHead";
 
         const thumb = document.createElement("div");
         thumb.className = "hoodThumb";
 
-        const text = document.createElement("div");
-
+        const t = document.createElement("div");
         const name = document.createElement("p");
         name.className = "hoodName";
         name.textContent = hoodName;
@@ -1086,11 +1083,11 @@
         city.className = "hoodCity";
         city.textContent = hoodCity;
 
-        text.appendChild(name);
-        text.appendChild(city);
+        t.appendChild(name);
+        t.appendChild(city);
 
-        top.appendChild(thumb);
-        top.appendChild(text);
+        head.appendChild(thumb);
+        head.appendChild(t);
 
         const rows = document.createElement("div");
         rows.className = "hoodRows";
@@ -1116,10 +1113,10 @@
         rows.appendChild(rowLine("Familias con niños", familyPct));
         rows.appendChild(rowLine("Precio medio de venta / m²", avgAsk));
 
-        inner.appendChild(top);
-        inner.appendChild(rows);
+        grid.appendChild(head);
+        grid.appendChild(rows);
 
-        hoodCardEl.appendChild(inner);
+        hoodCardEl.appendChild(grid);
       }
 
       function renderFeatures(row) {
@@ -1291,8 +1288,41 @@
         saveTextEl.textContent = isSaved ? "Guardado" : "Guardar";
       }
 
+      function initBackLink() {
+        const url = new URL(window.location.href);
+
+        // 1) Si viene un return= (URL codificada), úsala.
+        const ret = url.searchParams.get("return");
+        if (ret) {
+          try {
+            const decoded = decodeURIComponent(ret);
+            backBtnEl.href = decoded;
+            return;
+          } catch {}
+        }
+
+        // 2) Si el mapa guardó su URL en sessionStorage/localStorage.
+        const saved = sessionStorage.getItem("bh_last_map_url") || localStorage.getItem("bh_last_map_url");
+        if (saved) {
+          backBtnEl.href = saved;
+          return;
+        }
+
+        // 3) Si hay referrer interno, úsalo.
+        try {
+          const ref = document.referrer ? new URL(document.referrer) : null;
+          if (ref && ref.origin === window.location.origin) {
+            backBtnEl.href = ref.href;
+            return;
+          }
+        } catch {}
+
+        // 4) Fallback
+        backBtnEl.href = "./";
+      }
+
       shareBtn.addEventListener("click", async () => {
-        const ok = await copyToClipboard(window.location.href);
+        const ok = await navigator.clipboard.writeText(window.location.href).then(() => true).catch(() => false);
         if (!ok) window.prompt("Copia el enlace:", window.location.href);
       });
 
@@ -1301,6 +1331,7 @@
       });
 
       (async () => {
+        initBackLink();
         wireMediaButtons();
         wireReadMore();
 
