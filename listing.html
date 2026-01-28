@@ -1,1297 +1,253 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Buscar Hogar – Ficha</title>
-
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
-
-    <style>
-      :root{
-        --bg:#ffffff;
-        --text:#111;
-        --muted:#6b7280;
-        --border:#e6e7eb;
-        --link:#2563eb;
-
-        --gap:4px;
-
-        --mediaRatio: 2.55 / 1;
-        --contentMax: 1140px;
-        --bleed: 56px;
-
-        --shadow: 0 1px 0 rgba(0,0,0,0.03);
-      }
-
-      html,body{
-        margin:0;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        color:var(--text);
-        background:var(--bg);
-      }
-
-      .wrap{
-        max-width: var(--contentMax);
-        margin:0 auto;
-        padding:14px 16px 64px;
-      }
-
-      .topRow{display:flex; align-items:center; gap:12px; margin-bottom:10px;}
-
-      .back{
-        display:inline-flex;
-        align-items:center;
-        gap:8px;
-        text-decoration:none;
-        color:var(--text);
-        border:1px solid var(--border);
-        padding:8px 10px;
-        border-radius:12px;
-        background:#fff;
-        font-size:14px;
-      }
-
-      .banner{
-        border:1px solid #f3b4b4;
-        background:#fff5f5;
-        color:#7a1b1b;
-        padding:10px 12px;
-        border-radius:12px;
-        margin:10px 0 12px;
-        font-size:13px;
-        white-space:pre-wrap;
-        display:none;
-      }
-
-      .crumbs{
-        display:flex;
-        align-items:center;
-        gap:6px;
-        color:var(--muted);
-        font-size:12.5px;
-        margin:6px 0 12px;
-      }
-      .crumbLink{
-        color:var(--link);
-        text-decoration:none;
-        cursor:pointer;
-      }
-      .crumbLink:hover{text-decoration:underline;}
-      .crumbCurrent{color:var(--muted);}
-      .sep{color:#c4c7cf;}
-
-      .mediaOuter{
-        margin-left: calc(-1 * var(--bleed));
-        margin-right: calc(-1 * var(--bleed));
-        margin-top: 8px;
-        margin-bottom: 10px;
-      }
-
-      .mediaBlock{
-        position:relative;
-        overflow:hidden;
-        border:0;
-        background:#fff;
-      }
-
-      .mediaSizer{
-        width:100%;
-        aspect-ratio: var(--mediaRatio);
-        max-height: 520px;
-        min-height: 380px;
-      }
-
-      .mediaGrid{
-        display:grid;
-        grid-template-columns: 66% 34%;
-        gap: var(--gap);
-        padding: 0;
-        height:100%;
-        background:#fff;
-      }
-
-      .mediaBig, .mediaSmall{
-        border-radius: 0;
-        background:linear-gradient(135deg,#f0f1f3,#ffffff);
-        border:0;
-        display:grid;
-        place-items:center;
-        color:#9aa1aa;
-        user-select:none;
-        overflow:hidden;
-        position:relative;
-      }
-      .mediaBig{height:100%;}
-      .mediaSmallGrid{
-        display:grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-        gap: var(--gap);
-        height:100%;
-      }
-      .mediaSmall{height:100%;}
-
-      .mediaActions{
-        position:absolute;
-        right:12px;
-        top:12px;
-        display:flex;
-        gap:8px;
-        z-index:5;
-      }
-      .actionBtn{
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        height:36px;
-        padding:0 11px;
-        border-radius:999px;
-        border:1px solid rgba(0,0,0,0.08);
-        background:#fff;
-        cursor:pointer;
-        font-size:14px;
-        gap:8px;
-        box-shadow: var(--shadow);
-      }
-      .actionBtn:active{transform:translateY(1px);}
-      .actionIcon{width:36px; padding:0;}
-      .icon{width:18px; height:18px; display:inline-block;}
-
-      .mediaTabs{
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:12px;
-        border-bottom:1px solid var(--border);
-        padding:10px 2px 12px;
-        margin:10px 0 16px;
-      }
-      .tabsLeft{display:flex; gap:16px; flex-wrap:wrap; align-items:center;}
-      .tabBtn{
-        display:inline-flex;
-        align-items:center;
-        gap:8px;
-        color:#111;
-        font-size:14px;
-        padding:6px 6px;
-        border-radius:10px;
-        border:0;
-        background:transparent;
-        cursor:pointer;
-      }
-      .tabBtn:hover{background:#f6f7f9;}
-      .tabCount{color:var(--muted);}
-      .tabsRight .tabBtn{
-        border:1px solid var(--border);
-        background:#fff;
-        padding:7px 10px;
-        border-radius:12px;
-      }
-
-      .contentGrid{
-        display:grid;
-        grid-template-columns: 2fr 1fr;
-        gap:22px;
-        align-items:start;
-      }
-
-      .title{
-        font-size:30px;
-        line-height:1.12;
-        margin:0 0 6px;
-        font-weight:800;
-        letter-spacing:-0.2px;
-      }
-      .subTitle{
-        color: var(--muted);
-        margin: 0 0 10px;
-        font-size: 15px;
-      }
-
-      .priceRow{
-        display:flex;
-        align-items:baseline;
-        gap:12px;
-        flex-wrap:wrap;
-        margin:10px 0 8px;
-      }
-      .price{
-        font-size:34px;
-        font-weight:900;
-        margin:0;
-      }
-      .priceNoteBtn{
-        color:var(--link);
-        font-size:14px;
-        border:0;
-        background:transparent;
-        padding:0;
-        cursor:pointer;
-        text-decoration:none;
-      }
-      .priceNoteBtn:hover{text-decoration:underline;}
-
-      .factsRow{
-        display:flex;
-        gap:18px;
-        flex-wrap:wrap;
-        align-items:center;
-        margin-top:10px;
-        color:#111;
-        font-size:15px;
-      }
-      .fact{
-        display:inline-flex;
-        align-items:center;
-        gap:8px;
-        padding:0;
-        border:0;
-        background:transparent;
-      }
-      .factMuted{color:var(--muted);}
-
-      .subnav{
-        display:flex;
-        gap:14px;
-        flex-wrap:wrap;
-        align-items:center;
-        margin-top:16px;
-        padding-top:14px;
-        /* quitamos “la línea” extra que comentaste: NO borde arriba */
-        border-top:0;
-      }
-      .subnav a{
-        color:#111;
-        text-decoration:none;
-        font-size:14px;
-        padding:6px 8px;
-        border-radius:10px;
-      }
-      .subnav a:hover{background:#f6f7f9;}
-      .subnav .pill{
-        color:var(--muted);
-        font-size:13px;
-      }
-
-      .section{
-        padding-top:22px;
-        margin-top:22px;
-        border-top:1px solid var(--border);
-      }
-      .h2{
-        font-size:42px; /* más grande para “Popularidad” / “Barrio” estilo funda */
-        margin:0 0 10px;
-        letter-spacing:-0.6px;
-        line-height:1.05;
-      }
-      /* Para los H2 “normales” dentro del flujo (Descripción, Características, Ubicación) */
-      .h2.small{
-        font-size:20px;
-        letter-spacing:-0.1px;
-        line-height:1.2;
-      }
-
-      .p{
-        color:#111;
-        font-size:15px;
-        line-height:1.6;
-        margin:0;
-        white-space:pre-wrap;
-      }
-      .mutedP{color:var(--muted);}
-      .readMoreBtn{
-        margin-top:10px;
-        border:1px solid var(--border);
-        background:#fff;
-        padding:8px 10px;
-        border-radius:12px;
-        cursor:pointer;
-        font-size:14px;
-      }
-
-      .descClamp{
-        display:-webkit-box;
-        -webkit-box-orient:vertical;
-        overflow:hidden;
-      }
-      .clamp5{ -webkit-line-clamp:5; }
-      .clamp999{ -webkit-line-clamp:999; }
-
-      /* ===== ESTILO FUNDA – BLOQUES DE CARACTERÍSTICAS (cuadros + separadores) ===== */
-      .featuresGrid{
-        display:grid;
-        grid-template-columns: 1fr;
-        gap:16px;
-        margin-top:12px;
-      }
-
-      .featBlock{
-        border:1px solid var(--border);
-        border-radius:8px;
-        background:#fff;
-        overflow:hidden;
-      }
-
-      .featHead{
-        display:flex;
-        align-items:center;
-        gap:10px;
-        padding:14px 16px;
-        font-size:16px;
-        font-weight:600;
-        border-bottom:1px solid var(--border);
-      }
-
-      .featList{ padding:0; }
-
-      .featLine{
-        display:grid;
-        grid-template-columns: 260px 1fr;
-        padding:10px 16px;
-        border-bottom:1px solid var(--border);
-      }
-      .featLine:last-child{ border-bottom:none; }
-
-      .featK{ font-size:14px; color:var(--muted); }
-      .featV{ font-size:14px; color:#111; }
-
-      .sideSticky{position:sticky; top:14px; display:grid; gap:12px;}
-      .sideCard{
-        background:#fff;
-        border:1px solid var(--border);
-        border-radius:14px;
-        overflow:hidden;
-      }
-      .sideCardInner{padding:14px;}
-      .sideTitle{color:var(--muted); font-size:13px; margin:0 0 10px;}
-
-      .kv{display:grid; gap:10px;}
-      .kvLine{display:grid; grid-template-columns: 92px 1fr; gap:10px;}
-      .k{color:var(--muted); font-size:13px;}
-      .v{font-size:14px;}
-      .mono{
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-        font-size:12px;
-        color:var(--muted);
-        word-break:break-all;
-      }
-
-      #miniMap{height:160px; width:100%; background:linear-gradient(135deg,#f0f1f3,#ffffff);}
-      .mapHeader{
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        padding:12px 14px;
-        border-bottom:1px solid var(--border);
-      }
-      .mapHeaderTitle{font-size:14px; color:#111;}
-      .mapHeaderSmall{font-size:13px; color:var(--muted);}
-      .leaflet-control-zoom a{width:32px; height:32px; line-height:32px;}
-
-      #mainMap{
-        height: 340px;
-        width: 100%;
-        border-radius:14px;
-        border:1px solid var(--border);
-        overflow:hidden;
-        background:linear-gradient(135deg,#f0f1f3,#ffffff);
-      }
-
-      /* ===== POPULARIDAD (estilo funda) ===== */
-      .popularityBox{
-        border:1px solid var(--border);
-        border-radius:12px;
-        display:grid;
-        grid-template-columns: repeat(3, 1fr);
-        overflow:hidden;
-        margin-top:12px;
-      }
-      .popItem{
-        padding:22px 10px;
-        text-align:center;
-        border-right:1px solid var(--border);
-      }
-      .popItem:last-child{ border-right:none; }
-      .popIcon{ margin-bottom:8px; color:#6b7280; font-size:22px; }
-      .popValue{ font-size:28px; font-weight:800; margin-bottom:6px; }
-      .popLabel{ font-size:18px; font-weight:600; }
-      .popSub{ font-size:14px; color:var(--muted); margin-top:2px; }
-
-      /* ===== BARRIO (estilo funda) ===== */
-      .neighborhoodWrap{
-        display:grid;
-        grid-template-columns: 1fr;
-        gap:16px;
-        margin-top:12px;
-      }
-
-      .neighborhoodCard{
-        border:1px solid var(--border);
-        border-radius:12px;
-        padding:18px;
-        background:#fff;
-      }
-
-      .neighHeader{
-        display:flex;
-        gap:14px;
-        align-items:center;
-        margin-bottom:14px;
-      }
-
-      .neighThumb{
-        width:56px;
-        height:56px;
-        border-radius:12px;
-        background:#f0f1f3;
-        border:1px solid var(--border);
-      }
-
-      .neighTitle{
-        font-size:34px;
-        font-weight:800;
-        color:#2563eb;
-        line-height:1.05;
-        margin-bottom:2px;
-      }
-      .neighCity{
-        font-size:18px;
-        color:#111;
-        line-height:1.1;
-      }
-
-      .neighLine{
-        display:grid;
-        grid-template-columns: 260px 1fr;
-        padding:12px 0;
-        border-top:1px solid var(--border);
-        align-items:center;
-      }
-      .neighK{
-        color:var(--muted);
-        font-size:16px;
-      }
-      .neighV{
-        font-size:16px;
-        color:#111;
-        font-weight:500;
-      }
-
-      /* ===== BOTÓN GOOGLE MAPS (en vez de la frase) ===== */
-      .gmapsBtn{
-        margin-top:12px;
-        display:inline-flex;
-        align-items:center;
-        gap:8px;
-        padding:10px 14px;
-        border-radius:12px;
-        border:1px solid var(--border);
-        background:#fff;
-        font-size:14px;
-        cursor:pointer;
-        text-decoration:none;
-        color:#111;
-        width: fit-content;
-      }
-      .gmapsBtn:hover{ background:#f6f7f9; }
-
-      .contactBtns{
-        display:grid;
-        gap:10px;
-      }
-      .cta{
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        gap:10px;
-        width:100%;
-        height:42px;
-        border-radius:12px;
-        cursor:pointer;
-        border:1px solid var(--border);
-        background:#fff;
-        font-size:14px;
-      }
-      .ctaPrimary{
-        background:#111;
-        color:#fff;
-        border-color:#111;
-      }
-      .cta[disabled]{
-        opacity:0.55;
-        cursor:not-allowed;
-      }
-
-      @media (max-width: 1200px){
-        :root{ --bleed: 24px; }
-      }
-      @media (max-width: 980px){
-        .mediaOuter{ margin-left: 0; margin-right: 0; }
-        .mediaSizer{aspect-ratio:auto; min-height:0; max-height:none;}
-        .mediaGrid{grid-template-columns:1fr; height:auto;}
-        .mediaBig{min-height:260px;}
-        .mediaSmallGrid{height:auto;}
-        .mediaSmall{min-height:150px;}
-        .contentGrid{grid-template-columns:1fr;}
-        .sideSticky{position:static;}
-
-        .featLine{grid-template-columns: 1fr; gap:4px;}
-        .neighLine{grid-template-columns: 1fr; gap:6px;}
-        .popularityBox{grid-template-columns:1fr;}
-        .popItem{border-right:none; border-bottom:1px solid var(--border);}
-        .popItem:last-child{border-bottom:none;}
-        .h2{font-size:34px;}
-      }
-      @media (max-width: 560px){
-        .mediaSmallGrid{grid-template-columns:1fr;}
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="wrap">
-
-      <div class="topRow">
-        <a class="back" id="backBtn" href="./">Volver al mapa</a>
-      </div>
-
-      <div id="banner" class="banner"></div>
-
-      <div class="crumbs">
-        <a class="crumbLink" id="crumbCity" href="./">Ciudad</a>
-        <span class="sep">/</span>
-        <a class="crumbLink" id="crumbNeighborhood" href="./">Barrio</a>
-        <span class="sep">/</span>
-        <span class="crumbCurrent" id="crumbAddress">Dirección</span>
-      </div>
-
-      <div class="mediaOuter">
-        <div class="mediaBlock">
-          <div class="mediaActions">
-            <button class="actionBtn actionIcon" id="shareBtn" type="button" title="Compartir">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/>
-                <path d="M12 3v12"/>
-                <path d="M7 8l5-5 5 5"/>
-              </svg>
-            </button>
-
-            <button class="actionBtn" id="saveBtn" type="button" title="Guardar">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
-              </svg>
-              <span id="saveText">Guardar</span>
-            </button>
-          </div>
-
-          <div class="mediaSizer">
-            <div class="mediaGrid">
-              <div class="mediaBig" id="mediaBig">Foto principal (pendiente)</div>
-              <div class="mediaSmallGrid">
-                <div class="mediaSmall" id="mediaS1">Foto</div>
-                <div class="mediaSmall" id="mediaS2">Vídeo</div>
-                <div class="mediaSmall" id="mediaS3">Foto</div>
-                <div class="mediaSmall" id="mediaS4">Foto</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="mediaTabs">
-        <div class="tabsLeft">
-          <button class="tabBtn" type="button" id="tabPhotos">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l2-2h4l2 2h3a2 2 0 0 1 2 2z"/>
-              <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>
-            </svg>
-            Fotos <span class="tabCount" id="photosCount">0</span>
-          </button>
-
-          <button class="tabBtn" type="button" id="tabFloor">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16v16H4z"/>
-              <path d="M4 10h16"/>
-              <path d="M10 10v10"/>
-            </svg>
-            Plano <span class="tabCount" id="floorCount">0</span>
-          </button>
-
-          <button class="tabBtn" type="button" id="tab360">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M2 12a10 10 0 0 0 20 0"/>
-              <path d="M2 12a10 10 0 0 1 20 0"/>
-              <path d="M8 12h8"/>
-            </svg>
-            360° <span class="tabCount" id="panoCount">0</span>
-          </button>
-
-          <button class="tabBtn" type="button" id="tabVideo">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14.5 8.5l6-3v13l-6-3"/>
-              <path d="M3 6h11v12H3z"/>
-            </svg>
-            Vídeo
-          </button>
-        </div>
-
-        <div class="tabsRight">
-          <button class="tabBtn" type="button" id="tabAllMedia">Todo el contenido</button>
-        </div>
-      </div>
-
-      <div class="contentGrid">
-        <div>
-          <h1 class="title" id="title">Dirección</h1>
-          <p class="subTitle" id="subTitle">—</p>
-
-          <div class="priceRow">
-            <p class="price" id="price">—</p>
-            <button class="priceNoteBtn" type="button" id="monthlyLink">¿Cuánto pagaré al mes?</button>
-          </div>
-
-          <div class="factsRow" id="factsRow"></div>
-
-          <div class="subnav">
-            <a href="#descripcion">Descripción</a>
-            <a href="#caracteristicas">Características</a>
-            <a href="#ubicacion">Ubicación</a>
-            <span class="pill" id="navHint">—</span>
-          </div>
-
-          <div class="section" id="descripcion">
-            <h2 class="h2 small">Descripción</h2>
-            <div id="descWrap" class="p descClamp clamp5"></div>
-            <button id="descToggle" class="readMoreBtn" type="button" style="display:none;">Leer más</button>
-          </div>
-
-          <div class="section" id="caracteristicas">
-            <h2 class="h2 small">Características</h2>
-            <div class="featuresGrid" id="featuresGrid"></div>
-          </div>
-
-          <div class="section" id="popularidad">
-            <h2 class="h2">Popularidad</h2>
-            <div class="popularityBox">
-              <div class="popItem">
-                <div class="popIcon">👁</div>
-                <div class="popValue" id="popViews">—</div>
-                <div class="popLabel">Vistas</div>
-                <div class="popSub">en Buscar Hogar</div>
-              </div>
-
-              <div class="popItem">
-                <div class="popIcon">❤</div>
-                <div class="popValue" id="popSaved">—</div>
-                <div class="popLabel">Guardados</div>
-                <div class="popSub">en Buscar Hogar</div>
-              </div>
-
-              <div class="popItem">
-                <div class="popIcon">📅</div>
-                <div class="popValue" id="popSince">—</div>
-                <div class="popLabel">En Buscar Hogar</div>
-                <div class="popSub">fecha de alta</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="section" id="barrio">
-            <h2 class="h2">Barrio</h2>
-
-            <div class="neighborhoodWrap">
-              <div class="neighborhoodCard">
-                <div class="neighHeader">
-                  <div class="neighThumb"></div>
-                  <div>
-                    <div class="neighTitle" id="neighName">—</div>
-                    <div class="neighCity" id="neighCity">—</div>
-                  </div>
-                </div>
-
-                <div class="neighLine">
-                  <div class="neighK">Residentes</div>
-                  <div class="neighV" id="neighResidents">—</div>
-                </div>
-                <div class="neighLine">
-                  <div class="neighK">Familias con niños</div>
-                  <div class="neighV" id="neighFamilies">—</div>
-                </div>
-                <div class="neighLine">
-                  <div class="neighK">Precio medio de venta / m²</div>
-                  <div class="neighV" id="neighAvgM2">—</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="section" id="ubicacion">
-            <h2 class="h2 small">Ubicación</h2>
-            <div id="mainMap"></div>
-            <a id="gmapsBtn" class="gmapsBtn" target="_blank" rel="noopener" style="display:none;">
-              Calcular tiempo de viaje con Google Maps
-            </a>
-          </div>
-        </div>
-
-        <div>
-          <div class="sideSticky">
-            <div class="sideCard">
-              <div class="mapHeader">
-                <div class="mapHeaderTitle">Mapa</div>
-                <div class="mapHeaderSmall" id="mapHint">—</div>
-              </div>
-              <div id="miniMap"></div>
-            </div>
-
-            <div class="sideCard">
-              <div class="sideCardInner">
-                <p class="sideTitle">Contacto</p>
-                <div class="contactBtns">
-                  <button class="cta ctaPrimary" id="callBtn" type="button" disabled>Llamar</button>
-                  <button class="cta" id="emailBtn" type="button" disabled>Enviar mensaje</button>
-                </div>
-                <div style="height:10px;"></div>
-                <div class="kv">
-                  <div class="kvLine">
-                    <div class="k">Agencia</div>
-                    <div class="v" id="agency">—</div>
-                  </div>
-                  <div class="kvLine">
-                    <div class="k">Publicado</div>
-                    <div class="v" id="listedAt">—</div>
-                  </div>
-                  <div class="kvLine">
-                    <div class="k">Tipo</div>
-                    <div class="v" id="ptype">—</div>
-                  </div>
-                  <div class="kvLine">
-                    <div class="k">ID</div>
-                    <div class="v mono" id="id">—</div>
-                  </div>
-                </div>
-                <div style="height:10px;"></div>
-                <div class="p mutedP" style="font-size:13px;">
-                  MVP: botones de contacto se activarán cuando tengamos teléfono/email en la base de datos.
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Buscar Hogar – Ficha</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <style>
+    :root{
+      --bg:#fff;
+      --text:#111;
+      --muted:#6b7280;
+      --border:#e6e7eb;
+      --link:#2563eb;
+      --contentMax:1140px;
+    }
+
+    html,body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      color:var(--text);
+      background:var(--bg);
+    }
+
+    /* ===== STICKY FUNDA ===== */
+    .stickyBar{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      background:#fff;
+      border-bottom:1px solid var(--border);
+      z-index:1000;
+      transform:translateY(-100%);
+      transition:transform .25s ease;
+    }
+    .stickyBar.visible{ transform:translateY(0); }
+
+    .stickyInner{
+      max-width:var(--contentMax);
+      margin:0 auto;
+      padding:10px 16px;
+      display:grid;
+      grid-template-columns: 1fr auto;
+      align-items:center;
+      gap:16px;
+    }
+
+    .stickyLeft{
+      overflow:hidden;
+    }
+    .stickyTitle{
+      font-size:14px;
+      font-weight:600;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .stickyPrice{
+      font-size:14px;
+      font-weight:700;
+      margin-top:2px;
+    }
+
+    .stickyActions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .stickyBtn{
+      height:34px;
+      padding:0 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:13px;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .stickyBtn.primary{
+      background:#111;
+      color:#fff;
+      border-color:#111;
+    }
+
+    /* ===== PAGE ===== */
+    .wrap{
+      max-width:var(--contentMax);
+      margin:0 auto;
+      padding:16px 16px 80px;
+    }
+
+    .back{
+      display:inline-block;
+      margin-bottom:12px;
+      font-size:14px;
+      color:#111;
+      text-decoration:none;
+    }
+
+    /* ===== MEDIA ===== */
+    .mediaBlock{ margin-top:8px; }
+    .mediaGrid{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:4px;
+      height:420px;
+    }
+    .mediaBig,.mediaSmall{
+      background:#f0f1f3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#999;
+      font-size:14px;
+    }
+    .mediaSmallGrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      grid-template-rows:1fr 1fr;
+      gap:4px;
+    }
+
+    h1{ margin:16px 0 4px; }
+    .price{ font-size:32px; font-weight:800; margin:0; }
+
+    .section{ margin-top:36px; }
+    .h2{ font-size:26px; margin-bottom:12px; }
+
+    /* ===== MAP ===== */
+    #mainMap{
+      height:360px;
+      border-radius:12px;
+      border:1px solid var(--border);
+    }
+    .gmapsBtn{
+      margin-top:12px;
+      display:inline-block;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      text-decoration:none;
+      color:#111;
+      font-size:14px;
+    }
+
+    @media(max-width:900px){
+      .mediaGrid{ grid-template-columns:1fr; height:auto; }
+      .mediaSmallGrid{ grid-template-columns:1fr; }
+      .stickyInner{ grid-template-columns:1fr; gap:8px; }
+      .stickyActions{ flex-wrap:wrap; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- STICKY BAR -->
+<div class="stickyBar" id="stickyBar">
+  <div class="stickyInner">
+    <div class="stickyLeft">
+      <div class="stickyTitle" id="stickyTitle">—</div>
+      <div class="stickyPrice" id="stickyPrice">—</div>
     </div>
-
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-    ></script>
-
-    <script>
-      const SUPABASE_URL = "https://dpusnylssfjnksbieimj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_tSSgJcWWRfEe2uob7SFYgw_AqcBL7KK";
-      const VIEW_DETAIL = "listing_detail_public";
-
-      const bannerEl = document.getElementById("banner");
-
-      const titleEl = document.getElementById("title");
-      const subTitleEl = document.getElementById("subTitle");
-      const priceEl = document.getElementById("price");
-      const agencyEl = document.getElementById("agency");
-      const listedAtEl = document.getElementById("listedAt");
-      const idEl = document.getElementById("id");
-      const ptypeEl = document.getElementById("ptype");
-
-      const crumbsCityEl = document.getElementById("crumbCity");
-      const crumbsNeighborhoodEl = document.getElementById("crumbNeighborhood");
-      const crumbsAddressEl = document.getElementById("crumbAddress");
-
-      const factsRowEl = document.getElementById("factsRow");
-
-      const shareBtn = document.getElementById("shareBtn");
-      const saveBtn = document.getElementById("saveBtn");
-      const saveTextEl = document.getElementById("saveText");
-      const monthlyBtn = document.getElementById("monthlyLink");
-
-      const tabPhotos = document.getElementById("tabPhotos");
-      const tabFloor = document.getElementById("tabFloor");
-      const tab360 = document.getElementById("tab360");
-      const tabVideo = document.getElementById("tabVideo");
-      const tabAllMedia = document.getElementById("tabAllMedia");
-
-      const photosCountEl = document.getElementById("photosCount");
-      const floorCountEl = document.getElementById("floorCount");
-      const panoCountEl = document.getElementById("panoCount");
-
-      const mapHintEl = document.getElementById("mapHint");
-      const navHintEl = document.getElementById("navHint");
-
-      const descWrapEl = document.getElementById("descWrap");
-      const descToggleEl = document.getElementById("descToggle");
-
-      const featuresGridEl = document.getElementById("featuresGrid");
-
-      const gmapsBtnEl = document.getElementById("gmapsBtn");
-
-      const popViewsEl = document.getElementById("popViews");
-      const popSavedEl = document.getElementById("popSaved");
-      const popSinceEl = document.getElementById("popSince");
-
-      const neighNameEl = document.getElementById("neighName");
-      const neighCityEl = document.getElementById("neighCity");
-      const neighResidentsEl = document.getElementById("neighResidents");
-      const neighFamiliesEl = document.getElementById("neighFamilies");
-      const neighAvgM2El = document.getElementById("neighAvgM2");
-
-      const backBtnEl = document.getElementById("backBtn");
-
-      let miniMap = null;
-      let miniMarker = null;
-
-      let mainMap = null;
-      let mainMarker = null;
-
-      function showBanner(msg) {
-        bannerEl.style.display = "block";
-        bannerEl.textContent = msg;
-      }
-
-      function euro(n) {
-        try {
-          return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
-        } catch {
-          return String(n) + " EUR";
-        }
-      }
-
-      function fmtDate(s) {
-        if (!s) return "—";
-        try {
-          const d = new Date(s);
-          if (isNaN(d.getTime())) return String(s);
-          return d.toLocaleDateString("es-ES");
-        } catch {
-          return String(s);
-        }
-      }
-
-      function getParam(name) {
-        const u = new URL(window.location.href);
-        return u.searchParams.get(name);
-      }
-
-      function addFact(iconSvg, text, muted=false) {
-        const wrap = document.createElement("div");
-        wrap.className = "fact";
-
-        const icon = document.createElement("span");
-        icon.className = "icon";
-        icon.innerHTML = iconSvg;
-
-        const t = document.createElement("span");
-        t.textContent = text;
-        if (muted) t.className = "factMuted";
-
-        wrap.appendChild(icon);
-        wrap.appendChild(t);
-        factsRowEl.appendChild(wrap);
-      }
-
-      const ICON_AREA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 10h16"/><path d="M10 10v10"/></svg>';
-      const ICON_YEAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18"/><path d="M7 3v4"/><path d="M17 3v4"/><path d="M5 7h14v14H5z"/></svg>';
-      const ICON_TYPE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>';
-      const ICON_LOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-4.5 7-11a7 7 0 0 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2"/></svg>';
-
-      async function fetchDetail(listingId) {
-        const params = new URLSearchParams();
-        params.set(
-          "select",
-          [
-            "listing_id",
-            "price_eur",
-            "listed_at",
-            "agency_name",
-            "property_type",
-            "useful_area_m2",
-            "built_year",
-            "city",
-            "neighborhood",
-            "address_display",
-            "postcode",
-            "province",
-            "lat",
-            "lng"
-          ].join(",")
-        );
-        params.set("listing_id", "eq." + listingId);
-        params.set("limit", "1");
-
-        const url = SUPABASE_URL + "/rest/v1/" + VIEW_DETAIL + "?" + params.toString();
-
-        const res = await fetch(url, {
-          headers: {
-            apikey: SUPABASE_ANON_KEY,
-            Authorization: "Bearer " + SUPABASE_ANON_KEY
-          }
-        });
-
-        const text = await res.text();
-        if (!res.ok) throw new Error("Supabase " + res.status + ": " + text);
-
-        let data = [];
-        try { data = JSON.parse(text); } catch { data = []; }
-        return data[0] || null;
-      }
-
-      async function copyToClipboard(text) {
-        try { await navigator.clipboard.writeText(text); return true; }
-        catch { return false; }
-      }
-
-      function ensureMiniMap(lat, lng) {
-        const hasCoords = (typeof lat === "number" && typeof lng === "number" && isFinite(lat) && isFinite(lng));
-        if (!hasCoords) {
-          mapHintEl.textContent = "Sin coordenadas";
-          if (miniMap) { miniMap.remove(); miniMap = null; miniMarker = null; }
-          return;
-        }
-
-        mapHintEl.textContent = "Ver ubicación";
-
-        if (!miniMap) {
-          miniMap = L.map("miniMap", {
-            zoomControl: true,
-            attributionControl: false,
-            scrollWheelZoom: false,
-            dragging: false,
-            doubleClickZoom: false,
-            boxZoom: false,
-            keyboard: false
-          }).setView([lat, lng], 15);
-          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(miniMap);
-        } else {
-          miniMap.setView([lat, lng], 15);
-        }
-
-        if (miniMarker) miniMarker.setLatLng([lat, lng]);
-        else miniMarker = L.marker([lat, lng]).addTo(miniMap);
-      }
-
-      function ensureMainMap(lat, lng) {
-        const hasCoords = (typeof lat === "number" && typeof lng === "number" && isFinite(lat) && isFinite(lng));
-        if (!hasCoords) {
-          if (mainMap) { mainMap.remove(); mainMap = null; mainMarker = null; }
-          return;
-        }
-
-        if (!mainMap) {
-          mainMap = L.map("mainMap", { zoomControl: true, attributionControl: false, scrollWheelZoom: false }).setView([lat, lng], 14);
-          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(mainMap);
-        } else {
-          mainMap.setView([lat, lng], 14);
-        }
-
-        if (mainMarker) mainMarker.setLatLng([lat, lng]);
-        else mainMarker = L.marker([lat, lng]).addTo(mainMap);
-      }
-
-      function updateGoogleMapsLink(lat, lng){
-        const hasCoords = (lat != null && lng != null && isFinite(lat) && isFinite(lng));
-        if(!hasCoords){
-          gmapsBtnEl.style.display = "none";
-          return;
-        }
-        const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-        gmapsBtnEl.href = url;
-        gmapsBtnEl.style.display = "inline-flex";
-      }
-
-      function makeFeatBlock(title, lines) {
-        const block = document.createElement("div");
-        block.className = "featBlock";
-
-        const head = document.createElement("div");
-        head.className = "featHead";
-        head.textContent = title;
-
-        const list = document.createElement("div");
-        list.className = "featList";
-
-        lines.forEach(([k, v]) => {
-          const line = document.createElement("div");
-          line.className = "featLine";
-
-          const kk = document.createElement("div");
-          kk.className = "featK";
-          kk.textContent = k;
-
-          const vv = document.createElement("div");
-          vv.className = "featV";
-          vv.textContent = v;
-
-          line.appendChild(kk);
-          line.appendChild(vv);
-          list.appendChild(line);
-        });
-
-        block.appendChild(head);
-        block.appendChild(list);
-        return block;
-      }
-
-      function renderFeatures(row) {
-        featuresGridEl.innerHTML = "";
-
-        const dash = "—";
-        const vOrDash = (x) => (x == null || x === "") ? dash : String(x);
-
-        const price = row.price_eur != null ? Number(row.price_eur) : null;
-
-        // Como aún no tenemos “superficie útil exterior” ni “construida”, usamos útil interior si existe.
-        const utilInterior = row.useful_area_m2 != null ? Number(row.useful_area_m2) : null;
-
-        const pricePerM2 =
-          (price != null && utilInterior != null && isFinite(price) && isFinite(utilInterior) && utilInterior > 0)
-            ? Math.round(price / utilInterior)
-            : null;
-
-        // Secciones según tu listado
-        const bDatosPrincipales = makeFeatBlock("Datos principales", [
-          ["Precio", price != null ? euro(price) : dash],
-          ["Precio por metro cuadrado útil", pricePerM2 != null ? euro(pricePerM2) : dash],
-          ["Estado", dash],
-          ["Gastos de comunidad", dash]
-        ]);
-
-        const bEdificio = makeFeatBlock("Edificio", [
-          ["Tipo de apartamento", vOrDash(row.property_type)], // aproximación
-          ["Año de construcción", row.built_year != null ? String(row.built_year) : dash]
-        ]);
-
-        const bSuperficies = makeFeatBlock("Superficies", [
-          ["Superficie útil interior", utilInterior != null ? (String(utilInterior) + " m²") : dash],
-          ["Superficie útil exterior", dash],
-          ["Superficie total útil", utilInterior != null ? (String(utilInterior) + " m²") : dash],
-          ["Superficie construida total", dash],
-          ["Altura comedor", dash],
-          ["Volumen total vivienda", dash]
-        ]);
-
-        const bDistribucion = makeFeatBlock("Distribución", [
-          ["Número de dormitorios", dash],
-          ["Número de baños", dash],
-          ["Planta", dash]
-        ]);
-
-        const bEnergia = makeFeatBlock("Energía", [
-          ["Etiqueta energética", dash],
-          ["Aislamiento térmico", dash],
-          ["Calefacción", dash],
-          ["Refrigeración", dash],
-          ["Agua caliente", dash]
-        ]);
-
-        const bAlmacenaje = makeFeatBlock("Almacenaje", [
-          ["Trastero", dash],
-          ["Localización", dash],
-          ["Superficie", dash]
-        ]);
-
-        const bAparcamiento = makeFeatBlock("Aparcamiento", [
-          ["Número de plazas de aparcamiento", dash],
-          ["Incluida en el precio", dash]
-        ]);
-
-        featuresGridEl.appendChild(bDatosPrincipales);
-        featuresGridEl.appendChild(bEdificio);
-        featuresGridEl.appendChild(bSuperficies);
-        featuresGridEl.appendChild(bDistribucion);
-        featuresGridEl.appendChild(bEnergia);
-        featuresGridEl.appendChild(bAlmacenaje);
-        featuresGridEl.appendChild(bAparcamiento);
-      }
-
-      function renderDescription(row) {
-        const city = row.city || "la zona";
-        const neighborhood = row.neighborhood ? (" en " + row.neighborhood) : "";
-        const area = row.useful_area_m2 != null ? (String(row.useful_area_m2) + " m²") : null;
-        const year = row.built_year != null ? String(row.built_year) : null;
-
-        const parts = [];
-        parts.push("Descripción pendiente de publicación por la agencia. En cuanto esté disponible, aquí verás el texto completo con distribución, estado, equipamiento y detalles relevantes.");
-        parts.push("");
-        parts.push("Datos básicos:");
-        parts.push("- Ubicación: " + (row.city ? (row.city + neighborhood) : city));
-        parts.push("- Tipo: " + (row.property_type || "—"));
-        parts.push("- Superficie útil: " + (area || "—"));
-        parts.push("- Año: " + (year || "—"));
-        parts.push("");
-        parts.push("MVP: esta sección se conectará a la descripción estructurada en cuanto definamos el estándar final.");
-
-        descWrapEl.textContent = parts.join("\n");
-        descWrapEl.classList.add("descClamp", "clamp5");
-
-        const needsToggle = descWrapEl.textContent.length > 240;
-        descToggleEl.style.display = needsToggle ? "inline-flex" : "none";
-        descToggleEl.textContent = "Leer más";
-      }
-
-      function wireMediaButtons() {
-        const msg = "MVP: este botón abrirá la galería/visor cuando haya fotos/plano/vídeo.";
-        tabPhotos.addEventListener("click", () => alert(msg));
-        tabFloor.addEventListener("click", () => alert(msg));
-        tab360.addEventListener("click", () => alert(msg));
-        tabVideo.addEventListener("click", () => alert(msg));
-        tabAllMedia.addEventListener("click", () => alert(msg));
-      }
-
-      function wireReadMore() {
-        let open = false;
-        descToggleEl.addEventListener("click", () => {
-          open = !open;
-          descWrapEl.classList.toggle("clamp5", !open);
-          descWrapEl.classList.toggle("clamp999", open);
-          descToggleEl.textContent = open ? "Leer menos" : "Leer más";
-        });
-      }
-
-      function storageKey(listingId){ return "bh_saved_" + listingId; }
-
-      function setSavedUI(isSaved){
-        saveTextEl.textContent = isSaved ? "Guardado" : "Guardar";
-      }
-
-      function wireBackToMap(){
-        // Objetivo: volver al mapa “con estado”.
-        // Como no tenemos tu implementación del mapa aquí, lo resolvemos con:
-        // 1) Si viene un ?back=... lo usamos.
-        // 2) Si existe sessionStorage bh_last_map_url lo usamos.
-        // 3) Si no, cae a "./"
-        const urlParamBack = getParam("back");
-        if(urlParamBack){
-          try{
-            backBtnEl.href = decodeURIComponent(urlParamBack);
-            return;
-          }catch{}
-        }
-        const stored = sessionStorage.getItem("bh_last_map_url");
-        if(stored){
-          backBtnEl.href = stored;
-          return;
-        }
-        backBtnEl.href = "./";
-      }
-
-      shareBtn.addEventListener("click", async () => {
-        const ok = await copyToClipboard(window.location.href);
-        if (!ok) window.prompt("Copia el enlace:", window.location.href);
-      });
-
-      monthlyBtn.addEventListener("click", () => {
-        alert("MVP: aquí conectaremos calculadora de mensualidad (hipoteca + gastos) con supuestos configurables.");
-      });
-
-      (async () => {
-        wireBackToMap();
-        wireMediaButtons();
-        wireReadMore();
-
-        const listingId = getParam("id");
-        if (!listingId) {
-          showBanner("Falta el parámetro ?id=...");
-          titleEl.textContent = "Ficha no disponible";
-          return;
-        }
-
-        const initialSaved = localStorage.getItem(storageKey(listingId)) === "1";
-        setSavedUI(initialSaved);
-
-        saveBtn.addEventListener("click", () => {
-          const nowSaved = !(localStorage.getItem(storageKey(listingId)) === "1");
-          localStorage.setItem(storageKey(listingId), nowSaved ? "1" : "0");
-          setSavedUI(nowSaved);
-
-          // “Guardados” (visual) en Popularidad: MVP
-          popSavedEl.textContent = nowSaved ? "1" : "—";
-        });
-
-        try {
-          const row = await fetchDetail(listingId);
-
-          if (!row) {
-            showBanner("No hay fila en listing_detail_public para este id: " + listingId);
-            titleEl.textContent = "Ficha no encontrada";
-            idEl.textContent = listingId;
-            return;
-          }
-
-          crumbsCityEl.textContent = row.city || "Ciudad";
-          crumbsNeighborhoodEl.textContent = row.neighborhood || "Barrio";
-          crumbsAddressEl.textContent = row.address_display || "Dirección";
-
-          titleEl.textContent = row.address_display || "Dirección";
-          subTitleEl.textContent =
-            (row.postcode ? (row.postcode + " ") : "") +
-            (row.city || "—") +
-            (row.neighborhood ? (" · " + row.neighborhood) : "");
-
-          priceEl.textContent = row.price_eur != null ? euro(row.price_eur) : "—";
-
-          agencyEl.textContent = row.agency_name || "—";
-          listedAtEl.textContent = fmtDate(row.listed_at);
-          ptypeEl.textContent = row.property_type || "—";
-          idEl.textContent = row.listing_id || listingId;
-
-          factsRowEl.innerHTML = "";
-          if (row.useful_area_m2 != null) addFact(ICON_AREA, String(row.useful_area_m2) + " m² útiles");
-          if (row.property_type) addFact(ICON_TYPE, row.property_type, true);
-          if (row.built_year != null) addFact(ICON_YEAR, "Año " + row.built_year, true);
-          if (row.province) addFact(ICON_LOC, row.province, true);
-
-          navHintEl.textContent = "Actualizado: " + fmtDate(row.listed_at);
-
-          photosCountEl.textContent = "0";
-          floorCountEl.textContent = "0";
-          panoCountEl.textContent = "0";
-
-          renderDescription(row);
-          renderFeatures(row);
-
-          // Popularidad (MVP: sin datos reales)
-          popViewsEl.textContent = "—";
-          popSavedEl.textContent = initialSaved ? "1" : "—";
-          popSinceEl.textContent = fmtDate(row.listed_at);
-
-          // Barrio (MVP: sin datos demográficos aún)
-          neighNameEl.textContent = row.neighborhood || "—";
-          neighCityEl.textContent = row.city || "—";
-          neighResidentsEl.textContent = "—";
-          neighFamiliesEl.textContent = "—";
-          neighAvgM2El.textContent = "—";
-
-          const lat = (row.lat != null) ? Number(row.lat) : null;
-          const lng = (row.lng != null) ? Number(row.lng) : null;
-
-          ensureMiniMap(lat, lng);
-          ensureMainMap(lat, lng);
-          updateGoogleMapsLink(lat, lng);
-
-        } catch (e) {
-          console.error(e);
-          showBanner(String(e && e.message ? e.message : e));
-          titleEl.textContent = "Error cargando ficha";
-        }
-      })();
-    </script>
-  </body>
+    <div class="stickyActions">
+      <button class="stickyBtn" id="stickySave">Guardar</button>
+      <button class="stickyBtn" id="stickyPhone">Ver teléfono</button>
+      <button class="stickyBtn primary" id="stickyContact">Contacto</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <a href="#" class="back" id="backToMap">← Volver al mapa</a>
+
+  <!-- MEDIA -->
+  <div class="mediaBlock" id="mediaTrigger">
+    <div class="mediaGrid">
+      <div class="mediaBig">Foto principal</div>
+      <div class="mediaSmallGrid">
+        <div class="mediaSmall">Foto</div>
+        <div class="mediaSmall">Foto</div>
+        <div class="mediaSmall">Foto</div>
+        <div class="mediaSmall">Foto</div>
+      </div>
+    </div>
+  </div>
+
+  <h1 id="title">Dirección del inmueble</h1>
+  <p class="price" id="price">—</p>
+
+  <div class="section">
+    <h2 class="h2">Ubicación</h2>
+    <div id="mainMap"></div>
+    <a id="gmapsBtn" class="gmapsBtn" target="_blank">
+      Calcular tiempo de viaje con Google Maps
+    </a>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  /* ===== STICKY BAR ===== */
+  const stickyBar = document.getElementById("stickyBar");
+  const trigger = document.getElementById("mediaTrigger");
+
+  const observer = new IntersectionObserver(
+    ([e]) => stickyBar.classList.toggle("visible", !e.isIntersecting),
+    { threshold: 0 }
+  );
+  observer.observe(trigger);
+
+  /* ===== MAP STATE BACK ===== */
+  const backBtn = document.getElementById("backToMap");
+
+  backBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    const state = sessionStorage.getItem("bh_map_state");
+    if(state){
+      window.location.href = "./index.html?state=1";
+    }else{
+      window.location.href = "./index.html";
+    }
+  });
+
+  /* ===== DEMO DATA (MVP) ===== */
+  const address = "Calle Ejemplo 12, Madrid";
+  const price = "495.000 €";
+  const lat = 40.4168;
+  const lng = -3.7038;
+
+  document.getElementById("title").textContent = address;
+  document.getElementById("price").textContent = price;
+  document.getElementById("stickyTitle").textContent = address;
+  document.getElementById("stickyPrice").textContent = price;
+
+  /* ===== MAP ===== */
+  const map = L.map("mainMap",{scrollWheelZoom:false}).setView([lat,lng],14);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+  L.marker([lat,lng]).addTo(map);
+
+  document.getElementById("gmapsBtn").href =
+    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+</script>
+
+</body>
 </html>
 
