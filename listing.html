@@ -1,6 +1,16 @@
 <!doctype html>
 <html lang="es">
   <head>
+  <!-- Icono de acceso directo (pantalla de inicio) -->
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/homyo-icon-512.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/homyo-icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/homyo-apple-touch.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#8C1F2D" />
+  <meta name="apple-mobile-web-app-title" content="Homyo" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Buscar Hogar – Ficha</title>
@@ -973,6 +983,7 @@
         }
 
         .mobileGalleryOverlay{
+          display:block;
           position:fixed;
           inset:0;
           background:#fff;
@@ -1131,6 +1142,197 @@
           color:#fff;
           padding:0;
           text-align:left;
+        }
+        .mobileViewer360Thumb.isActive{ border-color:#C4962A; }
+        .mobileViewer360ThumbImage{
+          height:76px;
+          background:linear-gradient(135deg,#f0f1f3,#ffffff);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          color:#8b93a0;
+          font-size:12px;
+        }
+        .mobileViewer360ThumbLabel{
+          padding:8px 10px 10px;
+          font-size:12px;
+          font-weight:700;
+        }
+      }
+
+      /* ===== Visor de medios en escritorio (reutiliza el overlay) ===== */
+      @media (min-width: 981px){
+        .mobileGalleryOverlay{
+          position:fixed;
+          inset:0;
+          background:#fff;
+          z-index:2500;
+          display:flex;
+          flex-direction:column;
+          overflow:hidden;
+        }
+        .mobileGalleryOverlay[hidden]{ display:none !important; }
+        .mobileGalleryTopbar{
+          order:1;
+          flex:0 0 auto;
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          padding:16px 32px;
+          border-bottom:1px solid var(--border);
+          background:#fff;
+        }
+        .mobileGalleryTopbarLeft,.mobileGalleryTopbarRight{
+          display:flex;
+          align-items:center;
+          gap:10px;
+        }
+        .mobileGalleryIconBtn,.mobileGalleryCloseBtn{
+          border:0;
+          background:transparent;
+          color:#8C1F2D;
+          padding:8px;
+          border-radius:10px;
+          cursor:pointer;
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+        }
+        .mobileGalleryIconBtn:hover,.mobileGalleryCloseBtn:hover{ background:#f4f4f5; }
+        .mobileGalleryCloseBtn{ color:#111; }
+        .mobileGalleryBottomNav{
+          order:2;
+          flex:0 0 auto;
+          display:flex;
+          gap:8px;
+          justify-content:center;
+          padding:14px;
+          border-bottom:1px solid var(--border);
+          background:#fff;
+        }
+        .mobileGalleryNavBtn{
+          border:1px solid rgba(140,31,45,0.3);
+          background:#fff;
+          color:#8C1F2D;
+          font-size:14px;
+          font-weight:600;
+          cursor:pointer;
+          padding:9px 24px;
+          border-radius:999px;
+        }
+        .mobileGalleryNavBtn:hover{ background:#faf2f3; }
+        .mobileGalleryNavBtn.isActive{
+          background:#8C1F2D;
+          color:#fff;
+          border-color:#8C1F2D;
+        }
+        .mobileGalleryBody{
+          order:3;
+          flex:1 1 auto;
+          overflow:auto;
+          padding:28px 32px 48px;
+        }
+        .mobileGallerySection{ display:none; max-width:1100px; margin:0 auto; }
+        .mobileGallerySection.isActive{ display:block; }
+        .mobileGalleryGrid{
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:12px;
+        }
+        .mobileGalleryHero{
+          grid-column:1 / -1;
+          aspect-ratio:1.6 / 1;
+          background:linear-gradient(135deg,#f0f1f3,#ffffff);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          overflow:hidden;
+          border-radius:10px;
+        }
+        .mobileGalleryHalf{
+          aspect-ratio:4 / 3;
+          background:linear-gradient(135deg,#f0f1f3,#ffffff);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          overflow:hidden;
+          border-radius:10px;
+        }
+        .mobileGalleryPanorama{
+          grid-column:1 / -1;
+          aspect-ratio:2.4 / 1;
+          background:linear-gradient(135deg,#eef2f7,#ffffff);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          overflow:hidden;
+          border-radius:10px;
+        }
+        .mobileGalleryItemText{ color:#8b93a0; font-size:14px; }
+        .mobileViewer360{
+          position:relative;
+          min-height:60vh;
+          background:linear-gradient(180deg,#dfe8f2,#ffffff);
+          overflow:hidden;
+          border-radius:10px;
+        }
+        .mobileViewer360Stage{
+          min-height:60vh;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          position:relative;
+          color:#fff;
+          background:linear-gradient(135deg,#cfd8e5,#f7f9fb);
+        }
+        .mobileViewer360Hint{
+          position:absolute;
+          inset:0;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          text-align:center;
+          color:rgba(255,255,255,0.96);
+          font-size:18px;
+          padding:24px;
+          background:linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.12));
+        }
+        .mobileViewer360Arrow{
+          position:absolute;
+          top:50%;
+          transform:translateY(-50%);
+          width:46px;
+          height:46px;
+          border-radius:999px;
+          border:0;
+          background:rgba(255,255,255,0.25);
+          color:#fff;
+          font-size:26px;
+          cursor:pointer;
+        }
+        .mobileViewer360Arrow.left{ left:18px; }
+        .mobileViewer360Arrow.right{ right:18px; }
+        .mobileViewer360Thumbs{
+          position:absolute;
+          left:0;
+          right:0;
+          bottom:18px;
+          display:flex;
+          gap:12px;
+          overflow:auto;
+          padding:0 18px 6px;
+          justify-content:center;
+        }
+        .mobileViewer360Thumb{
+          min-width:150px;
+          border-radius:10px;
+          overflow:hidden;
+          border:3px solid transparent;
+          background:rgba(17,17,17,0.72);
+          color:#fff;
+          padding:0;
+          text-align:left;
+          cursor:pointer;
         }
         .mobileViewer360Thumb.isActive{ border-color:#C4962A; }
         .mobileViewer360ThumbImage{
@@ -1487,16 +1689,16 @@
   border-color:#8C1F2D !important;
 }
 .agencyBody .cta.ctaPrimary{
-  background:#8C1F2D !important;
-  border-color:#8C1F2D !important;
+  background:#A6414C !important;
+  border-color:#A6414C !important;
   color:#fff !important;
   font-weight:700 !important;
   letter-spacing:0.02em !important;
   box-shadow:none !important;
 }
 .agencyBody .cta.ctaPrimary:hover:not([disabled]){
-  background:#711824 !important;
-  border-color:#711824 !important;
+  background:#8C1F2D !important;
+  border-color:#8C1F2D !important;
   box-shadow:0 4px 12px rgba(140,31,45,0.18) !important;
 }
 .agencyBody .cta.ctaPrimary .ctaIcon svg{
@@ -1507,6 +1709,7 @@
 }
 .agencyBody .cta .ctaIcon svg{
   stroke:var(--dorado) !important;
+  stroke-width:1 !important;
 }
 .agencyBody .cta[disabled]{
   opacity:0.55 !important;
@@ -2513,6 +2716,8 @@ function placeMonthlyLinkInPrice(){
 
         const price=document.createElement("span");
         price.textContent=v.textContent;
+        price.style.color="var(--granate)";
+        price.style.fontWeight="700";
 
         v.textContent="";
         wrap.appendChild(price);
@@ -2652,7 +2857,21 @@ function renderFeatures(row) {
           ? "Disponible"
           : vOrDash(row.availability);
 
-        const outdoorOrientation = titleCaseList(normalizeArray(row.outdoor_orientation));
+        const ORIENTATION_WORDS = {
+          N: "Norte", S: "Sur", E: "Este", O: "Oeste", W: "Oeste",
+          NE: "Noreste", NO: "Noroeste", NW: "Noroeste",
+          SE: "Sureste", SO: "Suroeste", SW: "Suroeste"
+        };
+        const orientationLabel = (arr) => {
+          if (!arr.length) return dash;
+          return arr.map((item) => {
+            const key = String(item).replace(/[_-]+/g, " ").trim().toUpperCase();
+            if (ORIENTATION_WORDS[key]) return ORIENTATION_WORDS[key];
+            const s = key.toLowerCase();
+            return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+          }).filter(Boolean).join(", ");
+        };
+        const outdoorOrientation = orientationLabel(normalizeArray(row.outdoor_orientation));
         const accessibility = normalizeArray(row.accessibility_features);
 
         const hasBalcony = row.outdoor_space_type ? /balc/i.test(String(row.outdoor_space_type)) : null;
@@ -2666,7 +2885,8 @@ function renderFeatures(row) {
         const blocks = [
           makeFeatBlock("Descripción", [
             ["Precio de venta", formatMoney(price)],
-            ["Impuestos compra", dash],
+            ["IVA (10%)", price != null ? euro(price * 0.10) : dash],
+            ["Precio con IVA incluido", price != null ? euro(price * 1.10) : dash],
             ["Precio por m² útiles interiores", pricePerUsefulM2 != null ? euro(pricePerUsefulM2) : dash],
             ["Precio por m² construidos totales", pricePerBuiltM2 != null ? euro(pricePerBuiltM2) : dash],
             ["Disponible desde", listedSince]
@@ -2685,7 +2905,7 @@ function renderFeatures(row) {
             ["Superficie útil interior", formatM2(usefulArea)],
             ["Superficie construida interior", dash],
             ["Superficie construida total", formatM2(builtArea)],
-            ["Altura techo", dash]
+            ["Altura techo del salón", dash]
           ]),
           makeFeatBlock("Distribución", [
             ["Número de dormitorios", bedrooms != null ? String(bedrooms) : dash],
@@ -2696,7 +2916,7 @@ function renderFeatures(row) {
             ["Número de plantas", dash]
           ]),
           makeFeatBlock("Espacio exterior", [
-            ["Información de la ubicación", outdoorOrientation],
+            ["Orientación", outdoorOrientation],
             ["Balcón", hasBalcony == null ? dash : yesNo(hasBalcony)],
             ["Terraza", hasTerrace == null ? dash : yesNo(hasTerrace)],
             ["Jardín", hasGarden == null ? dash : yesNo(hasGarden)],
@@ -2754,7 +2974,7 @@ function renderFeatures(row) {
       }
 
       function openMobileGallery(section){
-        if (!isMobileViewport() || !mobileGalleryOverlayEl) return;
+        if (!mobileGalleryOverlayEl) return;
         mobileGalleryOverlayEl.hidden = false;
         document.body.style.overflow = "hidden";
         setMobileGallerySection(section || "photos");
@@ -2812,26 +3032,13 @@ function renderFeatures(row) {
 
 
       function wireMediaButtons() {
-        const msg = "MVP: este botón abrirá la galería/visor cuando haya fotos/plano/vídeo.";
-        tabPhotos.addEventListener("click", () => {
-          if (isMobileViewport()) return openMobileGallery("photos");
-          alert(msg);
-        });
-        tabFloor.addEventListener("click", () => {
-          if (isMobileViewport()) return openMobileGallery("floor");
-          alert(msg);
-        });
-        tab360.addEventListener("click", () => {
-          if (isMobileViewport()) return openMobileGallery("pano");
-          alert(msg);
-        });
-        tabVideo.addEventListener("click", () => {
-          if (isMobileViewport()) return openMobileGallery("video");
-          alert(msg);
-        });
-        tabAllMedia.addEventListener("click", () => {
-          if (isMobileViewport()) return openMobileGallery("photos");
-          alert(msg);
+        tabPhotos.addEventListener("click", () => openMobileGallery("photos"));
+        tabFloor.addEventListener("click", () => openMobileGallery("floor"));
+        tab360.addEventListener("click", () => openMobileGallery("pano"));
+        tabVideo.addEventListener("click", () => openMobileGallery("video"));
+        tabAllMedia.addEventListener("click", () => openMobileGallery("photos"));
+        document.addEventListener("keydown", (ev) => {
+          if (ev.key === "Escape" && mobileGalleryOverlayEl && !mobileGalleryOverlayEl.hidden) closeMobileGallery();
         });
       }
 

@@ -1,6 +1,16 @@
 <!doctype html>
 <html lang="es">
   <head>
+  <!-- Icono de acceso directo (pantalla de inicio) -->
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/homyo-icon-512.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/homyo-icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/homyo-apple-touch.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#8C1F2D" />
+  <meta name="apple-mobile-web-app-title" content="Homyo" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Buscar Hogar – Mapa</title>
@@ -373,14 +383,6 @@
                   </div>
 
                   <div class="textSide">
-                    <div class="topActions">
-                      <button class="closeBtn" id="cardClose" type="button" aria-label="Cerrar">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
-                        </svg>
-                      </button>
-                    </div>
-
                     <a id="cardAddrTop" class="addrTop" href="#">Dirección</a>
                     <div id="cardAddrBottom" class="addrBottom">—</div>
 
@@ -390,6 +392,11 @@
                     <div id="cardAgency" class="agency">—</div>
                   </div>
                 </div>
+                <button class="closeBtn" id="cardClose" type="button" aria-label="Cerrar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+                  </svg>
+                </button>
               </div>
 
               <!-- Status “pill” dentro del mapa (referencia visual) -->
@@ -508,6 +515,18 @@
           document.getElementById("cardClose")?.click();
         }
       }
+
+      // En móvil, al pulsar cualquiera de los 5 botones principales del mapa
+      // (Mi ubicación, Transporte, Sol, Área por puntos, Área dibujo libre),
+      // cerramos automáticamente la tarjeta del anuncio seleccionada para que no
+      // quede superpuesta. Listener en fase de captura y delegado en document
+      // porque los .qBtn son controles de Leaflet creados dinámicamente.
+      document.addEventListener("click", (e) => {
+        if (!window.matchMedia("(max-width: 768px)").matches) return;
+        if (e.target.closest && e.target.closest(".qBtn")) {
+          closeMapCard();
+        }
+      }, true);
 
       function openMobileFilters() {
         closeMapCard();

@@ -455,7 +455,9 @@ body{
 .cardGrid {
   display: grid;
   grid-template-columns: 35% 65%;
-  height: 150px;
+  height: 196px;
+  border-radius: inherit;
+  overflow: hidden;
 }
 
 .mediaSide {
@@ -2163,8 +2165,16 @@ body{
   .sunTimebar{
     left: 10px !important;
     right: 10px !important;
-    /* Subida para dejar un margen mínimo sobre la tira de atribución del plano */
-    bottom: calc(34px + env(safe-area-inset-bottom, 0px)) !important;
+    /* Bajada un pelín respecto a antes (estaba en 34px) */
+    bottom: calc(26px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 2200 !important;
+  }
+
+  /* Botón "Ahora": subido un pelín, justo encima de la barra de horas */
+  .sunNowDock{
+    left: 10px !important;
+    right: auto !important;
+    bottom: calc(26px + env(safe-area-inset-bottom, 0px) + var(--sunbar-inner-h) + 18px) !important;
     z-index: 2200 !important;
   }
 
@@ -3182,6 +3192,7 @@ body{
   border-radius: 3.5px !important;
   border: 1px solid var(--bh-border) !important;
   background: #fff !important;
+  overflow: visible !important;
   box-shadow:
     0 1px 0 rgba(140,31,45,0.04),
     0 18px 44px rgba(140,31,45,0.18),
@@ -3232,11 +3243,16 @@ body{
 }
 
 .closeBtn{
+  position: absolute !important;
+  top: -15px !important;
+  right: -15px !important;
+  z-index: 3 !important;
   width: 34px !important;
   height: 34px !important;
   border-radius: 999px !important;
   border: 1px solid var(--bh-border) !important;
   background: #fff !important;
+  box-shadow: 0 6px 16px rgba(140,31,45,0.20), 0 2px 6px rgba(0,0,0,0.10) !important;
   transition: all .15s ease !important;
 }
 .closeBtn svg{
@@ -3256,7 +3272,7 @@ body{
   color: var(--bh-granate) !important;
   font-size: 17px !important;
   font-weight: 600 !important;
-  padding-right: 60px !important;
+  padding-right: 4px !important;
 }
 .addrTop:hover{
   text-decoration-color: rgba(140,31,45,0.4) !important;
@@ -3279,11 +3295,12 @@ body{
 .facts{
   margin-top: 10px !important;
   gap: 6px !important;
+  flex-wrap: wrap !important;
   font-family: 'Raleway','Montserrat',system-ui,sans-serif !important;
   font-size: 11px !important;
   font-weight: 600 !important;
-  letter-spacing: 0.10em !important;
-  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  text-transform: none !important;
 }
 .fact{
   padding: 4px 9px !important;
@@ -3319,7 +3336,7 @@ body{
   }
   .addrTop{
     font-size: 17px !important;
-    padding-right: 50px !important;
+    padding-right: 4px !important;
   }
   .price{
     font-size: 20px !important;
@@ -3327,6 +3344,8 @@ body{
   .closeBtn{
     width: 36px !important;
     height: 36px !important;
+    top: -14px !important;
+    right: -10px !important;
   }
 }
 
@@ -4188,10 +4207,19 @@ body.saveSearchAuthOpen{
     justify-content: flex-start;
   }
 
-  /* Tarjeta anclada al borde izquierdo del mapa (deja de estar centrada). */
+  /* Tarjeta centrada dentro del área útil del mapa.
+     Se reserva un pasillo de 66px en el lado derecho para que el borde
+     derecho del cartel nunca llegue ni a los botones +/- del zoom
+     (esquina inferior derecha, ~54px de ancho) ni a la columna de iconos
+     (arriba-derecha, ~56px). Con left/right/width fijados y márgenes
+     auto, el bloque absoluto se centra en el hueco [0, ancho-66].
+     El ancho máximo se mantiene en 720px; en mapas estrechos (filtros y
+     listado abiertos) se encoge para seguir dejando el pasillo derecho. */
   .card{
     left: 0;
-    right: auto;
+    right: 66px;
+    width: min(720px, calc(100% - 94px));
+    margin-inline: auto;
     transform: translateY(10px);
   }
   .card.visible{
@@ -4211,10 +4239,9 @@ body.saveSearchAuthOpen{
    ===================================================================== */
 @media (min-width: 981px){
   .mapWrap:has(.tpPicking) #card{
-    /* Mantiene el ancho máximo habitual (720px) pero, cuando haría falta,
-       se estrecha lo justo para dejar 10px hasta el lado izquierdo de los
-       iconos. left:0 lo hereda de la regla de escritorio de .card. */
-    width: min(720px, calc(100% - 66px));
+    /* Hereda left:0 / right:66px / margin auto de la regla de escritorio,
+       así que basta con reusar el mismo ancho centrado. */
+    width: min(720px, calc(100% - 94px));
   }
 }
 

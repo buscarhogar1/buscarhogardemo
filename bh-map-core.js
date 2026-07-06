@@ -152,6 +152,44 @@ export function initMap(){
       cardPhotoIdx = (cardPhotoIdx + 1) % cardPhotos.length;
       renderCardPhoto();
     });
+
+    // Deslizar con el dedo para pasar fotos (táctil / móvil).
+    let swipeX = 0, swipeY = 0, swiping = false;
+    mediaSideEl.addEventListener("touchstart", (e) => {
+      if (cardPhotos.length < 2 || !e.touches || e.touches.length !== 1) {
+        swiping = false;
+        return;
+      }
+      swipeX = e.touches[0].clientX;
+      swipeY = e.touches[0].clientY;
+      swiping = true;
+    }, { passive: true });
+
+    mediaSideEl.addEventListener("touchmove", (e) => {
+      if (!swiping || !e.touches || e.touches.length !== 1) return;
+      const dx = e.touches[0].clientX - swipeX;
+      const dy = e.touches[0].clientY - swipeY;
+      // Gesto predominantemente horizontal: evita el scroll de la página.
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    mediaSideEl.addEventListener("touchend", (e) => {
+      if (!swiping) return;
+      swiping = false;
+      const t = (e.changedTouches && e.changedTouches[0]) || null;
+      if (!t || cardPhotos.length < 2) return;
+      const dx = t.clientX - swipeX;
+      const dy = t.clientY - swipeY;
+      if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;
+      if (dx < 0) {
+        cardPhotoIdx = (cardPhotoIdx + 1) % cardPhotos.length;
+      } else {
+        cardPhotoIdx = (cardPhotoIdx - 1 + cardPhotos.length) % cardPhotos.length;
+      }
+      renderCardPhoto();
+    }, { passive: true });
   }
 
   function renderCardPhoto() {
@@ -189,6 +227,12 @@ export function initMap(){
   }
   function iconType() {
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>';
+  }
+  function iconYear() {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>';
+  }
+  function iconBuilt() {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>';
   }
   function iconBed() {
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v11"/><path d="M3 13h18v5"/><path d="M21 18v-4a3 3 0 0 0-3-3H8v2"/></svg>';
@@ -271,10 +315,19 @@ export function initMap(){
     const beds = (p.bedrooms != null) ? `${p.bedrooms}` : "—";
     const baths = (p.bathrooms != null) ? `${p.bathrooms}` : "—";
 
+    const builtFact = (p.built_area_m2 != null)
+      ? `<div class="fact">${iconBuilt()}<span>${p.built_area_m2} m² Const.</span></div>`
+      : "";
+    const yearFact = (p.built_year != null)
+      ? `<div class="fact">${iconYear()}<span>${p.built_year}</span></div>`
+      : "";
+
     cardFactsEl.innerHTML = `
       <div class="fact">${iconArea()}<span>${m2} útiles</span></div>
+      ${builtFact}
       <div class="fact">${iconBed()}<span>${beds}</span></div>
       <div class="fact">${iconBath()}<span>${baths}</span></div>
+      ${yearFact}
     `;
 
     cardAgencyEl.textContent = p.agency_name || "—";
@@ -504,6 +557,45 @@ export function initMap(){
       });
     } catch (e) {
       console.warn("No se pudieron cargar medios de listing_media:", e);
+    }
+  }
+
+  // El RPC del mapa no devuelve el año de construcción ni la superficie
+  // construida total. Los traemos por lote desde listing_detail_public para que
+  // la tarjeta de selección los pueda mostrar. Igual patrón que attachListingMedia.
+  async function attachListingDetail(rows){
+    try {
+      const list = (rows || []).filter((p) => p && p.listing_id);
+      if (!list.length) return;
+      const ids = [...new Set(list.map((p) => String(p.listing_id)))];
+
+      const byId = new Map();
+      const CHUNK = 100;
+      for (let i = 0; i < ids.length; i += CHUNK){
+        const slice = ids.slice(i, i + CHUNK);
+        const params = new URLSearchParams();
+        params.set("select", "listing_id,built_year,built_area_m2");
+        params.set("listing_id", "in.(" + slice.join(",") + ")");
+        const url = `${SUPABASE_URL}/rest/v1/listing_detail_public?${params.toString()}`;
+        const res = await fetch(url, {
+          headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+        });
+        if (!res.ok) continue;
+        const data = await res.json();
+        for (const d of (data || [])){
+          if (!d) continue;
+          byId.set(String(d.listing_id), d);
+        }
+      }
+
+      list.forEach((p) => {
+        const entry = byId.get(String(p.listing_id));
+        if (!entry) return;
+        if (entry.built_year != null) p.built_year = entry.built_year;
+        if (entry.built_area_m2 != null) p.built_area_m2 = entry.built_area_m2;
+      });
+    } catch (e) {
+      console.warn("No se pudo cargar detalle de listing_detail_public:", e);
     }
   }
 
@@ -1440,6 +1532,7 @@ export function initMap(){
     const rows = await rpcSearchMapPoints(b, f);
     lastFetchedRows = rows;
     await attachListingMedia(rows);
+    await attachListingDetail(rows);
     storeListingPhotos(rows);
     lastViewInfo = { z, mode: f.mode };
     applyAreaFilterAndRender();
@@ -1950,7 +2043,10 @@ export function initMap(){
     // colocan en la misma vertical que la cartela explicativa (.areaHint), con la
     // base del "−" a 8px de su borde superior → clase específica .bhAreaShift.
     // Para Sol / Transporte se mantiene el desplazamiento general (.bhBottomShift).
-    cont.classList.toggle("bhAreaShift", areaActive);
+    // NOTA: no desplazamos los botones +/- del zoom al activar un área. La
+    // cartela (.areaHint) va centrada y no se solapa con el zoom (derecha), así
+    // que los botones deben mantener su posición fija.
+    cont.classList.toggle("bhAreaShift", false);
     // Sol: los botones +/- suben justo encima de la barra de horario del sol
     // (la base del "−" a 8px de la cara superior de la barra) → clase propia.
     const sunShift = !!sunEnabled && !areaActive;

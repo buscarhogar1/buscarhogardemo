@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Icono Homyo — opciones</title>
+<style>
+  :root{ --granate:#8C1F2D; --bg:#FFFDFA; }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100vh; background:#ECE7E0; color:#1a1a1a;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:32px; padding:48px 20px;
+  }
+  h1{ font-size:22px; font-weight:600; margin:0; }
+  .row{ display:flex; gap:48px; flex-wrap:wrap; justify-content:center; }
+  .card{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .icon{ width:180px; height:180px; border-radius:40px; box-shadow:0 8px 24px rgba(0,0,0,.18); }
+  .label{ font-size:15px; font-weight:500; color:#444; }
+  .sub{ font-size:13px; color:#777; max-width:200px; text-align:center; }
+</style>
+</head>
+<body>
+  <h1>Icono de acceso directo — Homyo</h1>
+  <div class="row">
+    <div class="card">
+      <img class="icon" src="icons/homyo-icon-512.png?v=9" alt="Opción A crema" />
+      <div class="label">A · Fondo crema</div>
+      <div class="sub">Sutil y minimalista, fiel al fondo de la web</div>
+    </div>
+    <div class="card">
+      <img class="icon" src="icons/homyo-granate-512.png?v=4" alt="Opción B granate" />
+      <div class="label">B · Fondo granate</div>
+      <div class="sub">Más visible y reconocible entre los iconos del móvil</div>
+    </div>
+  </div>
+</body>
+</html>

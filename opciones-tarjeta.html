@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="design_doc_mode" content="canvas" />
+  <title>Opciones tarjeta agencia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Raleway', system-ui, sans-serif; }
+
+    .frame {
+      position: absolute;
+      width: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .frameLabel {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+    .frameSub {
+      font-size: 12px;
+      font-weight: 400;
+      color: #9aa1aa;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      text-transform: none;
+      letter-spacing: 0;
+      margin-top: 3px;
+    }
+
+    /* ---- Card base ---- */
+    .agencyCard {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .agencyTop {
+      background: var(--top-bg);
+      padding: 22px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+    }
+    .agencyLogoFrame {
+      width: 78px;
+      height: 78px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      display: grid;
+      place-items: center;
+      margin-bottom: 12px;
+    }
+    .agencyLogoFallback {
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--granate);
+    }
+    .agencyName {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--granate);
+    }
+    .agencyVerified {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dorado);
+    }
+    .agencyVerified svg { width: 14px; height: 14px; }
+
+    .agencyBody { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      height: 46px;
+      border-radius: 10px;
+      border: 1px solid var(--cta-border);
+      background: #fff;
+      color: var(--granate);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ctaGhost { justify-content: flex-start; }
+    .ctaIcon { display: inline-flex; }
+    .ctaIcon svg { width: 20px; height: 20px; stroke: var(--dorado); }
+
+    .cta.ctaSecondary { justify-content: center; }
+    .cta.ctaSecondary .ctaIcon svg { stroke: var(--dorado); }
+
+    .cta.ctaPrimary {
+      justify-content: center;
+      background: var(--granate);
+      border-color: var(--granate);
+      color: #fff;
+      font-weight: 700;
+    }
+    .cta.ctaPrimary .ctaIcon svg { stroke: var(--dorado-on-dark); }
+  </style>
+</head>
+<body>
+
+  <!-- ============ REFERENCIA (actual) ============ -->
+  <div class="frame" style="left:60px; top:80px;
+        --granate:#8C1F2D; --granateDark:#711824; --dorado:#C4962A;
+        --dorado-on-dark:#C4962A; --line:#e6e7eb; --cta-border:rgba(140,31,45,0.35);
+        --top-bg:rgba(255,253,250,0.94);">
+    <div class="frameLabel">Actual <span class="frameSub">granate #8C1F2D · trazo 2</span></div>
+    <div class="agencyCard">
+      <div class="agencyTop">
+        <div class="agencyLogoFrame"><div class="agencyLogoFallback">AP</div></div>
+        <p class="agencyName">Agencia Prueba</p>
+        <span class="agencyVerified">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+          Profesional verificado
+        </span>
+      </div>
+      <div class="agencyBody" data-sw="2"></div>
+    </div>
+  </div>
+
+  <!-- ============ OPCIÓN A — Suave ============ -->
+  <div class="frame" style="left:480px; top:80px;
+        --granate:oklch(0.47 0.11 18); --dorado:oklch(0.74 0.085 80);
+        --dorado-on-dark:oklch(0.80 0.08 80); --line:#ecebe9; --cta-border:oklch(0.47 0.11 18 / 0.28);
+        --top-bg:oklch(0.985 0.006 60);">
+    <div class="frameLabel">Opción A · Suave <span class="frameSub">granate rebajado · trazo 1</span></div>
+    <div class="agencyCard">
+      <div class="agencyTop">
+        <div class="agencyLogoFrame"><div class="agencyLogoFallback">AP</div></div>
+        <p class="agencyName">Agencia Prueba</p>
+        <span class="agencyVerified">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+          Profesional verificado
+        </span>
+      </div>
+      <div class="agencyBody" data-sw="1"></div>
+    </div>
+  </div>
+
+  <!-- ============ OPCIÓN B — Media ============ -->
+  <div class="frame" style="left:900px; top:80px;
+        --granate:oklch(0.53 0.09 18); --dorado:oklch(0.77 0.07 80);
+        --dorado-on-dark:oklch(0.82 0.07 80); --line:#eeedeb; --cta-border:oklch(0.53 0.09 18 / 0.24);
+        --top-bg:oklch(0.99 0.004 60);">
+    <div class="frameLabel">Opción B · Media <span class="frameSub">más clara y desaturada · trazo 1</span></div>
+    <div class="agencyCard">
+      <div class="agencyTop">
+        <div class="agencyLogoFrame"><div class="agencyLogoFallback">AP</div></div>
+        <p class="agencyName">Agencia Prueba</p>
+        <span class="agencyVerified">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+          Profesional verificado
+        </span>
+      </div>
+      <div class="agencyBody" data-sw="1"></div>
+    </div>
+  </div>
+
+  <!-- ============ OPCIÓN C — Muy suave ============ -->
+  <div class="frame" style="left:1320px; top:80px;
+        --granate:oklch(0.58 0.07 18); --dorado:oklch(0.80 0.055 80);
+        --dorado-on-dark:oklch(0.85 0.06 80); --line:#f0efed; --cta-border:oklch(0.58 0.07 18 / 0.20);
+        --top-bg:oklch(0.992 0.003 60);">
+    <div class="frameLabel">Opción C · Muy suave <span class="frameSub">tono más ligero · trazo 0.9</span></div>
+    <div class="agencyCard">
+      <div class="agencyTop">
+        <div class="agencyLogoFrame"><div class="agencyLogoFallback">AP</div></div>
+        <p class="agencyName">Agencia Prueba</p>
+        <span class="agencyVerified">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+          Profesional verificado
+        </span>
+      </div>
+      <div class="agencyBody" data-sw="0.9"></div>
+    </div>
+  </div>
+
+  <script>
+    // Inject the 4 buttons into each card body, honoring per-frame stroke-width.
+    const phone = '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.63 2.62a2 2 0 0 1-.45 2.11L8.03 9.97a16 16 0 0 0 6 6l1.52-1.26a2 2 0 0 1 2.11-.45c.84.3 1.72.51 2.62.63A2 2 0 0 1 22 16.92z"/>';
+    const mail = '<path d="M4 4h16v16H4z"/><path d="m4 7 8 6 8-6"/>';
+    const cal = '<path d="M8 2v4"/><path d="M16 2v4"/><path d="M3 10h18"/><path d="M5 4h14v16H5z"/>';
+    function svg(paths, sw){
+      return '<span class="ctaIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round">'+paths+'</svg></span>';
+    }
+    document.querySelectorAll('.agencyBody').forEach(body => {
+      const sw = body.dataset.sw;
+      body.innerHTML =
+        '<button class="cta ctaGhost">'+svg(phone,sw)+'<span>Ver teléfono</span></button>' +
+        '<button class="cta ctaGhost">'+svg(mail,sw)+'<span>Ver correo</span></button>' +
+        '<button class="cta ctaPrimary">'+svg(mail,sw)+'<span>Ponerse en contacto</span></button>' +
+        '<button class="cta ctaSecondary">'+svg(cal,sw)+'<span>Solicitar una visita</span></button>';
+    });
+  </script>
+</body>
+</html>

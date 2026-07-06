@@ -767,6 +767,9 @@ html,body{
 
 /* ===== HOMYO header final overrides ===== */
 :root{ --headerH:82px; }
+/* Reserva el espacio del header antes de que el JS lo inyecte, para que el
+   contenido no salte ni el header aparezca "tarde" al cargar (sobre todo en móvil). */
+#bhHeader{ min-height: var(--headerH, 82px); background: var(--bg); }
 .topbar{ height:82px; }
 .rightGroup{ margin-right:20px; transform:none !important; }
 .leftGroup{ left:20px; }
@@ -1111,7 +1114,7 @@ body.bh-authenticated .bhSideAnonOnly{
 }
 .bhAccCard.pro{
   background:linear-gradient(180deg, rgba(226,184,76,.10), rgba(226,184,76,0) 70%), #FBF8F4;
-  border-color:rgba(226,184,76,.45);
+  border-color:rgba(205,182,138,.45);
 }
 
 .bhAccHead{ display:flex; align-items:center; gap:12px; margin-bottom:12px; }
@@ -1119,11 +1122,11 @@ body.bh-authenticated .bhSideAnonOnly{
   flex:0 0 auto;
   width:40px; height:40px; border-radius:12px;
   display:flex; align-items:center; justify-content:center;
-  background:#8C1F2D;
+  background:#fff; border:1px solid rgba(140,31,45,.18);
 }
-.bhAccCard.pro .bhAccIcon{ background:#E2B84C; }
-.bhAccIcon svg{ width:21px; height:21px; stroke:#FBEDE2; stroke-width:1.7; fill:none; stroke-linecap:round; stroke-linejoin:round; }
-.bhAccCard.pro .bhAccIcon svg{ stroke:#7A1A26; }
+.bhAccCard.pro .bhAccIcon{ background:#fff; border-color:rgba(226,184,76,.55); }
+.bhAccIcon svg{ width:21px; height:21px; stroke:#8C1F2D; stroke-width:1.7; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.bhAccCard.pro .bhAccIcon svg{ stroke:#E2B84C; }
 
 .bhAccTitleWrap{ display:flex; flex-direction:column; gap:1px; min-width:0; }
 .bhAccTitle{
@@ -1149,10 +1152,14 @@ body.bh-authenticated .bhSideAnonOnly{
   cursor:pointer; text-decoration:none;
   transition:all .16s ease; border:1px solid transparent; white-space:nowrap;
 }
-.bhBtnPrimary{ background:#8C1F2D; color:#fff; }
-.bhBtnPrimary:hover{ background:#7A1A26; }
-.bhBtnGhost{ background:#fff; color:#8C1F2D; border-color:rgba(140,31,45,.12); }
-.bhBtnGhost:hover{ background:#f8f0df; }
+.bhBtnPrimary{ background:#fff; color:#8C1F2D; border-color:rgba(140,31,45,.45); }
+.bhBtnPrimary:hover{ background:#8C1F2D; color:#fff; border-color:#8C1F2D; transform:translateY(-1px); box-shadow:0 6px 16px rgba(140,31,45,.22); }
+.bhBtnGhost{ background:#fff; color:#8f8578; border-color:#e4dccd; }
+.bhBtnGhost:hover{ background:#FBF8F4; color:#241f1b; border-color:#d6cbb6; transform:translateY(-1px); }
+/* En "Soy profesional" el botón principal usa dorado en vez de granate */
+.bhAccCard.pro .bhBtnPrimary{ color:#B98F2E; border-color:rgba(226,184,76,.70); }
+.bhAccCard.pro .bhBtnPrimary:hover{ background:#E2B84C; color:#fff; border-color:#E2B84C; box-shadow:0 6px 16px rgba(226,184,76,.28); }
+.bhBtn:active{ transform:translateY(0); }
 
 .bhAccFoot{
   display:flex; align-items:center; gap:6px;

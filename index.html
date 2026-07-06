@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Homyo</title>
 
+  <!-- Icono de acceso directo (pantalla de inicio) -->
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/homyo-icon-512.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/homyo-icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/homyo-apple-touch.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#8C1F2D" />
+  <meta name="apple-mobile-web-app-title" content="Homyo" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
   <link rel="stylesheet" href="./bh-shared.css?v=20260504" />
   <link rel="stylesheet" href="./bh-header-overrides.css?v=20260504" />
 
@@ -1168,6 +1178,8 @@
         // Banda de los iconos.
         const subBottomAbs = coreTopPx + subBottomRel;
         const modeRowEl = inner.querySelector(".modeRow");
+        const mobileSearchBtnEl = inner.querySelector(".mobileSearchBtn");
+        const subTaglineEl = inner.querySelector(".subTagline");
 
         if (mq.matches && kbMode) {
           // Teclado abierto: los 5 iconos se colocan ENCIMA del buscador, en la
@@ -1177,6 +1189,10 @@
           quickZone.style.visibility    = "";
           quickZone.style.pointerEvents = "";
           if (modeRowEl) modeRowEl.style.visibility = "hidden";
+          // En la vista expandida móvil ocultamos el botón "Buscar" y la
+          // frase rotativa de debajo del buscador.
+          if (mobileSearchBtnEl) mobileSearchBtnEl.style.display = "none";
+          if (subTaglineEl) subTaglineEl.style.visibility = "hidden";
         } else {
           // Estado normal: los iconos van abajo, bajo las frases.
           quickZone.style.top           = subBottomAbs + "px";
@@ -1184,6 +1200,8 @@
           quickZone.style.visibility    = "";
           quickZone.style.pointerEvents = "";
           if (modeRowEl) modeRowEl.style.visibility = "";
+          if (mobileSearchBtnEl) mobileSearchBtnEl.style.display = "";
+          if (subTaglineEl) subTaglineEl.style.visibility = "";
         }
 
         // Si el panel de sugerencias está montado, lo recolocamos para que
